@@ -41,9 +41,15 @@ app
     .post('/login', async ({ body: { email, password } }) => {
       const data = await auth.api.signInEmail({
         body: { email, password },
-        asResponse: true,
+        //asResponse: true,
       });
-      return data;
+      const role = await db
+        .select({ role: profile.role })
+        .from(profile)
+        .where(eq(profile.id, data.user.id))
+        .limit(1);
+      // return { ...data, role: role[0]?.role || 'user' };
+      return { ...data, role: role[0]?.role || 'user' };
     }, {
       body: t.Object({
         email: t.String(),
@@ -91,6 +97,13 @@ app
     })
     .get('/users', () => {
       return db.select().from(user);
+    })
+    .get('/role/:id', async ({ params: { id } }) => {
+      return await db
+        .select({ role: profile.role })
+        .from(profile)
+        .where(eq(profile.id, id))
+        .limit(1);
     })
     .get(
       '/profile/:id',

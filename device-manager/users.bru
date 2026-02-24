@@ -1,12 +1,12 @@
 meta {
-  name: get-user
+  name: users
   type: http
   seq: 3
 }
 
-post {
-  url: http://localhost:3000/users
-  body: json
+get {
+  url: http://localhost:3000/api/users
+  body: none
   auth: inherit
 }
 
