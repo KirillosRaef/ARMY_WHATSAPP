@@ -1,0 +1,23 @@
+meta {
+  name: get-user
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3000/users
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Sameh",
+    "email": "uuuussss"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

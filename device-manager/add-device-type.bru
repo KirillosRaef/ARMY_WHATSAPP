@@ -1,0 +1,26 @@
+meta {
+  name: add-device-type
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3000/device-type
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "brandName": "Dell",
+    "deviceType": "Laptop",
+    "description": "i7-10th Generation",
+    "serialNumber": "4R678HFT",
+    "usage": "New",
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
