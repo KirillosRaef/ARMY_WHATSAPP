@@ -12,7 +12,6 @@ function LoginPage() {
   const [password, setPassword] = useState('');
 
   const handleSubmit = async () => {
-
     try {
       const res = await fetch('http://localhost:5173/api/login', {
         method: 'POST',
@@ -20,24 +19,30 @@ function LoginPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
-
+          
+          
+      const data = await res.json();
+      console.log('Response status:', res.status);
+      console.log('Response body:', data);
       if (!res.ok) {
-        throw new Error('Login failed');
+        throw new Error(`Login failed: ${data.error || res.statusText}`);
       }
 
-      
+      console.log('Login successful');
 
-
-      navigate({ to: '/' });
+      //TODO: Store authentication state (e.g., in context or localStorage)
+      //TODO: rediect to appropriate page based on role
+      //TODO: inquire about session and account management and how to handle it in the frontend
+      if (data.role === 'admin') {
+        navigate({ to: '/admin_page' });
+      } else if (data.role === 'user') {
+        navigate({ to: '/user_page' });
+      }
     } catch (err) {
       console.log('Login failed:', err);
-    } 
-    navigate({ to: '/' });
+    }
   }
 
   return <div>
