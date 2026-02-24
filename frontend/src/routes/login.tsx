@@ -24,8 +24,8 @@ function LoginPage() {
           
           
       const data = await res.json();
-      console.log('Response status:', res.status);
-      console.log('Response body:', data);
+      // console.log('Response status:', res.status);
+      // console.log('Response body:', data);
       if (!res.ok) {
         throw new Error(`Login failed: ${data.error || res.statusText}`);
       }
