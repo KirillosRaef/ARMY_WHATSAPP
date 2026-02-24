@@ -9,7 +9,9 @@ import {
 
 
 export const user = sqliteTable('user', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => Bun.randomUUIDv7()),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   emailVerified: integer('email_verified', { mode: 'boolean' })
