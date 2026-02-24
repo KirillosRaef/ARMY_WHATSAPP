@@ -38,38 +38,38 @@ export const deviceType = sqliteTable('device_type', {
     .primaryKey()
     .$defaultFn(() => Bun.randomUUIDv7()),
   brandName: text('brand_name').notNull(),
-  deviceType: text('device_type').notNull(),
+  deviceKind: text('device_kind').notNull(),
   description: text('description'),
-}, (t) => [uniqueIndex('unique_brand_device').on(t.brandName, t.deviceType, t.description)]);
+}, (t) => [uniqueIndex('unique_brand_device').on(t.brandName, t.deviceKind, t.description)]);
 
 export const createInsertDeviceType = createInsertSchema(deviceType);
 
-export const device = sqliteTable(
-  'device',
-  {
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => Bun.randomUUIDv7()),
-    deviceTypeId: text('device_type_id').notNull(),
-    serialNumber: text('serial_number').notNull().unique(),
-    usage: text('usage', {enum: ['new', 'used', 'broken']}).notNull(),
-  }
-);
-
-export const createInsertDevice = createInsertSchema(device);
-
-export const requests = sqliteTable('requests', {
+export const device = sqliteTable('device', {
   id: text('id')
     .primaryKey()
     .$defaultFn(() => Bun.randomUUIDv7()),
-  deviceId: text('device_id').notNull(),
+  deviceTypeId: text('device_type_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
   usage: text('usage', { enum: ['new', 'used', 'broken'] }).notNull(),
   devicePhoto: text('device_photo'),
   serialNumberPhoto: text('serial_number_photo'),
 });
 
-export const createInsertRequests = createInsertSchema(requests);
+export const createInsertDevice = createInsertSchema(device);
+
+export const request = sqliteTable('request', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => Bun.randomUUIDv7()),
+  userId: text('user_id').notNull(),
+  deviceId: text('device_id').notNull(),
+  serialNumber: text('serial_number').notNull().unique(),
+  usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
+  devicePhoto: text('device_photo'),
+  serialNumberPhoto: text('serial_number_photo'),
+});
+
+export const createInsertRequest = createInsertSchema(request);
 
 
 
