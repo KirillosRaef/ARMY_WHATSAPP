@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { TanStackDevtools } from '@tanstack/react-devtools';
+import { hotkeysDevtoolsPlugin } from '@tanstack/react-hotkeys-devtools';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -22,6 +24,7 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <RouterProvider router={router} />
+      <TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
     </StrictMode>,
   );
 }
