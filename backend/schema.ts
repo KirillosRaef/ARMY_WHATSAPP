@@ -62,7 +62,7 @@ export const request = sqliteTable('request', {
     .primaryKey()
     .$defaultFn(() => Bun.randomUUIDv7()),
   userId: text('user_id').notNull(),
-  deviceId: text('device_id').notNull(),
+  deviceTypeId: text('device_type_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
   usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
   devicePhoto: text('device_photo'),
