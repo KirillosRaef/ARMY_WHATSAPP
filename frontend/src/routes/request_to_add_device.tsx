@@ -1,10 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useState, useCallback } from 'react';
+import { useState } from 'react';
 import Select, { type SingleValue } from 'react-select';
 import { useQuery } from '@tanstack/react-query';
-import { useDropzone } from 'react-dropzone';
-import Cropper from 'react-easy-crop';
-import type { Area } from 'react-easy-crop';
+import ImageUploadCrop from '../components/image_upload_crop';
+import { Button } from '@/components/ui/button';
 
 export const Route = createFileRoute('/request_to_add_device')({
   component: RouteComponent,
@@ -60,58 +59,9 @@ function RouteComponent() {
     label: 'Select usage',
   });
 
-  const [serialNumberImage, setSerialNumberImage] = useState('');
-  const [serialCrop, setSerialCrop] = useState({ x: 0, y: 0 });
-  const [serialZoom, setSerialZoom] = useState(1);
-  const [serialCroppedAreaPixels, setSerialCroppedAreaPixels] = useState<Area>({ x: 0, y: 0, width: 0, height: 0 });
-  const [isCropPopupOpen, setIsCropPopupOpen] = useState(false);
-  const [popupImage, setPopupImage] = useState('');
 
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    setSerialNumberImage(URL.createObjectURL(file));
-
-    setPopupImage(URL.createObjectURL(file));
-    setIsCropPopupOpen(true);
-  }, []);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: { 'image/*': [] },
-  });
-
-  const onSerialCropComplete = (croppedArea: Area, croppedAreaPx: Area) => {
-    setSerialCroppedAreaPixels(croppedAreaPx);
-  };
-
-  const getCroppedImg = async (imageSrc: string, crop: Area): Promise<Blob> => {
-    const image = new Image();
-    image.src = imageSrc;
-    await new Promise((resolve) => (image.onload = resolve));
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
-
-    canvas.width = crop.width;
-    canvas.height = crop.height;
-
-    ctx.drawImage(
-      image,
-      crop.x,
-      crop.y,
-      crop.width,
-      crop.height,
-      0,
-      0,
-      crop.width,
-      crop.height,
-    );
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 1);
-    });
-  };
+  const [serialNumberBlob, setSerialNumberBlob] = useState<Blob>(new Blob());
+  const [devicePhotoBlob, setDevicePhotoBlob] = useState<Blob>(new Blob());
 
   const {
     data: deviceTypes,
@@ -169,103 +119,30 @@ function RouteComponent() {
         options={usageOptions}
       />
 
+      <div className='grid grid-cols-2 gap-8'>
+        <ImageUploadCrop
+          title='Serial Number Image'
+          label='Upload Serial Number Image'
+          aspect={1}
+          onImageCropped={setSerialNumberBlob}
+        />
 
-      <div className='p-2 flex flex-col gap-2'>
-        <p className='font-bold'>Serial Number Photo</p>
-      {!serialNumberImage && (
-        <div
-          {...getRootProps()}
-          style={{
-            width: '400px',
-            border: '2px dashed #888',
-            padding: 20,
-          }}
-        >
-          <input {...getInputProps()} />
-          <p>Drag & drop or click to upload serial number image</p>
-        </div>
-      )}
-
-      {isCropPopupOpen && popupImage && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              background: 'white',
-              width: '500px',
-              height: '500px',
-              position: 'relative',
-              padding: 20,
-            }}
-          >
-            <div
-              style={{ position: 'relative', width: '100%', height: '400px' }}
-            >
-              <Cropper
-                image={popupImage}
-                crop={serialCrop}
-                zoom={serialZoom}
-                aspect={1}
-                onCropChange={setSerialCrop}
-                onZoomChange={setSerialZoom}
-                onCropComplete={onSerialCropComplete}
-              />
-            </div>
-
-            <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
-              <button
-                onClick={async () => {
-                  const croppedBlob = await getCroppedImg(
-                    popupImage,
-                    serialCroppedAreaPixels,
-                  );
-
-                  const previewUrl = URL.createObjectURL(croppedBlob);
-                  setSerialNumberImage(previewUrl);
-
-                  setIsCropPopupOpen(false);
-                  setPopupImage('');
-                }}
-              >
-                Confirm
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsCropPopupOpen(false);
-                  setPopupImage('');
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {serialNumberImage && (
-        <div
-          {...getRootProps()}
-          style={{ cursor: 'pointer', display: 'inline-block' }}
-        >
-          <input {...getInputProps()} />
-          <img
-            src={serialNumberImage}
-            alt='Cropped'
-            style={{ width: 400, borderRadius: 8 }}
-          />
-        </div>
-        )}
-        </div>
+        <ImageUploadCrop
+          title='Device Image'
+          label='Upload Device Image'
+          aspect={1}
+          onImageCropped={setDevicePhotoBlob}
+        />
+      </div>
+      <Button onClick={() => {
+        console.log('Submitting request:', {
+          selectedDeviceType,
+          serialNumber,
+          selectedUsage,
+          serialNumberBlob,
+          devicePhotoBlob,
+        });
+      }}>Submit Request</Button>
     </div>
   );
 
