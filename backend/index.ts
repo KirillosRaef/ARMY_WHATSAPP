@@ -3,12 +3,21 @@ import { createInsertDevice, createInsertDeviceType, createInsertRequest, device
 import { db } from "./database";
 import { auth } from "./auth";
 import { eq, and } from "drizzle-orm";
+import { cors } from '@elysiajs/cors';
+import { staticPlugin } from '@elysiajs/static';
+import { imageRoutes } from "./routes/imageRoutes";
 
-const app = new Elysia();
+const app = new Elysia()
+  .use(cors({
+    origin: 'http://localhost:5173',
+  }))
+  .use(staticPlugin({
+    assets: 'images',
+    prefix: '/images',
+  })).use(imageRoutes);
 
 
 
-// Add a new user
 app
   .onError((e) => {
     console.log(e);
@@ -170,6 +179,7 @@ app
           }),
         },
       ),
+      
   );
 
 app.listen(3000, () => {
