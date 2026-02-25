@@ -60,8 +60,10 @@ function RouteComponent() {
   });
 
 
-  const [serialNumberBlob, setSerialNumberBlob] = useState<Blob>(new Blob());
-  const [devicePhotoBlob, setDevicePhotoBlob] = useState<Blob>(new Blob());
+  const [serialNumberPhotoFile, setSerialNumberPhotoFile] = useState<File>(new File([],''));
+  const [devicePhotoFile, setDevicePhotoFile] = useState<File>(
+    new File([], ''),
+  );
 
   const {
     data: deviceTypes,
@@ -96,6 +98,60 @@ function RouteComponent() {
     label: `${dt.brandName} ${dt.deviceKind} ${dt.description}`,
   })) || [];
 
+  const handleSubmitRequest = async () => {
+    if (!selectedDeviceType || !selectedUsage || !serialNumber) {
+      alert('Please fill in all fields');
+      return;
+    }
+    if (!serialNumberPhotoFile || !devicePhotoFile) {
+      alert('Please upload images');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('imageFile', serialNumberPhotoFile);
+      formData.append('uploadDir', 'images/serial-numbers');
+
+      await fetch(
+        'http://localhost:5173/api/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        },
+      );
+
+      formData.set('imageFile', devicePhotoFile);
+      formData.set('uploadDir', 'images/devices');
+      await fetch(
+        'http://localhost:5173/api/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        },
+      );
+
+      // const res2 = await fetch('http://localhost:5173/api/request', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   credentials: 'include',
+      //   body: JSON.stringify({
+      //     userId: 'V0MfGOTEO2vMT5bIojeVFiuUrtyigDXx', // TODO: Replace with actual user ID from auth context/session
+      //     deviceTypeId: selectedDeviceType.value,
+      //     serialNumber: serialNumber,
+      //     usage: selectedUsage.value,
+      //     devicePhoto: devicePhotoPhotoFile,
+      //     serialNumberPhoto: serialNumberPhotoFile,
+      //   }),
+      // });
+     }
+    catch (err) {
+      console.error('Failed to submit request:', err);
+    }
+  }
+
   return (
     // console.log('Selected device type:', deviceTypes),
     <div>
@@ -123,26 +179,20 @@ function RouteComponent() {
         <ImageUploadCrop
           title='Serial Number Image'
           label='Upload Serial Number Image'
+          // filename= {serialNumberPhotoFile.fileName}
           aspect={1}
-          onImageCropped={setSerialNumberBlob}
+          onImageCropped={setSerialNumberPhotoFile}
         />
 
         <ImageUploadCrop
           title='Device Image'
           label='Upload Device Image'
+          // filename={devicePhotoFile.name}
           aspect={1}
-          onImageCropped={setDevicePhotoBlob}
+          onImageCropped={setDevicePhotoFile}
         />
       </div>
-      <Button onClick={() => {
-        console.log('Submitting request:', {
-          selectedDeviceType,
-          serialNumber,
-          selectedUsage,
-          serialNumberBlob,
-          devicePhotoBlob,
-        });
-      }}>Submit Request</Button>
+      <Button onClick={handleSubmitRequest}>Submit Request</Button>
     </div>
   );
 

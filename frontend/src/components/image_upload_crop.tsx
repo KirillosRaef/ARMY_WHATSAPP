@@ -7,7 +7,7 @@ type Props = {
   title: string;
   label: string;
   aspect?: number;
-  onImageCropped: (blob: Blob) => void;
+  onImageCropped: (file: File) => void;
 };
 
 export default function ImageUploadCrop({
@@ -144,7 +144,15 @@ export default function ImageUploadCrop({
 
                   const previewUrl = URL.createObjectURL(blob);
                   setPreview(previewUrl);
-                  onImageCropped(blob);
+                  const originalFile = (
+                    document.querySelector(
+                      'input[type="file"]',
+                    ) as HTMLInputElement
+                  )?.files?.[0];
+                  const fileName = originalFile?.name || 'image.jpg';
+                  onImageCropped(
+                    new File([blob], fileName, { type: 'image/jpeg' }),
+                  );
 
                   setIsModalOpen(false);
                   setTempImage(null);
