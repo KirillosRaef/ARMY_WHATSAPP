@@ -12,12 +12,12 @@ function RouteComponent() {
   };
 
   const goToViewRequests = () => {
-    navigate({ to: '/view_requests' });
+    navigate({ to: '/view_and_edit_requests' });
   }
 
 
   return <div>
     <button className='btn btn-primary' onClick={goToRequestDevice} >Request to add a device</button>
-    <button className='btn btn-secondary' onClick={goToViewRequests} >View Requests</button>
+    <button className='btn btn-secondary' onClick={goToViewRequests} >View and edit requests</button>
   </div>
 }
