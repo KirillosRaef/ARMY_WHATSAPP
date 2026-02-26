@@ -12,7 +12,7 @@ function RouteComponent() {
   };
 
   const goToViewRequests = () => {
-    navigate({ to: '/view_and_edit_requests' });
+    navigate({ to: '/view-and-edit-requests/view_and_edit_requests' });
   }
 
 

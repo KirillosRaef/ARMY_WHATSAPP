@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { createInsertDevice, createInsertDeviceType, createInsertRequest, device, deviceType, profile, request, user } from "./schema";
 import { db } from "./database";
 import { auth } from "./auth";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 import { imageRoutes } from "./routes/imageRoutes";
@@ -135,6 +135,9 @@ app
       .delete('/request/:id', async ({ params: { id } }) => {
         const data = await db.delete(request).where(eq(request.id, id));
       })
+      .delete('/request', async () => {
+        return await db.delete(request);
+      })
       .get('/users', () => {
         return db.select().from(user);
       })
@@ -150,6 +153,26 @@ app
       .get('/requests/:userId', async ({ params: { userId } }) => {
         return db.select().from(request).where(eq(request.userId, userId));
       })
+      .get('/requests-with-description/:userId', async ({ params: { userId } }) => {
+        return db
+          .select({
+            id: request.id,
+            deviceTypeId: request.deviceTypeId,
+            serialNumber: request.serialNumber,
+            usage: request.usage,
+            devicePhoto: request.devicePhoto,
+            serialNumberPhoto: request.serialNumberPhoto,
+
+            deviceDescription:  sql<string>`
+              ${deviceType.brandName} || ' ' ||
+              ${deviceType.deviceKind} || ' ' ||
+              ${deviceType.description}
+            `.as('deviceDescription')
+          })
+          .from(request)
+          .leftJoin(deviceType, eq(request.deviceTypeId, deviceType.id))
+          .where(eq(request.userId, userId));
+        })
       //TODO: useless api, could be useful later
       .get('/role/:id', async ({ params: { id } }) => {
         return await db

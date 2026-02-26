@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as View_and_edit_requestsRouteImport } from './routes/view_and_edit_requests'
 import { Route as User_pageRouteImport } from './routes/user_page'
 import { Route as Request_to_add_deviceRouteImport } from './routes/request_to_add_device'
 import { Route as LoginRouteImport } from './routes/login'
@@ -17,14 +16,10 @@ import { Route as Admin_pageRouteImport } from './routes/admin_page'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ViewAndEditRequestsView_and_edit_requestsRouteImport } from './routes/view-and-edit-requests/view_and_edit_requests'
 import { Route as AppTest2RouteImport } from './routes/_app/test2'
 import { Route as AppTestRouteImport } from './routes/_app/test'
 
-const View_and_edit_requestsRoute = View_and_edit_requestsRouteImport.update({
-  id: '/view_and_edit_requests',
-  path: '/view_and_edit_requests',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const User_pageRoute = User_pageRouteImport.update({
   id: '/user_page',
   path: '/user_page',
@@ -59,6 +54,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ViewAndEditRequestsView_and_edit_requestsRoute =
+  ViewAndEditRequestsView_and_edit_requestsRouteImport.update({
+    id: '/view-and-edit-requests/view_and_edit_requests',
+    path: '/view-and-edit-requests/view_and_edit_requests',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppTest2Route = AppTest2RouteImport.update({
   id: '/test2',
   path: '/test2',
@@ -77,9 +78,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/view_and_edit_requests': typeof View_and_edit_requestsRoute
   '/test': typeof AppTestRoute
   '/test2': typeof AppTest2Route
+  '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -88,9 +89,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/view_and_edit_requests': typeof View_and_edit_requestsRoute
   '/test': typeof AppTestRoute
   '/test2': typeof AppTest2Route
+  '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -101,9 +102,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/view_and_edit_requests': typeof View_and_edit_requestsRoute
   '/_app/test': typeof AppTestRoute
   '/_app/test2': typeof AppTest2Route
+  '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,9 +115,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
-    | '/view_and_edit_requests'
     | '/test'
     | '/test2'
+    | '/view-and-edit-requests/view_and_edit_requests'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -125,9 +126,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
-    | '/view_and_edit_requests'
     | '/test'
     | '/test2'
+    | '/view-and-edit-requests/view_and_edit_requests'
   id:
     | '__root__'
     | '/'
@@ -137,9 +138,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
-    | '/view_and_edit_requests'
     | '/_app/test'
     | '/_app/test2'
+    | '/view-and-edit-requests/view_and_edit_requests'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,18 +151,11 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   Request_to_add_deviceRoute: typeof Request_to_add_deviceRoute
   User_pageRoute: typeof User_pageRoute
-  View_and_edit_requestsRoute: typeof View_and_edit_requestsRoute
+  ViewAndEditRequestsView_and_edit_requestsRoute: typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/view_and_edit_requests': {
-      id: '/view_and_edit_requests'
-      path: '/view_and_edit_requests'
-      fullPath: '/view_and_edit_requests'
-      preLoaderRoute: typeof View_and_edit_requestsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/user_page': {
       id: '/user_page'
       path: '/user_page'
@@ -211,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/view-and-edit-requests/view_and_edit_requests': {
+      id: '/view-and-edit-requests/view_and_edit_requests'
+      path: '/view-and-edit-requests/view_and_edit_requests'
+      fullPath: '/view-and-edit-requests/view_and_edit_requests'
+      preLoaderRoute: typeof ViewAndEditRequestsView_and_edit_requestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/test2': {
       id: '/_app/test2'
       path: '/test2'
@@ -248,7 +249,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   Request_to_add_deviceRoute: Request_to_add_deviceRoute,
   User_pageRoute: User_pageRoute,
-  View_and_edit_requestsRoute: View_and_edit_requestsRoute,
+  ViewAndEditRequestsView_and_edit_requestsRoute:
+    ViewAndEditRequestsView_and_edit_requestsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
