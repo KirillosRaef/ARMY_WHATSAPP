@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react';
 import Select, { type SingleValue } from 'react-select';
 import { useQuery } from '@tanstack/react-query';
@@ -48,6 +48,7 @@ function RouteComponent() {
   //TODO: with two pictures, serialNumber, and devicePhoto
   //
   //TODO: button to add this request to the requests table *IF* all values inserted
+  const navigate = useNavigate();
   const [selectedDeviceType, setSelectedDeviceType] =
     useState<SingleValue<Option>>({
       value: 'Select id',
@@ -131,22 +132,24 @@ function RouteComponent() {
         },
       );
 
-      // const res2 = await fetch('http://localhost:5173/api/request', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   credentials: 'include',
-      //   body: JSON.stringify({
-      //     userId: 'V0MfGOTEO2vMT5bIojeVFiuUrtyigDXx', // TODO: Replace with actual user ID from auth context/session
-      //     deviceTypeId: selectedDeviceType.value,
-      //     serialNumber: serialNumber,
-      //     usage: selectedUsage.value,
-      //     devicePhoto: devicePhotoPhotoFile,
-      //     serialNumberPhoto: serialNumberPhotoFile,
-      //   }),
-      // });
-     }
+      await fetch('http://localhost:5173/api/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: 'V0MfGOTEO2vMT5bIojeVFiuUrtyigDXx', // TODO: Replace with actual user ID from auth context/session
+          deviceTypeId: selectedDeviceType.value,
+          serialNumber: serialNumber,
+          usage: selectedUsage.value,
+          devicePhoto: devicePhotoFile.name,
+          serialNumberPhoto: serialNumberPhotoFile.name,
+        }),
+      });
+      
+      navigate({ to: '/user_page' });
+    }
     catch (err) {
       console.error('Failed to submit request:', err);
     }
