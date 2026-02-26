@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { createInsertDevice, createInsertDeviceType, createInsertRequest, device, deviceType, profile, request, user } from "./schema";
 import { db } from "./database";
 import { auth } from "./auth";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 import { imageRoutes } from "./routes/imageRoutes";
@@ -138,6 +138,17 @@ app
       .delete('/request', async () => {
         return await db.delete(request);
       })
+      .delete(
+        '/requests',
+        async ({ body: { requestIds } }) => {
+          return await db.delete(request).where(inArray(request.id, requestIds));
+        },
+        {
+          body: t.Object({
+            requestIds: t.Array(t.String()),
+          }),
+        },
+      )
       .get('/users', () => {
         return db.select().from(user);
       })

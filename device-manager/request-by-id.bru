@@ -1,0 +1,22 @@
+meta {
+  name: request-by-id
+  type: http
+  seq: 18
+}
+
+delete {
+  url: http://localhost:3000/api/requests
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "requestIds": "[]"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
