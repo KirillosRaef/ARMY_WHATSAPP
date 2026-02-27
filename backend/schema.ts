@@ -33,7 +33,6 @@ export const profile = sqliteTable('profile', {
   role: text('role', { enum: ['admin', 'user'] }).notNull().default('user'),
 });
 
-//TODO: ADD BRANDLOGO
 export const deviceType = sqliteTable('device_type', {
   id: text('id')
     .primaryKey()
