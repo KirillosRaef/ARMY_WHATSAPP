@@ -50,4 +50,8 @@ export const imageRoutes = new Elysia();
           },
         });
       })
+    .get('/logos', async () => {
+      const logos = await Bun.$`ls images/logos`.text();
+      return logos.split('\n').filter(Boolean);
+    })
   );

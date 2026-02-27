@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useState, type SetStateAction } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ImageUploadCrop from '../components/image_upload_crop';
 import { AppShell } from '../components/app_shell';
@@ -136,12 +136,15 @@ function RouteComponent() {
       formData.set('imageFile', devicePhotoFile);
       formData.set('uploadDir', 'images/devices');
       await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
+      const userID = await fetch('http://localhost:5173/api/user-id');
+      if (!userID.ok) throw new Error('Failed to fetch user id');
+      const userIDText = await userID.text();
       await fetch('http://localhost:5173/api/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          userId: 'V0MfGOTEO2vMT5bIojeVFiuUrtyigDXx',
+          userId: userIDText,
           deviceTypeId: selectedDeviceType.value,
           serialNumber,
           usage: selectedUsage.value,
@@ -238,7 +241,12 @@ function RouteComponent() {
           <CardContent className="pt-8 px-8 pb-8 space-y-8">
             <div className="space-y-3">
               <Label className="text-foreground font-medium text-sm">Classification Group</Label>
-              <Select>
+              <Select
+                onValueChange={
+                  (value) => setSelectedDeviceType({
+                    value,
+                    label: deviceTypeOptions.find((option) => option.value === value)!.label
+                  })}>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
                   <SelectValue placeholder="Select a device type..." />
                 </SelectTrigger>
@@ -256,7 +264,13 @@ function RouteComponent() {
 
             <div className="space-y-3">
               <Label className="w-full text-foreground font-medium text-sm">Condition Status</Label>
-              <Select>
+              <Select
+                onValueChange={
+                  (value) => setSelectedUsage({
+                    value,
+                    label: usageOptions.find((option) => option.value === value)!.label
+                  })
+                }>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
                   <SelectValue placeholder="Select operational status..." />
                 </SelectTrigger>

@@ -13,8 +13,14 @@ export const Route = createFileRoute(
 });
 
 const getRequestsOfUser = async () => {
+  //TODO: change the user id to the current user id
+  const userID = await fetch('http://localhost:5173/api/user-id');
+  if (!userID.ok) throw new Error('Failed to fetch user id');
+  const userIDText = await userID.text();
+  console.log('User ID: ', userIDText);
+
   const res = await fetch(
-    'http://localhost:5173/api/requests-with-description/V0MfGOTEO2vMT5bIojeVFiuUrtyigDXx'
+    `http://localhost:5173/api/requests-with-description/${userIDText}`
   );
   if (!res.ok) throw new Error('Failed to fetch requests');
   const data = await res.json();

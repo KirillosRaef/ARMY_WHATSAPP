@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {
-    const role = await fetch('http://localhost:5173/api/auth', { credentials: 'include' });
+    const role = await fetch('http://localhost:5173/api/role', { credentials: 'include' });
     if (!role.ok) {
       throw redirect({ to: '/login' });
     }

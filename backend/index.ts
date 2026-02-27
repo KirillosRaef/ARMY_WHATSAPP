@@ -77,18 +77,26 @@ app
           }),
         },
     )
-      .get('/auth', async ({ headers}) => {
+      .get('/role', async ({ headers}) => {
         const session = await auth.api.getSession({ headers});
         if (!session) {
           throw new Response('Not authenticated', { status: 401 });
-        } else {
-          return (await db
+        }
+        return (await db
             .select({ role: profile.role })
             .from(profile)
             .where(eq(profile.id, session.user.id))
             .limit(1))[0]?.role ?? null;
           // return session;
+      })
+      .get('/user-id', async ({ headers}) => {
+        const session = await auth.api.getSession({ headers});
+        if (!session) {
+          throw new Response('Not authenticated', { status: 401 });
         }
+        const userId = session.user.id;
+        // console.log('User ID: ', userId);
+        return userId;
       })
       .post(
         '/device-type',
