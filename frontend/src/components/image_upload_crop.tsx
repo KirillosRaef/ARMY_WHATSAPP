@@ -15,6 +15,7 @@ type Props = {
 export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropped }: Props) {
   const [preview, setPreview] = useState<string | null>(null);
   const [tempImage, setTempImage] = useState<string | null>(null);
+  const [actualFileName, setActualFileName] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -25,6 +26,7 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
     if (!file) return;
     const imageUrl = URL.createObjectURL(file);
     setTempImage(imageUrl);
+    setActualFileName(file.name);
     setIsModalOpen(true);
   }, []);
 
@@ -57,9 +59,7 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
     const blob = await getCroppedImg(tempImage, croppedAreaPixels);
     const previewUrl = URL.createObjectURL(blob);
     setPreview(previewUrl);
-    const originalFile = (document.querySelector('input[type="file"]') as HTMLInputElement)?.files?.[0];
-    const fileName = originalFile?.name || 'image.jpg';
-    onImageCropped(new File([blob], fileName, { type: 'image/jpeg' }));
+    onImageCropped(new File([blob], actualFileName, { type: 'image/jpeg' }));
     setIsModalOpen(false);
     setTempImage(null);
   };
