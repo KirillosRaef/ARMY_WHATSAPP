@@ -15,6 +15,12 @@ function AdminDashboard() {
     { label: 'Registered Devices', value: '—', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
   ];
 
+  //TODO: 1) ADMIN CAN CREATE/DELETE/EDIT USERS
+  //TODO: 2) ADMIN CAN CREATE/DELETE/EDIT DEVICETYPES
+  //TODO: 3) ADMIN CAN VIEW then ACCEPT/REJECT REQUESTS TO ADD DEVICES
+  //TODO: 4) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES
+  //TODO: 5) ADMIN CAN SEARCH AND FILTER DEVICES
+  //TODO: 6) MAKE SURE THE ADMIN MENU IS NOT THE USER MENU
   return (
     <AppShell>
       <div className="space-y-8 animate-slide-up">
