@@ -2,25 +2,31 @@ import { createFileRoute } from '@tanstack/react-router';
 import { AppShell } from '../components/app_shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Users, ClipboardList, MonitorSmartphone } from 'lucide-react';
+import { Shield, Users, ClipboardList, MonitorSmartphone, User } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/admin_page')({
   component: AdminDashboard,
 });
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const stats = [
-    { label: 'Total Requests', value: '—', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    { label: 'Active Users', value: '—', icon: Users, color: 'oklch(0.55 0.18 290)' },
-    { label: 'Registered Devices', value: '—', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
+    { label: 'Add a Brand', route: '/admin/add-brand', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    {label: 'Add a User', route: '/admin/add-user', icon: User, color: 'oklch(0.55 0.18 290)'},
+    { label: 'Add a Device Type', route: '/admin/add-device-type', icon: Users, color: 'oklch(0.55 0.18 290)' },
+    { label: 'Add a Device', route: '/admin/add-device', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
+    { label: 'View Requests', route: '/admin/view-requests', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
   ];
 
-  //TODO: 1) ADMIN CAN CREATE/DELETE/EDIT USERS
-  //TODO: 2) ADMIN CAN CREATE/DELETE/EDIT DEVICETYPES
-  //TODO: 3) ADMIN CAN VIEW then ACCEPT/REJECT REQUESTS TO ADD DEVICES
-  //TODO: 4) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES
-  //TODO: 5) ADMIN CAN SEARCH AND FILTER DEVICES
-  //TODO: 6) MAKE SURE THE ADMIN MENU IS NOT THE USER MENU
+  //TODO: 1) ADMIN CAN ADD/REMOVE BRANDLOGO
+  //TODO: 2) ADMIN CAN CREATE/DELETE/EDIT USERS
+  //TODO: 3) ADMIN CAN CREATE/DELETE/EDIT DEVICETYPES
+  //TODO: 4) ADMIN CAN VIEW then ACCEPT/REJECT REQUESTS TO ADD DEVICES
+  //TODO: 5) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES
+
+  //TODO: 6) ADMIN CAN SEARCH AND FILTER DEVICES
+  //TODO: 7) MAKE SURE THE ADMIN MENU IS NOT THE USER MENU
   return (
     <AppShell>
       <div className="space-y-8 animate-slide-up">
@@ -47,8 +53,9 @@ function AdminDashboard() {
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-3 max-w-3xl">
-          {stats.map(({ label, value, icon: Icon, color }) => (
-            <Card key={label} className="glass-card border-white/8">
+          {stats.map(({ label,route, icon: Icon, color }) => (
+            <Card key={label} className="glass-card border-white/8"
+            onClick={() => {navigate({to: route})}}>
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
                 <div
@@ -58,10 +65,6 @@ function AdminDashboard() {
                   <Icon className="h-4 w-4" style={{ color }} />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{value}</div>
-                <p className="text-xs text-muted-foreground mt-1">Coming soon</p>
-              </CardContent>
             </Card>
           ))}
         </div>

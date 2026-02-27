@@ -15,6 +15,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as Admin_pageRouteImport } from './routes/admin_page'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ViewAndEditRequestsView_and_edit_requestsRouteImport } from './routes/view-and-edit-requests/view_and_edit_requests'
+import { Route as AdminViewRequestsRouteImport } from './routes/admin/view-requests'
+import { Route as AdminAddUserRouteImport } from './routes/admin/add-user'
+import { Route as AdminAddDeviceTypeRouteImport } from './routes/admin/add-device-type'
+import { Route as AdminAddDeviceRouteImport } from './routes/admin/add-device'
+import { Route as AdminAddBrandRouteImport } from './routes/admin/add-brand'
 
 const User_pageRoute = User_pageRouteImport.update({
   id: '/user_page',
@@ -47,6 +52,31 @@ const ViewAndEditRequestsView_and_edit_requestsRoute =
     path: '/view-and-edit-requests/view_and_edit_requests',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminViewRequestsRoute = AdminViewRequestsRouteImport.update({
+  id: '/admin/view-requests',
+  path: '/admin/view-requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAddUserRoute = AdminAddUserRouteImport.update({
+  id: '/admin/add-user',
+  path: '/admin/add-user',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAddDeviceTypeRoute = AdminAddDeviceTypeRouteImport.update({
+  id: '/admin/add-device-type',
+  path: '/admin/add-device-type',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAddDeviceRoute = AdminAddDeviceRouteImport.update({
+  id: '/admin/add-device',
+  path: '/admin/add-device',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAddBrandRoute = AdminAddBrandRouteImport.update({
+  id: '/admin/add-brand',
+  path: '/admin/add-brand',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +84,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
+  '/admin/add-brand': typeof AdminAddBrandRoute
+  '/admin/add-device': typeof AdminAddDeviceRoute
+  '/admin/add-device-type': typeof AdminAddDeviceTypeRoute
+  '/admin/add-user': typeof AdminAddUserRoute
+  '/admin/view-requests': typeof AdminViewRequestsRoute
   '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRoutesByTo {
@@ -62,6 +97,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
+  '/admin/add-brand': typeof AdminAddBrandRoute
+  '/admin/add-device': typeof AdminAddDeviceRoute
+  '/admin/add-device-type': typeof AdminAddDeviceTypeRoute
+  '/admin/add-user': typeof AdminAddUserRoute
+  '/admin/view-requests': typeof AdminViewRequestsRoute
   '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRoutesById {
@@ -71,6 +111,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
+  '/admin/add-brand': typeof AdminAddBrandRoute
+  '/admin/add-device': typeof AdminAddDeviceRoute
+  '/admin/add-device-type': typeof AdminAddDeviceTypeRoute
+  '/admin/add-user': typeof AdminAddUserRoute
+  '/admin/view-requests': typeof AdminViewRequestsRoute
   '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRouteTypes {
@@ -81,6 +126,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
+    | '/admin/add-brand'
+    | '/admin/add-device'
+    | '/admin/add-device-type'
+    | '/admin/add-user'
+    | '/admin/view-requests'
     | '/view-and-edit-requests/view_and_edit_requests'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -89,6 +139,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
+    | '/admin/add-brand'
+    | '/admin/add-device'
+    | '/admin/add-device-type'
+    | '/admin/add-user'
+    | '/admin/view-requests'
     | '/view-and-edit-requests/view_and_edit_requests'
   id:
     | '__root__'
@@ -97,6 +152,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
+    | '/admin/add-brand'
+    | '/admin/add-device'
+    | '/admin/add-device-type'
+    | '/admin/add-user'
+    | '/admin/view-requests'
     | '/view-and-edit-requests/view_and_edit_requests'
   fileRoutesById: FileRoutesById
 }
@@ -106,6 +166,11 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   Request_to_add_deviceRoute: typeof Request_to_add_deviceRoute
   User_pageRoute: typeof User_pageRoute
+  AdminAddBrandRoute: typeof AdminAddBrandRoute
+  AdminAddDeviceRoute: typeof AdminAddDeviceRoute
+  AdminAddDeviceTypeRoute: typeof AdminAddDeviceTypeRoute
+  AdminAddUserRoute: typeof AdminAddUserRoute
+  AdminViewRequestsRoute: typeof AdminViewRequestsRoute
   ViewAndEditRequestsView_and_edit_requestsRoute: typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 
@@ -153,6 +218,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ViewAndEditRequestsView_and_edit_requestsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/view-requests': {
+      id: '/admin/view-requests'
+      path: '/admin/view-requests'
+      fullPath: '/admin/view-requests'
+      preLoaderRoute: typeof AdminViewRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/add-user': {
+      id: '/admin/add-user'
+      path: '/admin/add-user'
+      fullPath: '/admin/add-user'
+      preLoaderRoute: typeof AdminAddUserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/add-device-type': {
+      id: '/admin/add-device-type'
+      path: '/admin/add-device-type'
+      fullPath: '/admin/add-device-type'
+      preLoaderRoute: typeof AdminAddDeviceTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/add-device': {
+      id: '/admin/add-device'
+      path: '/admin/add-device'
+      fullPath: '/admin/add-device'
+      preLoaderRoute: typeof AdminAddDeviceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/add-brand': {
+      id: '/admin/add-brand'
+      path: '/admin/add-brand'
+      fullPath: '/admin/add-brand'
+      preLoaderRoute: typeof AdminAddBrandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +262,11 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   Request_to_add_deviceRoute: Request_to_add_deviceRoute,
   User_pageRoute: User_pageRoute,
+  AdminAddBrandRoute: AdminAddBrandRoute,
+  AdminAddDeviceRoute: AdminAddDeviceRoute,
+  AdminAddDeviceTypeRoute: AdminAddDeviceTypeRoute,
+  AdminAddUserRoute: AdminAddUserRoute,
+  AdminViewRequestsRoute: AdminViewRequestsRoute,
   ViewAndEditRequestsView_and_edit_requestsRoute:
     ViewAndEditRequestsView_and_edit_requestsRoute,
 }
