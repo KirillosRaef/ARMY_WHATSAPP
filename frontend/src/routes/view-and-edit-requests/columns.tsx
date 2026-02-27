@@ -14,10 +14,12 @@ export type RequestModifiedType = {
   devicePhoto: string;
   serialNumberPhoto: string;
   deviceDescription: string;
+  brandLogo: string;
 };
 
 const DEVICE_URL = 'http://localhost:5173/api/image/devices';
 const SERIAL_NUMBER_URL = 'http://localhost:5173/api/image/serial-numbers';
+const LOGO_URL = 'http://localhost:5173/api/image/logos';
 
 function UsageBadge({ usage }: { usage: string }) {
   const map: Record<string, { label: string; className: string }> = {
@@ -86,7 +88,15 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
         <ArrowUpDown className="h-3 w-3" />
       </Button>
     ),
-    cell: ({ row }) => <div className="font-medium text-foreground/90">{row.original.deviceDescription}</div>,
+    cell: ({ row }) => <div className="font-medium text-foreground/90 flex items-center gap-2">
+      <img
+        src={`${LOGO_URL}/${row.original.brandLogo}`}
+        alt="Logo"
+        className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
+        loading="lazy"
+      />
+      {row.original.deviceDescription}
+    </div>,
   },
   {
     accessorKey: 'serialNumber',

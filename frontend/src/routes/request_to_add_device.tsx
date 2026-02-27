@@ -24,6 +24,8 @@ export const Route = createFileRoute('/request_to_add_device')({
   component: RouteComponent,
 });
 
+const LOGO_URL = 'http://localhost:5173/api/image/logos';
+
 type Option = { value: string; label: string };
 
 const usageOptions: Option[] = [
@@ -37,6 +39,7 @@ type DeviceType = {
   brandName: string;
   deviceKind: string;
   description: string;
+  brandLogo: string;
 };
 
 const getDeviceTypes = async () => {
@@ -254,6 +257,14 @@ function RouteComponent() {
                   <SelectGroup>
                     {deviceTypeOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
+                        <div>
+                          <img
+                            src={`${LOGO_URL}/${deviceTypes!.find((dt) => dt.id === option.value)?.brandLogo}`}
+                            alt="Device"
+                            className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
+                            loading="lazy"
+                          />
+                        </div>
                         {option.label}
                       </SelectItem>
                     ))}

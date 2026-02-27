@@ -41,6 +41,7 @@ export const deviceType = sqliteTable('device_type', {
   brandName: text('brand_name').notNull(),
   deviceKind: text('device_kind').notNull(),
   description: text('description'),
+  brandLogo: text('brand_logo'),
 }, (t) => [uniqueIndex('unique_brand_device').on(t.brandName, t.deviceKind, t.description)]);
 
 export const createInsertDeviceType = createInsertSchema(deviceType);

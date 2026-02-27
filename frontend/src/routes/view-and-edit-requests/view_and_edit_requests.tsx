@@ -13,7 +13,6 @@ export const Route = createFileRoute(
 });
 
 const getRequestsOfUser = async () => {
-  //TODO: change the user id to the current user id
   const userID = await fetch('http://localhost:5173/api/user-id');
   if (!userID.ok) throw new Error('Failed to fetch user id');
   const userIDText = await userID.text();

@@ -165,6 +165,12 @@ app
       .delete('/request', async () => {
         return await db.delete(request);
       })
+      .delete('/device-types', async () => {
+        return await db.delete(deviceType);
+      })
+      .delete('/device', async () => {
+        return await db.delete(device);
+      })
       .delete(
         '/requests',
         async ({ body: { requestIds } }) => {
@@ -200,6 +206,7 @@ app
             usage: request.usage,
             devicePhoto: request.devicePhoto,
             serialNumberPhoto: request.serialNumberPhoto,
+            brandLogo: deviceType.brandLogo,
 
             deviceDescription:  sql<string>`
               ${deviceType.brandName} || ' ' ||
