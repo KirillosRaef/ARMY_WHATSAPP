@@ -54,15 +54,21 @@ app
         async ({ body: { email, password } }) => {
           const data = await auth.api.signInEmail({
             body: { email, password },
-            //asResponse: true,
+            asResponse: true,
           });
+          const fetchedUsers = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
+
+          const currentUser = fetchedUsers[0];
+          if(!currentUser) {
+            return new Response('User not found', { status: 404 });
+          }
+
           const role = await db
             .select({ role: profile.role })
             .from(profile)
-            .where(eq(profile.id, data.user.id))
+            .where(eq(profile.id, currentUser.id))
             .limit(1);
-          // return { ...data, role: role[0]?.role || 'user' };
-          return { ...data, role: role[0]?.role || 'user' };
+          return data;
         },
         {
           body: t.Object({
@@ -70,7 +76,20 @@ app
             password: t.String(),
           }),
         },
-      )
+    )
+      .get('/auth', async ({ headers}) => {
+        const session = await auth.api.getSession({ headers});
+        if (!session) {
+          throw new Response('Not authenticated', { status: 401 });
+        } else {
+          return (await db
+            .select({ role: profile.role })
+            .from(profile)
+            .where(eq(profile.id, session.user.id))
+            .limit(1))[0]?.role ?? null;
+          // return session;
+        }
+      })
       .post(
         '/device-type',
         async ({ body }) => {
@@ -184,7 +203,6 @@ app
           .leftJoin(deviceType, eq(request.deviceTypeId, deviceType.id))
           .where(eq(request.userId, userId));
         })
-      //TODO: useless api, could be useful later
       .get('/role/:id', async ({ params: { id } }) => {
         return await db
           .select({ role: profile.role })

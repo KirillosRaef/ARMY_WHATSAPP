@@ -1,10 +1,18 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
-  beforeLoad: () => {
-    //TODO: Check if user is authenticated, if not, redirect to login page
-    //TODO: if authenticated, check role and redirect to appropriate page
-    return redirect({ to: '/login' });
+  beforeLoad: async () => {
+    const role = await fetch('http://localhost:5173/api/auth', { credentials: 'include' });
+    if (!role.ok) {
+      throw redirect({ to: '/login' });
+    }
+
+    const roleText = await role.text();
+    if(roleText == 'admin') {
+      throw redirect({ to: '/admin_page' });
+    } else if(roleText == 'user') {
+      throw redirect({ to: '/user_page' });
+    }
   },
   component: Index,
 });

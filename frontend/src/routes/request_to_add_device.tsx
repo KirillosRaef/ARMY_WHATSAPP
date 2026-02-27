@@ -1,22 +1,36 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import Select, { type SingleValue } from 'react-select';
 import { useQuery } from '@tanstack/react-query';
 import ImageUploadCrop from '../components/image_upload_crop';
+import { AppShell } from '../components/app_shell';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, CheckCircle2, AlertCircle, PackagePlus } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { SingleValue } from 'react-select';
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export const Route = createFileRoute('/request_to_add_device')({
   component: RouteComponent,
-})
+});
 
 type Option = { value: string; label: string };
 
 const usageOptions: Option[] = [
-  { value: 'New', label: 'New' },
-  { value: 'Used', label: 'Used' },
-  { value: 'Broken', label: 'Broken' },
+  { value: 'New', label: '✨ New' },
+  { value: 'Used', label: '🔄 Used' },
+  { value: 'Broken', label: '⚠️ Broken' },
 ];
-
 
 type DeviceType = {
   id: string;
@@ -31,172 +45,303 @@ const getDeviceTypes = async () => {
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
   });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch device types');
-  }
-
-  const data = await res.json();
-  console.log('Device types response:', data);
-  return data;
+  if (!res.ok) throw new Error('Failed to fetch device types');
+  return res.json();
 };
 
+const selectStyles = {
+  control: (base: object, state: { isFocused: boolean }) => ({
+    ...base,
+    background: 'hsl(var(--background))',
+    border: state.isFocused
+      ? '1px solid hsl(var(--primary))'
+      : '1px solid hsl(var(--border))',
+    borderRadius: '0.375rem',
+    boxShadow: state.isFocused ? '0 0 0 1px hsl(var(--primary))' : 'none',
+    color: 'hsl(var(--foreground))',
+    minHeight: '40px',
+    transition: 'all 0.15s',
+    '&:hover': { border: '1px solid hsl(var(--primary) / 0.5)' },
+  }),
+  singleValue: (base: object) => ({ ...base, color: 'hsl(var(--foreground))' }),
+  placeholder: (base: object) => ({ ...base, color: 'hsl(var(--muted-foreground))' }),
+  menu: (base: object) => ({
+    ...base,
+    background: 'hsl(var(--card))',
+    border: '1px solid hsl(var(--border))',
+    borderRadius: '0.375rem',
+    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    zIndex: 50,
+  }),
+  option: (base: object, state: { isSelected: boolean; isFocused: boolean }) => ({
+    ...base,
+    background: state.isSelected
+      ? 'hsl(var(--primary) / 0.2)'
+      : state.isFocused
+      ? 'hsl(var(--muted))'
+      : 'transparent',
+    color: state.isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+    borderRadius: '0.25rem',
+    margin: '2px 4px',
+    width: 'calc(100% - 8px)',
+    cursor: 'pointer',
+    transition: 'all 0.1s',
+  }),
+  input: (base: object) => ({ ...base, color: 'hsl(var(--foreground))' }),
+  indicatorSeparator: () => ({ display: 'none' }),
+  dropdownIndicator: (base: object) => ({ ...base, color: 'hsl(var(--muted-foreground))' }),
+};
 
 function RouteComponent() {
-  //TODO: Add components to get the deviceId (dropdown search with values from deviceType),
-  //TODO: serialNumber (text), and usage (dropdown enum) 
-  //TODO: with two pictures, serialNumber, and devicePhoto
-  //
-  //TODO: button to add this request to the requests table *IF* all values inserted
   const navigate = useNavigate();
-  const [selectedDeviceType, setSelectedDeviceType] =
-    useState<SingleValue<Option>>({
-      value: 'Select id',
-      label: 'Select device type',
-    });
+  const [selectedDeviceType, setSelectedDeviceType] = useState<SingleValue<Option>>(null);
   const [serialNumber, setSerialNumber] = useState('');
-  const [selectedUsage, setSelectedUsage] = useState<SingleValue<Option>>({
-    value: 'Select usage',
-    label: 'Select usage',
-  });
+  const [selectedUsage, setSelectedUsage] = useState<SingleValue<Option>>(null);
+  const [serialNumberPhotoFile, setSerialNumberPhotoFile] = useState<File>(new File([], ''));
+  const [devicePhotoFile, setDevicePhotoFile] = useState<File>(new File([], ''));
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-
-  const [serialNumberPhotoFile, setSerialNumberPhotoFile] = useState<File>(new File([],''));
-  const [devicePhotoFile, setDevicePhotoFile] = useState<File>(
-    new File([], ''),
-  );
-
-  const {
-    data: deviceTypes,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: deviceTypes, isLoading, error } = useQuery({
     queryKey: ['deviceTypes'],
     queryFn: getDeviceTypes as () => Promise<DeviceType[]>,
     staleTime: 0,
     gcTime: 10 * 60 * 1000,
-    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnMount: true,
   });
 
-  if (isLoading) {
-    return (
-      <div className='flex justify-center items-center h-screen'>
-        <div className='text-xl'>Loading device types...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className='flex justify-center items-center h-screen'>
-        <div className='text-xl text-red-600'>Error: {error.message}</div>
-      </div>
-    );
-  }
-
-  const deviceTypeOptions = deviceTypes?.map((dt) => ({
-    value: dt.id,
-    label: `${dt.brandName} ${dt.deviceKind} ${dt.description}`,
-  })) || [];
+  const deviceTypeOptions =
+    deviceTypes?.map((dt: { id: string; brandName: string; deviceKind: string; description: string; }) => ({
+      value: dt.id,
+      label: `${dt.brandName} ${dt.deviceKind}${dt.description ? ' — ' + dt.description : ''}`,
+    })) || [];
 
   const handleSubmitRequest = async () => {
+    setSubmitError('');
     if (!selectedDeviceType || !selectedUsage || !serialNumber) {
-      alert('Please fill in all fields');
+      setSubmitError('Please fill in all fields before submitting.');
       return;
     }
-    if (!serialNumberPhotoFile || !devicePhotoFile) {
-      alert('Please upload images');
+    if (!serialNumberPhotoFile.name || !devicePhotoFile.name) {
+      setSubmitError('Please upload both the serial number and device photos.');
       return;
     }
-
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('imageFile', serialNumberPhotoFile);
       formData.append('uploadDir', 'images/serial-numbers');
-
-      await fetch(
-        'http://localhost:5173/api/image/upload',
-        {
-          method: 'POST',
-          body: formData,
-        },
-      );
-
+      await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
       formData.set('imageFile', devicePhotoFile);
       formData.set('uploadDir', 'images/devices');
-      await fetch(
-        'http://localhost:5173/api/image/upload',
-        {
-          method: 'POST',
-          body: formData,
-        },
-      );
-
+      await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
       await fetch('http://localhost:5173/api/request', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          userId: 'V0MfGOTEO2vMT5bIojeVFiuUrtyigDXx', // TODO: Replace with actual user ID from auth context/session
+          userId: 'V0MfGOTEO2vMT5bIojeVFiuUrtyigDXx',
           deviceTypeId: selectedDeviceType.value,
-          serialNumber: serialNumber,
+          serialNumber,
           usage: selectedUsage.value,
           devicePhoto: devicePhotoFile.name,
           serialNumberPhoto: serialNumberPhotoFile.name,
         }),
       });
-      
-      navigate({ to: '/user_page' });
+      setSubmitSuccess(true);
+      setTimeout(() => navigate({ to: '/user_page' }), 1500);
+    } catch (err) {
+      setSubmitError('Failed to submit request. Please try again.');
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
     }
-    catch (err) {
-      console.error('Failed to submit request:', err);
-    }
+  };
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="space-y-6 max-w-5xl mx-auto w-full animate-fade-in">
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Card className="glass-card shadow-sm border-border rounded-lg">
+            <CardContent className="space-y-4 pt-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24 rounded" />
+                  <Skeleton className="h-10 w-full rounded" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center justify-center py-20 gap-4 animate-fade-in">
+          <AlertCircle className="h-12 w-12 text-destructive" />
+          <p className="text-lg font-semibold text-foreground">Failed to load device types</p>
+          <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
+        </div>
+      </AppShell>
+    );
   }
 
   return (
-    // console.log('Selected device type:', deviceTypes),
-    <div>
-      <Select
-        defaultValue={selectedDeviceType}
-        onChange={(newValue) => setSelectedDeviceType(newValue)}
-        options={deviceTypeOptions}
-      />
-      <div className='p-2 flex flex-col gap-2'>
-        <input
-          type='text'
-          placeholder='Serial Number'
-          value={serialNumber}
-          onChange={(e) => setSerialNumber(e.target.value)}
-          className='p-2 border rounded'
-        />
-      </div>
-      <Select
-        defaultValue={selectedUsage}
-        onChange={(newValue) => setSelectedUsage(newValue)}
-        options={usageOptions}
-      />
+    <AppShell>
+      <div className="space-y-8 max-w-5xl mx-auto w-full animate-slide-up">
+        <div className="flex flex-col gap-2 pb-6 border-b border-white/5">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 flex-shrink-0 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
+              <PackagePlus className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Equipment Registration</h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                Complete the requirements below to submit a new device to the network.
+              </p>
+            </div>
+          </div>
+        </div>
 
-      <div className='grid grid-cols-2 gap-8'>
-        <ImageUploadCrop
-          title='Serial Number Image'
-          label='Upload Serial Number Image'
-          // filename= {serialNumberPhotoFile.fileName}
-          aspect={1}
-          onImageCropped={setSerialNumberPhotoFile}
-        />
+        {submitSuccess && (
+          <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400 animate-fade-in">
+            <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+            Request submitted successfully! Redirecting...
+          </div>
+        )}
+        {submitError && (
+          <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive animate-fade-in">
+            <AlertCircle className="h-5 w-5 flex-shrink-0" />
+            {submitError}
+          </div>
+        )}
 
-        <ImageUploadCrop
-          title='Device Image'
-          label='Upload Device Image'
-          // filename={devicePhotoFile.name}
-          aspect={1}
-          onImageCropped={setDevicePhotoFile}
-        />
+        <Card className="glass-card shadow-2xl overflow-hidden rounded-2xl border-white/10 relative">
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <CardHeader className="border-b border-white/5 bg-white/[0.02] pb-6 pt-6 px-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">1</div>
+              <div>
+                <CardTitle className="text-lg font-medium text-foreground">Equipment Identifiers</CardTitle>
+                <CardDescription className="text-sm mt-1">Select the classification and unique serial</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-8 px-8 pb-8 space-y-8">
+            <div className="space-y-3">
+              <Label className="text-foreground font-medium text-sm">Classification Group</Label>
+              <Select>
+                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                  <SelectValue placeholder="Select a device type..." />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                  <SelectGroup>
+                    {deviceTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="w-full text-foreground font-medium text-sm">Condition Status</Label>
+              <Select>
+                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                  <SelectValue placeholder="Select operational status..." />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                  <SelectGroup>
+                    {usageOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="rounded-lg focus:bg-white/5 my-0.5 cursor-pointer">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="serial" className="text-foreground font-medium text-sm">
+                Serial Number
+              </Label>
+              <Input
+                id="serial"
+                type="text"
+                placeholder="e.g. SN-1234567890"
+                value={serialNumber}
+                onChange={(e) => setSerialNumber(e.target.value)}
+                className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card shadow-2xl overflow-hidden rounded-2xl border-white/10 relative">
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <CardHeader className="border-b border-white/5 bg-white/[0.02] pb-6 pt-6 px-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">2</div>
+              <div>
+                <CardTitle className="text-lg font-medium text-foreground">Visual Verification</CardTitle>
+                <CardDescription className="text-sm mt-1">Upload required photographic evidence</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-8 px-8 pb-8">
+            <div className="grid grid-cols-2 gap-6">
+              <ImageUploadCrop
+                title="Serial Number Photo"
+                label="Drop or click to upload"
+                aspect={1}
+                onImageCropped={setSerialNumberPhotoFile}
+              />
+              <ImageUploadCrop
+                title="Device Photo"
+                label="Drop or click to upload"
+                aspect={1}
+                onImageCropped={setDevicePhotoFile}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end pt-6">
+          <Button
+            id="submit-request-btn"
+            onClick={handleSubmitRequest}
+            disabled={isSubmitting || submitSuccess}
+            size="lg"
+            className="px-8 font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all rounded-xl relative overflow-hidden group h-12"
+          >
+            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin relative z-10" />
+                <span className="relative z-10">Processing Registration...</span>
+              </>
+            ) : submitSuccess ? (
+              <>
+                <CheckCircle2 className="mr-2 h-4 w-4 relative z-10" />
+                <span className="relative z-10">Registration Completed</span>
+              </>
+            ) : (
+              <span className="relative z-10">Submit Registration</span>
+            )}
+          </Button>
+        </div>
       </div>
-      <Button onClick={handleSubmitRequest}>Submit Request</Button>
-    </div>
+    </AppShell>
   );
-
 }

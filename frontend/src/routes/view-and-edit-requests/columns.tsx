@@ -2,13 +2,10 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-// import { ArrowUpDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ArrowUpDown } from 'lucide-react';
 
-
-
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
 export type RequestModifiedType = {
   id: string;
   deviceTypeId: string;
@@ -22,6 +19,31 @@ export type RequestModifiedType = {
 const DEVICE_URL = 'http://localhost:5173/api/image/devices';
 const SERIAL_NUMBER_URL = 'http://localhost:5173/api/image/serial-numbers';
 
+function UsageBadge({ usage }: { usage: string }) {
+  const map: Record<string, { label: string; className: string }> = {
+    New: {
+      label: '✨ New',
+      className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+    },
+    Used: {
+      label: '🔄 Used',
+      className: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+    },
+    Broken: {
+      label: '⚠️ Broken',
+      className: 'bg-red-500/15 text-red-400 border-red-500/20',
+    },
+  };
+
+  const config = map[usage] ?? { label: usage, className: 'bg-muted text-muted-foreground border-border' };
+
+  return (
+    <Badge variant="outline" className={config.className}>
+      {config.label}
+    </Badge>
+  );
+}
+
 export const columns: ColumnDef<RequestModifiedType>[] = [
   {
     id: 'select',
@@ -32,14 +54,16 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
           (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
+        aria-label="Select all"
+        className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
+        aria-label="Select row"
+        className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary translate-y-[2px]"
       />
     ),
   },
@@ -51,68 +75,83 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
   },
   {
     accessorKey: 'deviceDescription',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Device Description
-          {/* <ArrowUpDown className='ml-2 h-4 w-4' /> */}
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Device
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="font-medium text-foreground/90">{row.original.deviceDescription}</div>,
   },
   {
     accessorKey: 'serialNumber',
-    header: 'Serial Number',
+    header: () => (
+      <span className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
+        Serial No.
+      </span>
+    ),
+    cell: ({ row }) => (
+      <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+        {row.original.serialNumber}
+      </code>
+    ),
   },
   {
     accessorKey: 'usage',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Usage
-          {/* <ArrowUpDown className='ml-2 h-4 w-4' /> */}
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Condition
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="flex">
+        <UsageBadge usage={row.original.usage} />
+      </div>
+    ),
   },
+  //TODO: MAKE THE IMAGE CLICKABLE AND OPEN IN A MODAL 
+  //TODO: AND/OR MAKE THE IMAGE LARGER AND CHANGE TABLE DESIGN
   {
     accessorKey: 'devicePhoto',
-    header: 'Device Photo',
+    header: () => (
+      <span className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">Device Photo</span>
+    ),
     cell: ({ row }) => {
       const fileName = row.original.devicePhoto;
-
       return (
         <img
           src={`${DEVICE_URL}/${fileName}`}
-          alt='Device'
-          width={150}
-          height={150}
-          className='w-10 h-10 object-cover rounded-md border'
-          loading='lazy'
+          alt="Device"
+          className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
+          loading="lazy"
         />
       );
     },
   },
   {
     accessorKey: 'serialNumberPhoto',
-    header: 'Serial Number Photo',
+    header: () => (
+      <span className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">Serial Photo</span>
+    ),
     cell: ({ row }) => {
-      const fileName = row.original.devicePhoto;
-
+      const fileName = row.original.serialNumberPhoto;
       return (
         <img
           src={`${SERIAL_NUMBER_URL}/${fileName}`}
-          alt='Serial Number'
-          width={150}
-          height={150}
-          className='w-10 h-10 object-cover rounded-md border'
-          loading='lazy'
+          alt="Serial Number"
+          className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
+          loading="lazy"
         />
       );
     },

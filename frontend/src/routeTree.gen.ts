@@ -13,12 +13,8 @@ import { Route as User_pageRouteImport } from './routes/user_page'
 import { Route as Request_to_add_deviceRouteImport } from './routes/request_to_add_device'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as Admin_pageRouteImport } from './routes/admin_page'
-import { Route as AboutRouteImport } from './routes/about'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ViewAndEditRequestsView_and_edit_requestsRouteImport } from './routes/view-and-edit-requests/view_and_edit_requests'
-import { Route as AppTest2RouteImport } from './routes/_app/test2'
-import { Route as AppTestRouteImport } from './routes/_app/test'
 
 const User_pageRoute = User_pageRouteImport.update({
   id: '/user_page',
@@ -40,15 +36,6 @@ const Admin_pageRoute = Admin_pageRouteImport.update({
   path: '/admin_page',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -60,93 +47,61 @@ const ViewAndEditRequestsView_and_edit_requestsRoute =
     path: '/view-and-edit-requests/view_and_edit_requests',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AppTest2Route = AppTest2RouteImport.update({
-  id: '/test2',
-  path: '/test2',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTestRoute = AppTestRouteImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => AppRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/test': typeof AppTestRoute
-  '/test2': typeof AppTest2Route
   '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/test': typeof AppTestRoute
-  '/test2': typeof AppTest2Route
   '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_app': typeof AppRouteWithChildren
-  '/about': typeof AboutRoute
   '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
   '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/_app/test': typeof AppTestRoute
-  '/_app/test2': typeof AppTest2Route
   '/view-and-edit-requests/view_and_edit_requests': typeof ViewAndEditRequestsView_and_edit_requestsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
     | '/admin_page'
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
-    | '/test'
-    | '/test2'
     | '/view-and-edit-requests/view_and_edit_requests'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/admin_page'
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
-    | '/test'
-    | '/test2'
     | '/view-and-edit-requests/view_and_edit_requests'
   id:
     | '__root__'
     | '/'
-    | '/_app'
-    | '/about'
     | '/admin_page'
     | '/login'
     | '/request_to_add_device'
     | '/user_page'
-    | '/_app/test'
-    | '/_app/test2'
     | '/view-and-edit-requests/view_and_edit_requests'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
-  AboutRoute: typeof AboutRoute
   Admin_pageRoute: typeof Admin_pageRoute
   LoginRoute: typeof LoginRoute
   Request_to_add_deviceRoute: typeof Request_to_add_deviceRoute
@@ -184,20 +139,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Admin_pageRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -212,39 +153,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ViewAndEditRequestsView_and_edit_requestsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/test2': {
-      id: '/_app/test2'
-      path: '/test2'
-      fullPath: '/test2'
-      preLoaderRoute: typeof AppTest2RouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/test': {
-      id: '/_app/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof AppTestRouteImport
-      parentRoute: typeof AppRoute
-    }
   }
 }
 
-interface AppRouteChildren {
-  AppTestRoute: typeof AppTestRoute
-  AppTest2Route: typeof AppTest2Route
-}
-
-const AppRouteChildren: AppRouteChildren = {
-  AppTestRoute: AppTestRoute,
-  AppTest2Route: AppTest2Route,
-}
-
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
-  AboutRoute: AboutRoute,
   Admin_pageRoute: Admin_pageRoute,
   LoginRoute: LoginRoute,
   Request_to_add_deviceRoute: Request_to_add_deviceRoute,
