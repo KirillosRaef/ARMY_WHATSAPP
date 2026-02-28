@@ -34,9 +34,9 @@ export const columns: ColumnDef<Brands>[] = [
     ),
   },
   {
-    id: "brandName",
-    accessorKey: "brandName",
-    header: "Brand Name",
+    id: "brandLogo",
+    accessorKey: "brandLogo",
+    header: "Brand Logo",
     cell: ({ row }) => {
       const fileName = row.original.brandName;
       return (
@@ -49,4 +49,18 @@ export const columns: ColumnDef<Brands>[] = [
       );
     },
   },
+  {
+    id: "brandName",
+    accessorKey: "brandName",
+    header: "Brand Name",
+    cell: ({ row }) => {
+      const fileName = row.original.brandName;
+      return (
+        // TODO: REMOVE THE CAPITALIZED LETTER IF NEEDED
+        <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+          {fileName.split('.')[0].charAt(0).toUpperCase() + fileName.split('.')[0].slice(1)}
+        </code>
+      );
+    },
+  }
 ]
