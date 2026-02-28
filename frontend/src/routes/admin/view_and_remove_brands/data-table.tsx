@@ -38,7 +38,7 @@ const deleteSelection = async (brands: string[]) => {
   if (!res.ok) throw new Error('Failed to delete selected requests');
 };
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { brandName: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
