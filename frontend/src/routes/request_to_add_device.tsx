@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle2, AlertCircle, PackagePlus } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { SingleValue } from 'react-select';
 
 import {
@@ -19,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import ErrorComponent from '@/components/helpers/error_component';
+import LoadingComponent from '@/components/helpers/loading_component';
 
 export const Route = createFileRoute('/request_to_add_device')({
   component: RouteComponent,
@@ -166,38 +167,11 @@ function RouteComponent() {
   };
 
   if (isLoading) {
-    return (
-      <AppShell>
-        <div className="space-y-6 max-w-5xl mx-auto w-full animate-fade-in">
-          <div>
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-          <Card className="glass-card shadow-sm border-border rounded-lg">
-            <CardContent className="space-y-4 pt-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-24 rounded" />
-                  <Skeleton className="h-10 w-full rounded" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </AppShell>
-    );
+    return <LoadingComponent />;
   }
 
   if (error) {
-    return (
-      <AppShell>
-        <div className="flex flex-col items-center justify-center py-20 gap-4 animate-fade-in">
-          <AlertCircle className="h-12 w-12 text-destructive" />
-          <p className="text-lg font-semibold text-foreground">Failed to load device types</p>
-          <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
-        </div>
-      </AppShell>
-    );
+    return <ErrorComponent error={error} />;
   }
 
   return (
