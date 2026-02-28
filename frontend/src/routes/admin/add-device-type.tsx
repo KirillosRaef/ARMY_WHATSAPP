@@ -149,13 +149,16 @@ function RouteComponent() {
         </CardHeader>
         <CardContent className="pt-8 px-8 pb-8 space-y-8">
           <div className="space-y-3">
-              <Label className="text-foreground font-medium text-sm">Classification Group</Label>
+              <Label className="text-foreground font-medium text-sm">Brand</Label>
               <Select
                 onValueChange={
-                  (value) => setSelectedBrand({
+                (value) => {
+                  setSelectedBrand({
                     value: value,
                     label: value.split('.')[0].charAt(0).toUpperCase() + value.split('.')[0].slice(1),
                   })
+                  setBrandName(value.split('.')[0].charAt(0).toUpperCase() + value.split('.')[0].slice(1))
+                }
                 }
               >
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
@@ -194,7 +197,7 @@ function RouteComponent() {
               type="text"
               placeholder="e.g. Dell"
               value={brandName}
-              onChange={(e) => setBrandName(e.target.value)}
+              // onChange={(e) => setBrandName(e.target.value)}
               className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
             />
           </div>

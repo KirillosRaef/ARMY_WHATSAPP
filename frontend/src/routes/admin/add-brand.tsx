@@ -2,6 +2,8 @@ import { AppShell } from '@/components/app_shell'
 import ImageUploadCrop from '@/components/image_upload_crop'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -14,6 +16,7 @@ function RouteComponent() {
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [brandName, setBrandName] = useState('');
   const navigate = useNavigate();
 
   const handleAddBrand = async () => {
@@ -25,7 +28,8 @@ function RouteComponent() {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('imageFile', brandLogoFile);
+      const newFile = new File([brandLogoFile], brandName + '.png');
+      formData.append('imageFile', newFile);
       formData.append('uploadDir', 'images/logos');
       await fetch(`http://localhost:5173/api/image/upload`, {
         method: 'POST',
@@ -64,6 +68,19 @@ function RouteComponent() {
                 onImageCropped={setBrandLogoFile}
               />
             </div>
+            <div className="space-y-3">
+            <Label htmlFor="name" className="text-foreground font-medium text-sm">
+              Brand Name
+            </Label>
+            <Input
+              id="brandName"
+              type="text"
+              placeholder="e.g. John Doe"
+              value={brandName}
+              onChange={(e) => setBrandName(e.target.value)}
+              className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
+            />
+          </div>
           </CardContent>
         </Card>  
         <Button onClick={handleAddBrand}>Add Brand</Button>
