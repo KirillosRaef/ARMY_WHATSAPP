@@ -36,7 +36,7 @@ app
           });
           await db.insert(profile).values({
             id: data.user.id,
-            role: role as 'admin' | 'user',
+            role: role.toLowerCase() as 'admin' | 'user',
           });
           return { name, email };
         },
