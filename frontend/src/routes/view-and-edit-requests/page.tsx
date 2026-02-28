@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, ClipboardList } from 'lucide-react';
 
 export const Route = createFileRoute(
-  '/view-and-edit-requests/view_and_edit_requests'
+  '/view-and-edit-requests/page'
 )({
   component: RouteComponent,
 });

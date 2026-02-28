@@ -15,7 +15,7 @@ import type { ReactNode } from 'react';
 const navItems = [
   { to: '/user_page' as const, label: 'Dashboard', icon: LayoutDashboard },
   { to: '/request_to_add_device' as const, label: 'Add Device', icon: PlusCircle },
-  { to: '/view-and-edit-requests/view_and_edit_requests' as const, label: 'My Requests', icon: ClipboardList },
+  { to: '/view-and-edit-requests/page' as const, label: 'My Requests', icon: ClipboardList },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {

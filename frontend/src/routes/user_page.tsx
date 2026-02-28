@@ -72,7 +72,7 @@ function UserDashboard() {
           <Card
             className="group relative flex flex-col overflow-hidden cursor-pointer border-white/10 glass-card hover:border-primary/50 transition-all duration-500"
             onClick={() =>
-              navigate({ to: '/view-and-edit-requests/view_and_edit_requests' })
+              navigate({ to: '/view-and-edit-requests/page' })
             }
           >
             <div className="absolute inset-0 bg-gradient-to-bl from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -91,7 +91,7 @@ function UserDashboard() {
                 className="inline-flex items-center gap-2 text-foreground font-medium text-sm group-hover:text-primary transition-colors mt-auto"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate({ to: '/view-and-edit-requests/view_and_edit_requests' });
+                  navigate({ to: '/view-and-edit-requests/page' });
                 }}
               >
                 Access logs <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
