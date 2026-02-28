@@ -20,6 +20,7 @@ import { Route as AdminAddUserRouteImport } from './routes/admin/add-user'
 import { Route as AdminAddDeviceTypeRouteImport } from './routes/admin/add-device-type'
 import { Route as AdminAddDeviceRouteImport } from './routes/admin/add-device'
 import { Route as AdminAddBrandRouteImport } from './routes/admin/add-brand'
+import { Route as AdminView_and_remove_device_typesPageRouteImport } from './routes/admin/view_and_remove_device_types/page'
 import { Route as AdminView_and_remove_brandsPageRouteImport } from './routes/admin/view_and_remove_brands/page'
 
 const User_pageRoute = User_pageRouteImport.update({
@@ -77,6 +78,12 @@ const AdminAddBrandRoute = AdminAddBrandRouteImport.update({
   path: '/admin/add-brand',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminView_and_remove_device_typesPageRoute =
+  AdminView_and_remove_device_typesPageRouteImport.update({
+    id: '/admin/view_and_remove_device_types/page',
+    path: '/admin/view_and_remove_device_types/page',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminView_and_remove_brandsPageRoute =
   AdminView_and_remove_brandsPageRouteImport.update({
     id: '/admin/view_and_remove_brands/page',
@@ -97,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/admin/view-requests': typeof AdminViewRequestsRoute
   '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
   '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
+  '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -111,6 +119,7 @@ export interface FileRoutesByTo {
   '/admin/view-requests': typeof AdminViewRequestsRoute
   '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
   '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
+  '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -126,6 +135,7 @@ export interface FileRoutesById {
   '/admin/view-requests': typeof AdminViewRequestsRoute
   '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
   '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
+  '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/admin/view-requests'
     | '/view-and-edit-requests/page'
     | '/admin/view_and_remove_brands/page'
+    | '/admin/view_and_remove_device_types/page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/admin/view-requests'
     | '/view-and-edit-requests/page'
     | '/admin/view_and_remove_brands/page'
+    | '/admin/view_and_remove_device_types/page'
   id:
     | '__root__'
     | '/'
@@ -170,6 +182,7 @@ export interface FileRouteTypes {
     | '/admin/view-requests'
     | '/view-and-edit-requests/page'
     | '/admin/view_and_remove_brands/page'
+    | '/admin/view_and_remove_device_types/page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,6 +198,7 @@ export interface RootRouteChildren {
   AdminViewRequestsRoute: typeof AdminViewRequestsRoute
   ViewAndEditRequestsPageRoute: typeof ViewAndEditRequestsPageRoute
   AdminView_and_remove_brandsPageRoute: typeof AdminView_and_remove_brandsPageRoute
+  AdminView_and_remove_device_typesPageRoute: typeof AdminView_and_remove_device_typesPageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -266,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAddBrandRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/view_and_remove_device_types/page': {
+      id: '/admin/view_and_remove_device_types/page'
+      path: '/admin/view_and_remove_device_types/page'
+      fullPath: '/admin/view_and_remove_device_types/page'
+      preLoaderRoute: typeof AdminView_and_remove_device_typesPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/view_and_remove_brands/page': {
       id: '/admin/view_and_remove_brands/page'
       path: '/admin/view_and_remove_brands/page'
@@ -289,6 +310,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminViewRequestsRoute: AdminViewRequestsRoute,
   ViewAndEditRequestsPageRoute: ViewAndEditRequestsPageRoute,
   AdminView_and_remove_brandsPageRoute: AdminView_and_remove_brandsPageRoute,
+  AdminView_and_remove_device_typesPageRoute:
+    AdminView_and_remove_device_typesPageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

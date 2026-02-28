@@ -25,7 +25,6 @@ interface DataTableProps<TData, TValue> {
 }
 
 
-//TODO: Implement delete selection
 const deleteSelection = async (brands: string[]) => {
   const res = await fetch('http://localhost:5173/api/image/logos', {
     method: 'DELETE',

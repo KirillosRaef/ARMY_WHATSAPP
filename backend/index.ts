@@ -182,6 +182,17 @@ app
           }),
         },
       )
+      .delete(
+        '/device-types',
+        async ({ body: { deviceTypeIds } }) => {
+          return await db.delete(deviceType).where(inArray(deviceType.id, deviceTypeIds));
+        },
+        {
+          body: t.Object({
+            deviceTypeIds: t.Array(t.String()),
+          }),
+        },
+      )
       .get('/users', () => {
         return db.select().from(user);
       })
