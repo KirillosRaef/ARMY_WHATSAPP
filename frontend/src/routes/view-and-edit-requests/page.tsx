@@ -16,7 +16,7 @@ const getRequestsOfUser = async () => {
   const userID = await fetch('http://localhost:5173/api/user-id');
   if (!userID.ok) throw new Error('Failed to fetch user id');
   const userIDText = await userID.text();
-  console.log('User ID: ', userIDText);
+  // console.log('User ID: ', userIDText);
 
   const res = await fetch(
     `http://localhost:5173/api/requests-with-description/${userIDText}`

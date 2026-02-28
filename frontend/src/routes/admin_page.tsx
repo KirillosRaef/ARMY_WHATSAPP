@@ -13,7 +13,8 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const stats = [
     { label: 'Add a Brand', route: '/admin/add-brand', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    {label: 'Add a User', route: '/admin/add-user', icon: User, color: 'oklch(0.55 0.18 290)'},
+    { label: 'View Brands', route: '/admin/view_and_remove_brands/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { label: 'Add a User', route: '/admin/add-user', icon: User, color: 'oklch(0.55 0.18 290)' },
     { label: 'Add a Device Type', route: '/admin/add-device-type', icon: Users, color: 'oklch(0.55 0.18 290)' },
     { label: 'Add a Device', route: '/admin/add-device', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
     { label: 'View Requests', route: '/admin/view-requests', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },

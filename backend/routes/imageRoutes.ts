@@ -1,5 +1,5 @@
 import { error } from 'better-auth/api';
-import { Elysia } from 'elysia';
+import { Elysia, t } from 'elysia';
 
 export const imageRoutes = new Elysia();
 
@@ -54,4 +54,17 @@ export const imageRoutes = new Elysia();
       const logos = await Bun.$`ls images/logos`.text();
       return logos.split('\n').filter(Boolean);
     })
+      .delete('/logos', async ({ body: { brands } }) => {
+              const filePath = `images/logos`;
+              for (const brand of brands) {
+                await Bun.$`rm -f ${filePath}/${brand}`.nothrow();
+              }
+              // return { filePath, brands };
+            },
+            {
+              body: t.Object({
+                brands: t.Array(t.String()),
+              }),
+            },
+          )
   );
