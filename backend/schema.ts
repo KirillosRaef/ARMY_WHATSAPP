@@ -33,6 +33,17 @@ export const profile = sqliteTable('profile', {
   role: text('role', { enum: ['Admin', 'User'] }).notNull().default('User'),
 });
 
+export const militaryUnit = sqliteTable('military_unit', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => Bun.randomUUIDv7()),
+  militaryUnitName: text('military_unit_name').notNull(),
+  branch: text('branch').default('-'),
+  // militaryUnitLogo: text('military_unit_logo'),
+}, (t) => [uniqueIndex('unique_military_unit').on(t.militaryUnitName, t.branch)]);
+
+export const createInsertMilitaryUnit = createInsertSchema(militaryUnit);
+
 export const deviceType = sqliteTable('device_type', {
   id: text('id')
     .primaryKey()
@@ -50,8 +61,10 @@ export const device = sqliteTable('device', {
     .primaryKey()
     .$defaultFn(() => Bun.randomUUIDv7()),
   deviceTypeId: text('device_type_id').notNull(),
+  militaryUnitId: text('military_unit_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
   usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
+  userName: text('user_name'),
   devicePhoto: text('device_photo'),
   serialNumberPhoto: text('serial_number_photo'),
 });
@@ -64,8 +77,10 @@ export const request = sqliteTable('request', {
     .$defaultFn(() => Bun.randomUUIDv7()),
   userId: text('user_id').notNull(),
   deviceTypeId: text('device_type_id').notNull(),
+  militaryUnitId: text('military_unit_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
   usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
+  userName: text('user_name'),
   devicePhoto: text('device_photo'),
   serialNumberPhoto: text('serial_number_photo'),
 });
