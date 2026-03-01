@@ -33,6 +33,17 @@ export const profile = sqliteTable('profile', {
   role: text('role', { enum: ['Admin', 'User'] }).notNull().default('User'),
 });
 
+export const militaryUnit = sqliteTable('military_unit', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => Bun.randomUUIDv7()),
+  militaryUnitName: text('military_unit_name').notNull(),
+  branch: text('branch').default('-'),
+  // militaryUnitLogo: text('military_unit_logo'),
+}, (t) => [uniqueIndex('unique_military_unit').on(t.militaryUnitName, t.branch)]);
+
+export const createInsertMilitaryUnit = createInsertSchema(militaryUnit);
+
 export const deviceType = sqliteTable('device_type', {
   id: text('id')
     .primaryKey()

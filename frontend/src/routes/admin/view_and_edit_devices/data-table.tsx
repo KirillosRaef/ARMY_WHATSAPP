@@ -39,13 +39,13 @@ const usageOptions: Option[] = [
 
 
 const deleteSelection = async (ids: string[]) => {
-  const delRes = await fetch('http://localhost:5173/api/requests', {
+  const delRes = await fetch('http://localhost:5173/api/devices', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ requestIds: ids }),
+    body: JSON.stringify({ deviceIds: ids }),
   });
-  if (!delRes.ok) throw new Error('Failed to delete selected requests');
+  if (!delRes.ok) throw new Error('Failed to delete selected devices');
 };
 
 interface DataTableProps<TData, TValue> {
@@ -85,6 +85,7 @@ export function DataTable<TData extends { id: string }, TValue>({
     if (selectedIds.length === 0) return;
     setIsDeleting(true);
     try {
+      // console.log("selectedIds", selectedIds);
       await deleteSelection(selectedIds);
       window.location.reload();
     } finally {

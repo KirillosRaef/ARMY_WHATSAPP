@@ -9,6 +9,7 @@ import { imageRoutes } from "./routes/imageRoutes";
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
 import { acceptRequestsRoute } from "./routes/acceptRequestsRoute";
 import { devicesWithDescriptionRoute } from "./routes/devicesWithDescriptionRoute";
+import { militaryUnitRoutes } from "./routes/militaryUnitRoutes";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -24,7 +25,8 @@ const app = new Elysia()
   }))
   .use(imageRoutes)
   .use(acceptRequestsRoute)
-  .use(devicesWithDescriptionRoute);
+  .use(devicesWithDescriptionRoute)
+  .use(militaryUnitRoutes);
 
 
 
