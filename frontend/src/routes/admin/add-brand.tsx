@@ -75,7 +75,7 @@ function RouteComponent() {
             <Input
               id="brandName"
               type="text"
-              placeholder="e.g. John Doe"
+              placeholder="e.g. Dell"
               value={brandName}
               onChange={(e) => setBrandName(e.target.value)}
               className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"

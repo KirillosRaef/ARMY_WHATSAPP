@@ -4,6 +4,7 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 
@@ -49,6 +50,7 @@ export function DataTable<TData extends { brandName: string }, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: setRowSelection,
+    getPaginationRowModel: getPaginationRowModel(),
     state: {
       rowSelection,
     },
@@ -96,7 +98,8 @@ export function DataTable<TData extends { brandName: string }, TValue>({
           </Button>
         )}
       </div>
-      <Table>
+      <div>
+        <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -138,9 +141,6 @@ export function DataTable<TData extends { brandName: string }, TValue>({
           )}
         </TableBody>
       </Table>
-      <div className="text-muted-foreground flex-1 text-sm">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
     </div>
   )
