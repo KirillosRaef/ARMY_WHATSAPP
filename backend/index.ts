@@ -8,6 +8,7 @@ import { staticPlugin } from '@elysiajs/static';
 import { imageRoutes } from "./routes/imageRoutes";
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
 import { acceptRequestsRoute } from "./routes/acceptRequestsRoute";
+import { devicesWithDescriptionRoute } from "./routes/devicesWithDescriptionRoute";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -22,7 +23,8 @@ const app = new Elysia()
     prefix: '/images',
   }))
   .use(imageRoutes)
-  .use(acceptRequestsRoute);
+  .use(acceptRequestsRoute)
+  .use(devicesWithDescriptionRoute);
 
 
 
@@ -200,7 +202,18 @@ app
             deviceTypeIds: t.Array(t.String()),
           }),
         },
-    )
+      )
+      .delete(
+        '/devices',
+        async ({ body: { deviceIds } }) => {
+          return await db.delete(device).where(inArray(device.id, deviceIds));
+        },
+        {
+          body: t.Object({
+            deviceIds: t.Array(t.String()),
+          }),
+        },
+      )
       .delete('/users', async ({ body: { userIds } }) => {
         await db.delete(user)
           .where(and(inArray(user.id, userIds), ne(lower(user.name), 'mnozom')));

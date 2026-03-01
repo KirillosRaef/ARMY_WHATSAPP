@@ -1,7 +1,9 @@
 "use client"
 
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table"
+import { ArrowUpDown } from "lucide-react";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -52,7 +54,17 @@ export const columns: ColumnDef<Brands>[] = [
   {
     id: "brandName",
     accessorKey: "brandName",
-    header: "Brand Name",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Brand Name
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const fileName = row.original.brandName;
       return (

@@ -22,8 +22,9 @@ const navItems = [
   { to: '/admin/view_and_remove_users/page' as const, label: 'View Users', icon: User },
   { to: '/admin/add-device-type' as const, label: 'Add Device Type', icon: Users },
   { to: '/admin/view_and_remove_device_types/page' as const, label: 'View Device Types', icon: Users },
-  { to: '/admin/add-device' as const, label: 'Add Device', icon: MonitorSmartphone },
   { to: '/admin/view-accept-reject-requests/page' as const, label: 'View Requests', icon: ClipboardList },
+  { to: '/admin/add-device' as const, label: 'Add Device', icon: MonitorSmartphone },
+  { to: '/admin/view_and_edit_devices/page' as const, label: 'View Devices', icon: MonitorSmartphone },
 ] as const;
 
 export function AdminShell({ children }: { children: ReactNode }) {

@@ -20,7 +20,7 @@ function AdminDashboard() {
     { label: 'View Device Types', route: '/admin/view_and_remove_device_types/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
     { label: 'View Requests', route: '/admin/view-accept-reject-requests/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
     { label: 'Add a Device', route: '/admin/add-device', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
-    { label: 'View Devices', route: '/admin/view_and_remove_devices/page', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
+    { label: 'View Devices', route: '/admin/view_and_edit_devices/page', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
   ];
 
   //TODO: 1) ADMIN CAN ADD/REMOVE BRANDLOGO (DONE)
@@ -30,7 +30,7 @@ function AdminDashboard() {
 
   //TODO: 5) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES
   //TODO: 6) ADMIN CAN SEARCH AND FILTER DEVICES
-  //TODO: 7) MAKE SURE THE ADMIN MENU IS NOT THE USER MENU
+  //TODO: 7) MAKE SURE THE ADMIN MENU IS NOT THE USER MENU (DONE)
 
   //TODO: 8) ASK AI TO REDO WITH PLANNING THE UI
   //TODO: 9) Translate into arabic/english

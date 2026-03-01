@@ -6,15 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 
-export type RequestModifiedType = {
+export type DeviceModifiedType = {
   id: string;
   deviceTypeId: string;
+  brandLogo: string;
+  brandName: string;
+  deviceKind: string;
+  description: string;
   serialNumber: string;
   usage: string;
   devicePhoto: string;
   serialNumberPhoto: string;
-  deviceDescription: string;
-  brandLogo: string;
 };
 
 const DEVICE_URL = 'http://localhost:5173/api/image/devices';
@@ -46,7 +48,7 @@ function UsageBadge({ usage }: { usage: string }) {
   );
 }
 
-export const columns: ColumnDef<RequestModifiedType>[] = [
+export const columns: ColumnDef<DeviceModifiedType>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -76,7 +78,7 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: 'deviceDescription',
+    accessorKey: 'brandName',
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -84,7 +86,7 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
         className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Device
+        Brand
         <ArrowUpDown className="h-3 w-3" />
       </Button>
     ),
@@ -95,8 +97,46 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
         className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
         loading="lazy"
       />
-      {row.original.deviceDescription}
+      {row.original.brandName}
     </div>,
+  },
+  {
+    accessorKey: 'deviceKind',
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Device Type
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+        {row.original.deviceKind}
+      </code>
+    ),
+  },
+  {
+    accessorKey: 'description',
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Description
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+        {row.original.description}
+      </code>
+    ),
   },
   {
     accessorKey: 'serialNumber',

@@ -100,10 +100,16 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
   },
   {
     accessorKey: 'serialNumber',
-    header: () => (
-      <span className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
-        Serial No.
-      </span>
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Condition
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
     ),
     cell: ({ row }) => (
       <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">

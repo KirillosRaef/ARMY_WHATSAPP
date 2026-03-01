@@ -22,6 +22,7 @@ import { Route as AdminAddBrandRouteImport } from './routes/admin/add-brand'
 import { Route as AdminView_and_remove_usersPageRouteImport } from './routes/admin/view_and_remove_users/page'
 import { Route as AdminView_and_remove_device_typesPageRouteImport } from './routes/admin/view_and_remove_device_types/page'
 import { Route as AdminView_and_remove_brandsPageRouteImport } from './routes/admin/view_and_remove_brands/page'
+import { Route as AdminView_and_edit_devicesPageRouteImport } from './routes/admin/view_and_edit_devices/page'
 import { Route as AdminViewAcceptRejectRequestsPageRouteImport } from './routes/admin/view-accept-reject-requests/page'
 
 const User_pageRoute = User_pageRouteImport.update({
@@ -92,6 +93,12 @@ const AdminView_and_remove_brandsPageRoute =
     path: '/admin/view_and_remove_brands/page',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminView_and_edit_devicesPageRoute =
+  AdminView_and_edit_devicesPageRouteImport.update({
+    id: '/admin/view_and_edit_devices/page',
+    path: '/admin/view_and_edit_devices/page',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminViewAcceptRejectRequestsPageRoute =
   AdminViewAcceptRejectRequestsPageRouteImport.update({
     id: '/admin/view-accept-reject-requests/page',
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/admin/add-user': typeof AdminAddUserRoute
   '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
   '/admin/view-accept-reject-requests/page': typeof AdminViewAcceptRejectRequestsPageRoute
+  '/admin/view_and_edit_devices/page': typeof AdminView_and_edit_devicesPageRoute
   '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
   '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
@@ -127,6 +135,7 @@ export interface FileRoutesByTo {
   '/admin/add-user': typeof AdminAddUserRoute
   '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
   '/admin/view-accept-reject-requests/page': typeof AdminViewAcceptRejectRequestsPageRoute
+  '/admin/view_and_edit_devices/page': typeof AdminView_and_edit_devicesPageRoute
   '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
   '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
@@ -144,6 +153,7 @@ export interface FileRoutesById {
   '/admin/add-user': typeof AdminAddUserRoute
   '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
   '/admin/view-accept-reject-requests/page': typeof AdminViewAcceptRejectRequestsPageRoute
+  '/admin/view_and_edit_devices/page': typeof AdminView_and_edit_devicesPageRoute
   '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
   '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/admin/add-user'
     | '/view-and-edit-requests/page'
     | '/admin/view-accept-reject-requests/page'
+    | '/admin/view_and_edit_devices/page'
     | '/admin/view_and_remove_brands/page'
     | '/admin/view_and_remove_device_types/page'
     | '/admin/view_and_remove_users/page'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/admin/add-user'
     | '/view-and-edit-requests/page'
     | '/admin/view-accept-reject-requests/page'
+    | '/admin/view_and_edit_devices/page'
     | '/admin/view_and_remove_brands/page'
     | '/admin/view_and_remove_device_types/page'
     | '/admin/view_and_remove_users/page'
@@ -194,6 +206,7 @@ export interface FileRouteTypes {
     | '/admin/add-user'
     | '/view-and-edit-requests/page'
     | '/admin/view-accept-reject-requests/page'
+    | '/admin/view_and_edit_devices/page'
     | '/admin/view_and_remove_brands/page'
     | '/admin/view_and_remove_device_types/page'
     | '/admin/view_and_remove_users/page'
@@ -211,6 +224,7 @@ export interface RootRouteChildren {
   AdminAddUserRoute: typeof AdminAddUserRoute
   ViewAndEditRequestsPageRoute: typeof ViewAndEditRequestsPageRoute
   AdminViewAcceptRejectRequestsPageRoute: typeof AdminViewAcceptRejectRequestsPageRoute
+  AdminView_and_edit_devicesPageRoute: typeof AdminView_and_edit_devicesPageRoute
   AdminView_and_remove_brandsPageRoute: typeof AdminView_and_remove_brandsPageRoute
   AdminView_and_remove_device_typesPageRoute: typeof AdminView_and_remove_device_typesPageRoute
   AdminView_and_remove_usersPageRoute: typeof AdminView_and_remove_usersPageRoute
@@ -309,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminView_and_remove_brandsPageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/view_and_edit_devices/page': {
+      id: '/admin/view_and_edit_devices/page'
+      path: '/admin/view_and_edit_devices/page'
+      fullPath: '/admin/view_and_edit_devices/page'
+      preLoaderRoute: typeof AdminView_and_edit_devicesPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/view-accept-reject-requests/page': {
       id: '/admin/view-accept-reject-requests/page'
       path: '/admin/view-accept-reject-requests/page'
@@ -332,6 +353,7 @@ const rootRouteChildren: RootRouteChildren = {
   ViewAndEditRequestsPageRoute: ViewAndEditRequestsPageRoute,
   AdminViewAcceptRejectRequestsPageRoute:
     AdminViewAcceptRejectRequestsPageRoute,
+  AdminView_and_edit_devicesPageRoute: AdminView_and_edit_devicesPageRoute,
   AdminView_and_remove_brandsPageRoute: AdminView_and_remove_brandsPageRoute,
   AdminView_and_remove_device_typesPageRoute:
     AdminView_and_remove_device_typesPageRoute,

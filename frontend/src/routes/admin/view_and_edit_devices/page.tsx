@@ -1,56 +1,51 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { columns, type RequestModifiedType } from './columns';
+import { columns, type DeviceModifiedType } from './columns';
 import { DataTable } from './data-table';
-import { UserShell } from '../../components/user_shell';
+import { AdminShell } from '../../../components/admin_shell';
 import { ClipboardList } from 'lucide-react';
 import LoadingComponent from '@/components/helpers/loading_component';
 import ErrorComponent from '@/components/helpers/error_component';
 
 export const Route = createFileRoute(
-  '/view-and-edit-requests/page'
+  '/admin/view_and_edit_devices/page'
 )({
   component: RouteComponent,
 });
 
-const getRequestsOfUser = async () => {
-  const userID = await fetch('http://localhost:5173/api/user-id');
-  if (!userID.ok) throw new Error('Failed to fetch user id');
-  const userIDText = await userID.text();
-  // console.log('User ID: ', userIDText);
-
+const getDevices = async () => {
   const res = await fetch(
-    `http://localhost:5173/api/requests-with-description/${userIDText}`
+    `http://localhost:5173/api/devices-with-description`
   );
-  if (!res.ok) throw new Error('Failed to fetch requests');
+  if (!res.ok) throw new Error('Failed to fetch devices');
   const data = await res.json();
-  console.log('Requests of user response:', data);
+  console.log('Devices response:', data);
   return data;
 };
 
 function RouteComponent() {
   const {
-    data: requestsOfUser,
+    data: devices,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['requestsOfUser'],
-    queryFn: getRequestsOfUser as () => Promise<RequestModifiedType[]>,
+    queryKey: ['devices'],
+    queryFn: getDevices as () => Promise<DeviceModifiedType[]>,
     staleTime: 0,
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
   });
 
   if (isLoading) {
-      return <LoadingComponent shell='User' />
-    }
-  
-    if (error) {
-      return <ErrorComponent error={error} shell='User' />
-    }
+    return <LoadingComponent shell='Admin' />
+  }
+
+  if (error) {
+    return <ErrorComponent error={error} shell='Admin' />
+  }
 
   return (
-    <UserShell>
+    <AdminShell>
       <div className="space-y-8 max-w-7xl mx-auto w-full animate-slide-up">
         <div className="flex flex-col gap-2 pb-6 border-b border-white/5">
           <div className="flex items-center gap-4">
@@ -60,8 +55,8 @@ function RouteComponent() {
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-foreground">Active Records</h1>
               <p className="text-muted-foreground text-sm mt-1">
-                {requestsOfUser?.length
-                  ? `${requestsOfUser.length} authorized request${requestsOfUser.length !== 1 ? 's' : ''} found in your log`
+                {devices?.length
+                  ? `${devices.length} authorized device${devices.length !== 1 ? 's' : ''} found in your log`
                   : 'No active records found targeting your clearance'}
               </p>
             </div>
@@ -69,9 +64,9 @@ function RouteComponent() {
         </div>
 
         <div className="glass-card rounded-2xl border-white/10 shadow-2xl overflow-hidden">
-          <DataTable columns={columns} data={requestsOfUser || []} />
+          <DataTable columns={columns} data={devices || []} />
         </div>
       </div>
-    </UserShell>
+    </AdminShell>
   );
 }
