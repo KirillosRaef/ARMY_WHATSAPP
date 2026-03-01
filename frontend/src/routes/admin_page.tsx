@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { AppShell } from '../components/app_shell';
+import { AdminShell } from '../components/admin_shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Users, ClipboardList, MonitorSmartphone, User } from 'lucide-react';
@@ -35,7 +35,7 @@ function AdminDashboard() {
   //TODO: 9) Translate into arabic/english
   //TODO: 10) Clickable images
   return (
-    <AppShell>
+    <AdminShell>
       <div className="space-y-8 animate-slide-up">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -90,6 +90,6 @@ function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </AdminShell>
   );
 }

@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { columns, type Brands } from "./columns"
 import { DataTable } from "./data-table"
 import { useQuery } from '@tanstack/react-query';
-import { AppShell } from '@/components/app_shell';
+import { AdminShell } from '@/components/admin_shell';
 import LoadingComponent from '@/components/helpers/loading_component';
 import ErrorComponent from '@/components/helpers/error_component';
 
@@ -34,18 +34,18 @@ function RouteComponent() {
   });
   
   if (isLoading) {
-      return <LoadingComponent />;
+      return <LoadingComponent shell='Admin' />;
     }
   
     if (error) {
-      return <ErrorComponent error={error} />;
+      return <ErrorComponent error={error} shell='Admin' />;
     }
   return (
     <div className="container mx-auto py-10">
       
-      <AppShell>
+      <AdminShell>
         <DataTable columns={columns} data={brands} />
-      </AppShell>
+      </AdminShell>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/app_shell'
+import { AdminShell } from '@/components/admin_shell'
 import ImageUploadCrop from '@/components/image_upload_crop'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,7 +46,7 @@ function RouteComponent() {
   }
 
   return (
-    <AppShell>
+    <AdminShell>
       <div>
         <Card className="glass-card shadow-2xl overflow-hidden rounded-2xl border-white/10 relative">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -85,6 +85,6 @@ function RouteComponent() {
         </Card>  
         <Button onClick={handleAddBrand}>Add Brand</Button>
       </div>
-    </AppShell>
+    </AdminShell>
   )
 }

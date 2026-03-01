@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { AppShell } from '../components/app_shell';
+import { UserShell } from '../components/user_shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, ClipboardList, ArrowRight, MonitorSmartphone, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,7 @@ function UserDashboard() {
   const navigate = useNavigate();
 
   return (
-    <AppShell>
+    <UserShell>
       <div className="space-y-10 animate-slide-up w-full">
         {/* Hero header */}
         {/* Header */}
@@ -110,6 +110,6 @@ function UserDashboard() {
           </p>
         </div>
       </div>
-    </AppShell>
+    </UserShell>
   );
 }

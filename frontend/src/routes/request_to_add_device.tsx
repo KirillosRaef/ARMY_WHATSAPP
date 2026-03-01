@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, type SetStateAction } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ImageUploadCrop from '../components/image_upload_crop';
-import { AppShell } from '../components/app_shell';
+import { UserShell } from '../components/user_shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -167,15 +167,15 @@ function RouteComponent() {
   };
 
   if (isLoading) {
-    return <LoadingComponent />;
+    return <LoadingComponent shell='User' />;
   }
 
   if (error) {
-    return <ErrorComponent error={error} />;
+    return <ErrorComponent error={error} shell='User' />;
   }
 
   return (
-    <AppShell>
+    <UserShell>
       <div className="space-y-8 max-w-5xl mx-auto w-full animate-slide-up">
         <div className="flex flex-col gap-2 pb-6 border-b border-white/5">
           <div className="flex items-center gap-4">
@@ -341,6 +341,6 @@ function RouteComponent() {
           </Button>
         </div>
       </div>
-    </AppShell>
+    </UserShell>
   );
 }

@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { columns, type DeviceType } from './columns';
 import { DataTable } from './data-table';
-import { AppShell } from '@/components/app_shell';
+import { AdminShell } from '@/components/admin_shell';
 import ErrorComponent from '@/components/helpers/error_component';
 import LoadingComponent from '@/components/helpers/loading_component';
 import { ClipboardList } from 'lucide-react';
@@ -34,15 +34,15 @@ function RouteComponent() {
   });
 
   if (isLoading) {
-    return <LoadingComponent />
+    return <LoadingComponent shell='Admin' />
   }
 
   if (error) {
-    return <ErrorComponent error={error} />
+    return <ErrorComponent error={error} shell='Admin' />
   }
 
   return (
-    <AppShell>
+    <AdminShell>
       <div className="space-y-8 max-w-7xl mx-auto w-full animate-slide-up">
         <div className="flex flex-col gap-2 pb-6 border-b border-white/5">
           <div className="flex items-center gap-4">
@@ -64,6 +64,6 @@ function RouteComponent() {
           <DataTable columns={columns} data={deviceTypes || []} />
         </div>
       </div>
-    </AppShell>
+    </AdminShell>
   );
 }

@@ -7,18 +7,26 @@ import {
   LogOut,
   ChevronRight,
   Settings,
+  User,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 
 const navItems = [
-  { to: '/user_page' as const, label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/request_to_add_device' as const, label: 'Add Device', icon: PlusCircle },
-  { to: '/view-and-edit-requests/page' as const, label: 'My Requests', icon: ClipboardList },
+  { to: '/admin_page' as const, label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/add-brand' as const, label: 'Add Brand', icon: PlusCircle },
+  { to: '/admin/view_and_remove_brands/page' as const, label: 'View Brands', icon: ClipboardList },
+  { to: '/admin/add-user' as const, label: 'Add User', icon: User },
+  { to: '/admin/view_and_remove_users/page' as const, label: 'View Users', icon: User },
+  { to: '/admin/add-device-type' as const, label: 'Add Device Type', icon: Users },
+  { to: '/admin/view_and_remove_device_types/page' as const, label: 'View Device Types', icon: Users },
+  { to: '/admin/add-device' as const, label: 'Add Device', icon: MonitorSmartphone },
+  { to: '/admin/view-accept-reject-requests/page' as const, label: 'View Requests', icon: ClipboardList },
 ] as const;
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AdminShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
-import { AppShell } from '@/components/app_shell';
+import { AdminShell } from '@/components/admin_shell';
 import { AlertCircle, CheckCircle2, Loader2, PackagePlus, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,7 +67,7 @@ function RouteComponent() {
     }
   };
   
-  return (<AppShell>
+  return (<AdminShell>
     <div className="space-y-8 max-w-5xl mx-auto w-full animate-slide-up">
       <div className="flex flex-col gap-2 pb-6 border-b border-white/5">
         <div className="flex items-center gap-4">
@@ -226,6 +226,6 @@ function RouteComponent() {
           </Button>
         </div>
     </div>
-  </AppShell>
+  </AdminShell>
   );
 }

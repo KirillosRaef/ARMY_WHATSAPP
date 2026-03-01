@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { columns, type RequestModifiedType } from './columns';
 import { DataTable } from './data-table';
-import { AppShell } from '../../components/app_shell';
+import { AppShell } from '../../components/user_shell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, ClipboardList } from 'lucide-react';
 
