@@ -140,15 +140,11 @@ function RouteComponent() {
       formData.set('imageFile', devicePhotoFile);
       formData.set('uploadDir', 'images/devices');
       await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
-      const userID = await fetch('http://localhost:5173/api/user-id');
-      if (!userID.ok) throw new Error('Failed to fetch user id');
-      const userIDText = await userID.text();
-      await fetch('http://localhost:5173/api/request', {
+      await fetch('http://localhost:5173/api/device', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          userId: userIDText,
           deviceTypeId: selectedDeviceType.value,
           serialNumber,
           usage: selectedUsage.value,
@@ -157,7 +153,7 @@ function RouteComponent() {
         }),
       });
       setSubmitSuccess(true);
-      setTimeout(() => navigate({ to: '/user_page' }), 1500);
+      setTimeout(() => navigate({ to: '/admin_page' }), 1500);
     } catch (err) {
       setSubmitError('Failed to submit request. Please try again.');
       console.error(err);
