@@ -1,0 +1,22 @@
+meta {
+  name: all-military-units
+  type: http
+  seq: 30
+}
+
+delete {
+  url: http://localhost:3000/api/military-units
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "militaryUnitIds": []
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
