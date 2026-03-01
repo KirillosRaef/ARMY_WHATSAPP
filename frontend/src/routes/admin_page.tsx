@@ -46,6 +46,7 @@ function AdminDashboard() {
   //TODO: 14) Table can make image columns invisible and others like unit and far3
   //TODO: 15) Next and previous buttons (DONE)
   //TODO: 16) Make sure the total count is present in the table, even when searching (DONE)
+  //TODO: 17) HANDLES CASCADING DELETES PROPERLY
   return (
     <AdminShell>
       <div className="space-y-8 animate-slide-up">

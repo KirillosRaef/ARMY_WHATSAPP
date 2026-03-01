@@ -4,12 +4,10 @@ import * as React from 'react';
 import {
   type ColumnDef,
   type SortingState,
-  type ColumnFiltersState,
   flexRender,
-  getPaginationRowModel,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 
@@ -22,31 +20,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input"
 import { Trash2, AlertTriangle } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { SingleValue } from 'react-select';
 
 
-type Option = { value: string; label: string };
-
-const usageOptions: Option[] = [
-  { value: 'New', label: '✨ New' },
-  { value: 'Used', label: '🔄 Used' },
-  { value: 'Broken', label: '⚠️ Broken' },
-];
-
-
-
+//TODO: TOOTOTOTOOTOTOTOTO
 const deleteSelection = async (ids: string[]) => {
-  const delRes = await fetch('http://localhost:5173/api/devices', {
+  await fetch('http://localhost:5173/api/military-units-id', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ deviceIds: ids }),
+    body: JSON.stringify({ militaryUnitIds: ids }),
   });
-  if (!delRes.ok) throw new Error('Failed to delete selected devices');
+  console.log(ids);
 };
 
 interface DataTableProps<TData, TValue> {
@@ -61,8 +46,6 @@ export function DataTable<TData extends { id: string }, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [selectedUsage, setSelectedUsage] = React.useState<SingleValue<Option>>(null);
 
   const table = useReactTable({
     data,
@@ -70,11 +53,9 @@ export function DataTable<TData extends { id: string }, TValue>({
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    onRowSelectionChange: setRowSelection,
-    onColumnFiltersChange: setColumnFilters,
     getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: { sorting, rowSelection, columnFilters },
+    onRowSelectionChange: setRowSelection,
+    state: { sorting, rowSelection },
     initialState: { columnVisibility: { id: false } },
   });
 
@@ -86,9 +67,8 @@ export function DataTable<TData extends { id: string }, TValue>({
     if (selectedIds.length === 0) return;
     setIsDeleting(true);
     try {
-      // console.log("selectedIds", selectedIds);
       await deleteSelection(selectedIds);
-      window.location.reload();
+      // window.location.reload();
     } finally {
       setIsDeleting(false);
     }
@@ -120,87 +100,6 @@ export function DataTable<TData extends { id: string }, TValue>({
             )}
           </Button>
         )}
-      </div>
-
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter brand name..."
-          value={(table.getColumn("brandName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("brandName")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter device type..."
-          value={(table.getColumn("deviceKind")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("deviceKind")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter description..."
-          value={(table.getColumn("description")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("description")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter serial number..."
-          value={(table.getColumn("serialNumber")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("serialNumber")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter usage..."
-          value={(table.getColumn("usage")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("usage")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        {/* <div className="space-y-3">
-              <Label className="max-w-sm w-full text-foreground font-medium text-sm">Condition Status</Label>
-              <Select
-                onValueChange={(value) => {
-                setSelectedUsage({
-                  value,
-                  label: usageOptions.find((option) => option.value === value)!.label
-                })
-              
-              if (value == selectedUsage?.value) {
-                  console.log("value === selectedUsage?.value")
-                  table.getColumn("usage")?.setFilterValue(null);
-                } else {
-                  table.getColumn("usage")?.setFilterValue(value);
-                }
-              }}>
-                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Filter condition..." />
-                </SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
-                  <SelectGroup>
-                    {usageOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="rounded-lg focus:bg-white/5 my-0.5 cursor-pointer">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
       </div>
 
       {/* Table */}
@@ -251,8 +150,8 @@ export function DataTable<TData extends { id: string }, TValue>({
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
-                      <p className="text-sm font-medium text-foreground/60">No requests found</p>
-                      <p className="text-xs mt-0.5">Submit a new device request to get started</p>
+                      <p className="text-sm font-medium text-foreground/60">No users found</p>
+                      <p className="text-xs mt-0.5">Submit a new user to get started</p>
                     </div>
                   </div>
                 </TableCell>
