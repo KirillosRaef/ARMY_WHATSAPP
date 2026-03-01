@@ -22,6 +22,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Trash2, AlertTriangle, Check } from 'lucide-react';
 
+
+//TODO: CHECK THE FUNCTIONALITY OF THESE BUTTONS
 const deleteSelection = async (ids: string[]) => {
   const delRes = await fetch('http://localhost:5173/api/requests', {
     method: 'DELETE',

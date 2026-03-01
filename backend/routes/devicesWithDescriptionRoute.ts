@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 import { db } from "../database";
-import { device, deviceType } from "../schema";
+import { device, deviceType, militaryUnit } from "../schema";
 import { eq } from "drizzle-orm";
 
 
@@ -20,5 +20,11 @@ devicesWithDescriptionRoute.onError(({error}) => {
       usage: device.usage,
       devicePhoto: device.devicePhoto,
       serialNumberPhoto: device.serialNumberPhoto,
-    }).from(device).leftJoin(deviceType, eq(device.deviceTypeId, deviceType.id));
+      militaryUnitId: device.militaryUnitId,
+      militaryUnitName: militaryUnit.militaryUnitName,
+      branch: militaryUnit.branch,
+      username: device.username,
+    }).from(device)
+      .leftJoin(deviceType, eq(device.deviceTypeId, deviceType.id))
+      .leftJoin(militaryUnit, eq(device.militaryUnitId, militaryUnit.id));
 });

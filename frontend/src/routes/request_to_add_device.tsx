@@ -161,7 +161,7 @@ function RouteComponent() {
 
   const handleSubmitRequest = async () => {
     setSubmitError('');
-    if (!selectedDeviceType || !selectedUsage || !serialNumber) {
+    if (!selectedDeviceType || !selectedUsage || !serialNumber || !selectedMilitaryUnit || !selectedMilitaryUnitBranch || !username) {
       setSubmitError('Please fill in all fields before submitting.');
       return;
     }

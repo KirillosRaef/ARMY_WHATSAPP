@@ -61,8 +61,10 @@ export const device = sqliteTable('device', {
     .primaryKey()
     .$defaultFn(() => Bun.randomUUIDv7()),
   deviceTypeId: text('device_type_id').notNull(),
+  militaryUnitId: text('military_unit_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
   usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
+  username: text('username'),
   devicePhoto: text('device_photo'),
   serialNumberPhoto: text('serial_number_photo'),
 });

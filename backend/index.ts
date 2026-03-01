@@ -123,7 +123,11 @@ app
       .post(
         '/device',
         async ({ body }) => {
-          const data = await db.insert(device).values(body);
+          const data = await db.select().from(device).where(eq(device.serialNumber, body.serialNumber));
+          if (data.length > 0) {
+            throw new Error('Serial number already exists');
+          }
+          await db.insert(device).values(body);
           return body;
         },
         {
@@ -133,7 +137,11 @@ app
       .post(
         '/request',
         async ({ body }) => {
-          const data = await db.insert(request).values(body);
+          const data = await db.select().from(request).where(eq(request.serialNumber, body.serialNumber));
+          if (data.length > 0) {
+            throw new Error('Serial number already exists');
+          }
+          await db.insert(request).values(body);
           return body;
         },
         {
