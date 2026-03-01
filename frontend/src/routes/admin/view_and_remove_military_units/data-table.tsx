@@ -68,7 +68,7 @@ export function DataTable<TData extends { id: string }, TValue>({
     setIsDeleting(true);
     try {
       await deleteSelection(selectedIds);
-      // window.location.reload();
+      window.location.reload();
     } finally {
       setIsDeleting(false);
     }

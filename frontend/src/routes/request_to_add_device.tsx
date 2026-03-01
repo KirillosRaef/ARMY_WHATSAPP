@@ -35,12 +35,24 @@ const usageOptions: Option[] = [
   { value: 'Broken', label: '⚠️ Broken' },
 ];
 
+type MilitaryUnit = {
+  id: string;
+  militaryUnitName: string;
+  branch: string;
+};
+
 type DeviceType = {
   id: string;
   brandName: string;
   deviceKind: string;
   description: string;
   brandLogo: string;
+};
+
+const getMilitaryUnits = async () => {
+  const res = await fetch('http://localhost:5173/api/military-units');
+  if (!res.ok) throw new Error('Failed to fetch military units');
+  return res.json();
 };
 
 const getDeviceTypes = async () => {
@@ -103,9 +115,35 @@ function RouteComponent() {
   const [selectedUsage, setSelectedUsage] = useState<SingleValue<Option>>(null);
   const [serialNumberPhotoFile, setSerialNumberPhotoFile] = useState<File>(new File([], ''));
   const [devicePhotoFile, setDevicePhotoFile] = useState<File>(new File([], ''));
+  const [selectedMilitaryUnit, setSelectedMilitaryUnit] = useState<SingleValue<Option>>({ value: '', label: '' });
+  const [selectedMilitaryUnitBranch, setSelectedMilitaryUnitBranch] = useState<SingleValue<Option>>({ value: '', label: '' });
+  const [username, setUsername] = useState('');
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const { data: militaryUnits, isLoading: militaryUnitsLoading, error: militaryUnitsError } = useQuery({
+    queryKey: ['militaryUnits'],
+    queryFn: getMilitaryUnits as () => Promise<MilitaryUnit[]>,
+    staleTime: 0,
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: true,
+  });
+
+  const militaryUnitMainOptions =
+    militaryUnits?.filter((mu: { id: string; militaryUnitName: string; branch: string; }) => mu.branch === '-')
+    .map((mu: { id: string; militaryUnitName: string; branch: string; }) => ({
+      value: mu.id,
+      label: `${mu.militaryUnitName}`,
+    })) || [];
+  
+  const militaryUnitBranchOptions = 
+    militaryUnits?.filter((mu: { id: string; militaryUnitName: string; branch: string; }) => mu.militaryUnitName === selectedMilitaryUnit?.label)
+    .map((mu: { id: string; militaryUnitName: string; branch: string; }) => ({
+      value: mu.id,
+      label: `${mu.branch}`,
+    })) || [];
 
   const { data: deviceTypes, isLoading, error } = useQuery({
     queryKey: ['deviceTypes'],
@@ -150,8 +188,10 @@ function RouteComponent() {
         body: JSON.stringify({
           userId: userIDText,
           deviceTypeId: selectedDeviceType.value,
+          militaryUnitId: selectedMilitaryUnitBranch!.value,
           serialNumber,
           usage: selectedUsage.value,
+          username,
           devicePhoto: devicePhotoFile.name,
           serialNumberPhoto: serialNumberPhotoFile.name,
         }),
@@ -281,6 +321,88 @@ function RouteComponent() {
                 placeholder="e.g. SN-1234567890"
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
+                className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-foreground font-medium text-sm">Classification Group</Label>
+              <Select
+                onValueChange={
+                  (value) => setSelectedMilitaryUnit({
+                    value,
+                    label: militaryUnitMainOptions.find((option) => option.value === value)!.label
+                  })}>
+                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                  <SelectValue placeholder="Select a military unit..." />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                  <SelectGroup>
+                    {militaryUnitMainOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {!selectedMilitaryUnit!.value && (
+              <div className="space-y-3">
+                <Label className="text-foreground font-medium text-sm">Military Unit Branch</Label>
+                <Select>
+                  <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                    <SelectValue placeholder="Choose a military unit first..." />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                    {/* <SelectGroup>
+                      {militaryUnitBranchOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup> */}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {selectedMilitaryUnit!.value && (
+            <div className="space-y-3">
+              <Label className="text-foreground font-medium text-sm">Military Unit Branch</Label>
+              <Select
+                onValueChange={
+                  (value) => setSelectedMilitaryUnitBranch({
+                    value,
+                    label: militaryUnitBranchOptions.find((option) => option.value === value)!.label
+                  })}>
+                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                  <SelectValue placeholder="Choose a military unit first..." />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                  <SelectGroup>
+                    {militaryUnitBranchOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            )}
+
+            <div className="space-y-3">
+              <Label htmlFor="username" className="text-foreground font-medium text-sm">
+                Username
+              </Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="e.g. SN-1234567890"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
               />
             </div>
