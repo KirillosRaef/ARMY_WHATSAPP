@@ -1,0 +1,22 @@
+meta {
+  name: accept-requests-by-id
+  type: http
+  seq: 23
+}
+
+post {
+  url: http://localhost:3000/api/accept-requests
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "requestIds": ["trial"]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

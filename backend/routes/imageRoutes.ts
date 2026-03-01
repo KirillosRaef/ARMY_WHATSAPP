@@ -1,4 +1,3 @@
-import { error } from 'better-auth/api';
 import { Elysia, t } from 'elysia';
 
 export const imageRoutes = new Elysia();

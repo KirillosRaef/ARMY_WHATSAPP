@@ -2,10 +2,16 @@ import { Elysia, t } from "elysia";
 import { createInsertDevice, createInsertDeviceType, createInsertRequest, device, deviceType, profile, request, user } from "./schema";
 import { db } from "./database";
 import { auth } from "./auth";
-import { eq, and, sql, inArray } from "drizzle-orm";
+import { eq, and, sql, inArray, ne } from "drizzle-orm";
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 import { imageRoutes } from "./routes/imageRoutes";
+import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
+import { acceptRequestsRoute } from "./routes/acceptRequestsRoute";
+
+export function lower(email: SQLiteColumn): any {
+  return sql`lower(${email})`;
+}
 
 const app = new Elysia()
   .use(cors({
@@ -14,7 +20,9 @@ const app = new Elysia()
   .use(staticPlugin({
     assets: 'images',
     prefix: '/images',
-  })).use(imageRoutes);
+  }))
+  .use(imageRoutes)
+  .use(acceptRequestsRoute);
 
 
 
@@ -36,7 +44,7 @@ app
           });
           await db.insert(profile).values({
             id: data.user.id,
-            role: role.toLowerCase() as 'admin' | 'user',
+            role: role as 'Admin' | 'User',
           });
           return { name, email };
         },
@@ -45,7 +53,7 @@ app
             name: t.String(),
             email: t.String(),
             password: t.String(),
-            role: t.String({ enum: ['admin', 'user'] }),
+            role: t.String({ enum: ['Admin', 'User'] }),
           }),
         },
       )
@@ -192,9 +200,33 @@ app
             deviceTypeIds: t.Array(t.String()),
           }),
         },
-      )
+    )
+      .delete('/users', async ({ body: { userIds } }) => {
+        await db.delete(user)
+          .where(and(inArray(user.id, userIds), ne(lower(user.name), 'mnozom')));
+        await db.delete(profile)
+          .where(
+            and(
+              inArray(profile.id,userIds),
+              db.select()
+                .from(profile)
+                .innerJoin(user, eq(profile.id, user.id))
+                .where(ne(lower(user.name), 'mnozom'))
+            )
+          );
+      }, {
+        body: t.Object({
+          userIds: t.Array(t.String()),
+        }),  
+      })
       .get('/users', () => {
-        return db.select().from(user);
+        return db.select({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: profile.role,
+          image: user.image, //TODO: ADD PROFILE IMAGE
+        }).from(user).leftJoin(profile, eq(user.id, profile.id));
       })
       .get('/device-types', () => {
         return db.select().from(deviceType);
@@ -204,6 +236,26 @@ app
       })
       .get('/requests', () => {
         return db.select().from(request);
+      })
+      .get('/requests-with-description', () => {
+        return db
+          .select({
+            id: request.id,
+            deviceTypeId: request.deviceTypeId,
+            serialNumber: request.serialNumber,
+            usage: request.usage,
+            devicePhoto: request.devicePhoto,
+            serialNumberPhoto: request.serialNumberPhoto,
+            brandLogo: deviceType.brandLogo,
+
+            deviceDescription:  sql<string>`
+              ${deviceType.brandName} || ' ' ||
+              ${deviceType.deviceKind} || ' ' ||
+              ${deviceType.description}
+            `.as('deviceDescription')
+          })
+          .from(request)
+          .leftJoin(deviceType, eq(request.deviceTypeId, deviceType.id));
       })
       .get('/requests/:userId', async ({ params: { userId } }) => {
         return db.select().from(request).where(eq(request.userId, userId));
@@ -256,7 +308,7 @@ app
             id: t.String(),
           }),
         },
-      ),
+    )
       
   );
 

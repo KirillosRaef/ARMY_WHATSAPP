@@ -30,7 +30,7 @@ export const user = sqliteTable('user', {
 export const profile = sqliteTable('profile', {
   id: text('user_id')
     .notNull(),
-  role: text('role', { enum: ['admin', 'user'] }).notNull().default('user'),
+  role: text('role', { enum: ['Admin', 'User'] }).notNull().default('User'),
 });
 
 export const deviceType = sqliteTable('device_type', {
@@ -51,7 +51,7 @@ export const device = sqliteTable('device', {
     .$defaultFn(() => Bun.randomUUIDv7()),
   deviceTypeId: text('device_type_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
-  usage: text('usage', { enum: ['new', 'used', 'broken'] }).notNull(),
+  usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
   devicePhoto: text('device_photo'),
   serialNumberPhoto: text('serial_number_photo'),
 });

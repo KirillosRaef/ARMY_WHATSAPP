@@ -5,17 +5,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 
-export type DeviceType = {
+export type UserType = {
   id: string;
-  brandName: string;
-  deviceKind: string;
-  description: string;
-  brandLogo: string;
+  name: string;
+  email: string;
+  role: string;
+  image: string; //TODO: ADD PROFILE IMAGE LATER
 }
 
-const LOGO_URL = 'http://localhost:5173/api/image/logos';
-
-export const columns: ColumnDef<DeviceType>[] = [
+export const columns: ColumnDef<UserType>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -45,24 +43,7 @@ export const columns: ColumnDef<DeviceType>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: 'brandLogo',
-    header: () => (
-      <span className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">Brand Logo</span>
-    ),
-    cell: ({ row }) => {
-      const fileName = row.original.brandLogo;
-      return (
-        <img
-          src={`${LOGO_URL}/${fileName}`}
-          alt="Logo"
-          className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
-          loading="lazy"
-        />
-      );
-    },
-  },
-  {
-    accessorKey: 'brandName',
+    accessorKey: 'name',
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -70,18 +51,18 @@ export const columns: ColumnDef<DeviceType>[] = [
         className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Brand Name
+        Full Name
         <ArrowUpDown className="h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => (
       <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
-        {row.original.brandName}
+        {row.original.name}
       </code>
     ),
   },
   {
-    accessorKey: 'deviceKind',
+    accessorKey: 'email',
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -89,18 +70,18 @@ export const columns: ColumnDef<DeviceType>[] = [
         className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Device Kind
+        Email Address
         <ArrowUpDown className="h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => (
       <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
-        {row.original.deviceKind}
+        {row.original.email}
       </code>
     ),
   },
   {
-    accessorKey: 'description',
+    accessorKey: 'role',
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -108,13 +89,13 @@ export const columns: ColumnDef<DeviceType>[] = [
         className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Description
+        Role
         <ArrowUpDown className="h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => (
       <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
-        {row.original.description}
+        {row.original.role.charAt(0).toUpperCase() + row.original.role.slice(1)}
       </code>
     ),
   },

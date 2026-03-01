@@ -15,20 +15,25 @@ function AdminDashboard() {
     { label: 'Add a Brand', route: '/admin/add-brand', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
     { label: 'View Brands', route: '/admin/view_and_remove_brands/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
     { label: 'Add a User', route: '/admin/add-user', icon: User, color: 'oklch(0.55 0.18 290)' },
+    { label: 'View Users', route: '/admin/view_and_remove_users/page', icon: User, color: 'oklch(0.55 0.18 290)' },
     { label: 'Add a Device Type', route: '/admin/add-device-type', icon: Users, color: 'oklch(0.55 0.18 290)' },
     { label: 'View Device Types', route: '/admin/view_and_remove_device_types/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
     { label: 'Add a Device', route: '/admin/add-device', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
-    { label: 'View Requests', route: '/admin/view-requests', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { label: 'View Requests', route: '/admin/view-accept-reject-requests/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
   ];
 
   //TODO: 1) ADMIN CAN ADD/REMOVE BRANDLOGO (DONE)
-  //TODO: 2) ADMIN CAN CREATE/DELETE/EDIT USERS
+  //TODO: 2) ADMIN CAN CREATE/DELETE/EDIT USERS (DONE)
   //TODO: 3) ADMIN CAN CREATE/DELETE/EDIT DEVICETYPES (DONE)
-  //TODO: 4) ADMIN CAN VIEW then ACCEPT/REJECT REQUESTS TO ADD DEVICES
-  //TODO: 5) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES
+  //TODO: 4) ADMIN CAN VIEW then ACCEPT/REJECT REQUESTS TO ADD DEVICES (DONE)
 
+  //TODO: 5) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES
   //TODO: 6) ADMIN CAN SEARCH AND FILTER DEVICES
   //TODO: 7) MAKE SURE THE ADMIN MENU IS NOT THE USER MENU
+
+  //TODO: 8) ASK AI TO REDO WITH PLANNING THE UI
+  //TODO: 9) Translate into arabic/english
+  //TODO: 10) Clickable images
   return (
     <AppShell>
       <div className="space-y-8 animate-slide-up">

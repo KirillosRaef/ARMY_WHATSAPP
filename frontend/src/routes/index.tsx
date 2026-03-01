@@ -8,9 +8,9 @@ export const Route = createFileRoute('/')({
     }
 
     const roleText = await role.text();
-    if(roleText == 'admin') {
+    if(roleText == 'Admin') {
       throw redirect({ to: '/admin_page' });
-    } else if(roleText == 'user') {
+    } else if(roleText == 'User') {
       throw redirect({ to: '/user_page' });
     }
   },
