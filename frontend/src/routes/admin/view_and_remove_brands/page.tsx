@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { columns, type Brands } from "./columns"
+import { useBrandColumns } from './columns';
 import { DataTable } from "./data-table"
 import { useQuery } from '@tanstack/react-query';
 import { AdminShell } from '@/components/admin_shell';
@@ -25,6 +25,7 @@ const getBrands = async () => {
 
 
 function RouteComponent() {
+  const columns = useBrandColumns();
   const { data: brands, isLoading, error } = useQuery({
     queryKey: ['brands'],
     queryFn: getBrands,

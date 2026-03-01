@@ -8,17 +8,21 @@ import {
   ChevronRight,
   Settings,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 
 const navItems = [
-  { to: '/user_page' as const, label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/request_to_add_device' as const, label: 'Add Device', icon: PlusCircle },
-  { to: '/view-and-edit-requests/page' as const, label: 'My Requests', icon: ClipboardList },
+  { to: '/user_page' as const, labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { to: '/request_to_add_device' as const, labelKey: 'nav.addDevice', icon: PlusCircle },
+  { to: '/view-and-edit-requests/page' as const, labelKey: 'nav.myRequests', icon: ClipboardList },
 ] as const;
 
 export function UserShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
@@ -35,15 +39,16 @@ export function UserShell({ children }: { children: ReactNode }) {
     navigate({ to: '/login', reloadDocument: true });
   };
 
-  const activeLabel = navItems.find(
+  const activeNav = navItems.find(
     (n) => currentPath === n.to || currentPath.startsWith(n.to + '/')
-  )?.label ?? 'Dashboard';
+  );
+  const activeLabel = activeNav ? t(activeNav.labelKey) : t('nav.dashboard');
 
   return (
     <div className="flex min-h-dvh bg-background">
       {/* Sidebar */}
       <aside
-        className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/5 bg-background"
+        className="fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-white/5 bg-background"
       >
         {/* Brand */}
         <div className="flex items-center gap-3 px-6 py-6 border-b border-white/5">
@@ -55,16 +60,16 @@ export function UserShell({ children }: { children: ReactNode }) {
           </div>
           <div>
             <p className="text-base font-semibold tracking-tight text-foreground">AMRY</p>
-            <p className="text-xs text-muted-foreground font-medium tracking-wide">Device Manager</p>
+            <p className="text-xs text-muted-foreground font-medium tracking-wide">{t('app.subtitle')}</p>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
           <p className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-            Menu
+            {t('common.menu')}
           </p>
-          {navItems.map(({ to, label, icon: Icon }) => {
+          {navItems.map(({ to, labelKey, icon: Icon }) => {
             const isActive = currentPath === to || currentPath.startsWith(to + '/');
             return (
               <Link
@@ -79,7 +84,7 @@ export function UserShell({ children }: { children: ReactNode }) {
               >
                 {/* Active indicator line */}
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-primary rounded-r-full" />
+                  <div className="absolute start-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-primary rounded-e-full" />
                 )}
                 
                 <Icon
@@ -88,9 +93,9 @@ export function UserShell({ children }: { children: ReactNode }) {
                     isActive ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground'
                   )}
                 />
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
                 {isActive && (
-                  <ChevronRight className="ml-auto h-3.5 w-3.5 text-primary/50" />
+                  <ChevronRight className="me-auto h-3.5 w-3.5 text-primary/50 rtl:rotate-180" />
                 )}
               </Link>
             );
@@ -106,7 +111,7 @@ export function UserShell({ children }: { children: ReactNode }) {
             )}
           >
             <Settings className="h-4 w-4 flex-shrink-0 text-muted-foreground/70" />
-            <span>Preferences</span>
+            <span>{t('common.preferences')}</span>
           </button>
           <Button
             variant="ghost"
@@ -114,16 +119,16 @@ export function UserShell({ children }: { children: ReactNode }) {
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 flex-shrink-0 text-muted-foreground/70" />
-            Disconnect
+            {t('common.disconnect')}
           </Button>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 ml-64 min-h-dvh flex flex-col relative overflow-hidden">
+      <main className="flex-1 ms-64 min-h-dvh flex flex-col relative overflow-hidden">
         {/* Subtle mesh background element */}
         <div
-          className="pointer-events-none fixed top-0 left-64 right-0 h-[500px] opacity-10"
+          className="pointer-events-none fixed top-0 start-64 end-0 h-[500px] opacity-10"
           style={{
             background: 'radial-gradient(circle at top right, oklch(var(--primary)), transparent 70%)',
           }}
@@ -131,15 +136,19 @@ export function UserShell({ children }: { children: ReactNode }) {
 
         {/* Top bar */}
         <header
-          className="sticky top-0 z-40 flex h-16 items-center border-b border-white/5 px-8"
+          className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-white/5 px-8"
           style={{
             background: 'oklch(var(--background) / 80%)',
             backdropFilter: 'blur(12px)',
           }}
         >
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Application / </span>
+            <span className="text-muted-foreground">{t('common.application')} / </span>
             <span className="text-foreground font-medium">{activeLabel}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
           </div>
         </header>
 

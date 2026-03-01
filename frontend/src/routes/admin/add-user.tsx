@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-
+import { useTranslation } from 'react-i18next';
 import { AdminShell } from '@/components/admin_shell';
 import { AlertCircle, CheckCircle2, Loader2, PackagePlus, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
@@ -16,13 +16,13 @@ export const Route = createFileRoute('/admin/add-user')({
 
 type Option = { value: string; label: string };
 
-const roleOptions: Option[] = [
-  { value: 'Admin', label: 'Admin' },
-  { value: 'User', label: 'User' },
-];
-
 function RouteComponent() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const roleOptions: Option[] = [
+    { value: 'Admin', label: t('forms.roleAdmin') },
+    { value: 'User', label: t('forms.roleUser') },
+  ];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -32,16 +32,16 @@ function RouteComponent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<SingleValue<Option>>({ value: '', label: 'Select a role' });
+  const [role, setRole] = useState<SingleValue<Option>>({ value: '', label: t('forms.selectRole') });
   
   const handleSubmitRequest = async () => {
     setSubmitError('');
     if (!name || !email || !password || !confirmPassword || !role) {
-      setSubmitError('Please fill in all fields before submitting.');
+      setSubmitError(t('forms.fillAllFields'));
       return;
     }
     if (password !== confirmPassword) {
-      setSubmitError('Passwords do not match.');
+      setSubmitError(t('forms.passwordsDoNotMatch'));
       return;
     }
     setIsSubmitting(true);
@@ -60,7 +60,7 @@ function RouteComponent() {
       setSubmitSuccess(true);
       setTimeout(() => navigate({ to: '/admin_page' }), 1500);
     } catch (err) {
-      setSubmitError('Failed to create user. Please try again.');
+      setSubmitError(t('forms.failedCreateUser'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -75,9 +75,9 @@ function RouteComponent() {
             <PackagePlus className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">User Registration</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t('forms.userRegistration')}</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Complete the requirements below to submit a new user to the network.
+              {t('forms.userRegistrationDesc')}
             </p>
           </div>
         </div>
@@ -86,7 +86,7 @@ function RouteComponent() {
       {submitSuccess && (
         <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400 animate-fade-in">
           <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-          Request submitted successfully! Redirecting...
+          {t('forms.requestSubmittedSuccess')}
         </div>
       )}
       {submitError && (
@@ -102,8 +102,8 @@ function RouteComponent() {
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">1</div>
             <div>
-              <CardTitle className="text-lg font-medium text-foreground">Add a new User</CardTitle>
-              <CardDescription className="text-sm mt-1">Check the requirements below before submitting.</CardDescription>
+              <CardTitle className="text-lg font-medium text-foreground">{t('forms.addNewUser')}</CardTitle>
+              <CardDescription className="text-sm mt-1">{t('forms.addNewUserDesc')}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -111,25 +111,25 @@ function RouteComponent() {
 
           <div className="space-y-3">
             <Label htmlFor="name" className="text-foreground font-medium text-sm">
-              Full Name
+              {t('forms.fullName')}
             </Label>
             <Input
               id="name"
               type="text"
-              placeholder="e.g. John Doe"
+              placeholder={t('forms.namePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
             />
           </div>
           <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground/80 font-medium text-sm">Email Address</Label>
+                <Label htmlFor="email" className="text-foreground/80 font-medium text-sm">{t('forms.emailAddress')}</Label>
                 <div className="relative group">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('forms.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -140,7 +140,7 @@ function RouteComponent() {
           
           <div className="space-y-2 pt-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-foreground/80 font-medium text-sm">Password</Label>
+                  <Label htmlFor="password" className="text-foreground/80 font-medium text-sm">{t('forms.password')}</Label>
                 </div>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -158,7 +158,7 @@ function RouteComponent() {
 
           <div className="space-y-2 pt-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="confirmPassword" className="text-foreground/80 font-medium text-sm">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-foreground/80 font-medium text-sm">{t('forms.confirmPassword')}</Label>
                 </div>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -175,7 +175,7 @@ function RouteComponent() {
           </div>
 
           <div className="space-y-3">
-              <Label className="w-full text-foreground font-medium text-sm">Condition Status</Label>
+              <Label className="w-full text-foreground font-medium text-sm">{t('forms.conditionStatus')}</Label>
               <Select
                 onValueChange={
                   (value) => setRole({
@@ -184,7 +184,7 @@ function RouteComponent() {
                   })
                 }>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Select operational status..." />
+                  <SelectValue placeholder={t('forms.selectRole')} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                   <SelectGroup>
@@ -213,15 +213,15 @@ function RouteComponent() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin relative z-10" />
-                <span className="relative z-10">Processing Registration...</span>
+                <span className="relative z-10">{t('forms.processingRegistration')}</span>
               </>
             ) : submitSuccess ? (
               <>
                 <CheckCircle2 className="mr-2 h-4 w-4 relative z-10" />
-                <span className="relative z-10">Registration Completed</span>
+                <span className="relative z-10">{t('forms.registrationCompleted')}</span>
               </>
             ) : (
-              <span className="relative z-10">Submit Registration</span>
+              <span className="relative z-10">{t('forms.submitRegistration')}</span>
             )}
           </Button>
         </div>

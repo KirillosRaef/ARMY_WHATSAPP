@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   type ColumnDef,
   type SortingState,
@@ -41,6 +42,7 @@ export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -88,12 +90,12 @@ export function DataTable<TData extends { id: string }, TValue>({
             {isDeleting ? (
               <>
                 <div className="h-3.5 w-3.5 rounded-full border-2 border-red-500/40 border-t-red-500 animate-spin" />
-                Deleting...
+                {t('table.deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="h-3.5 w-3.5" />
-                Delete {selectedCount} selected
+                {t('table.deleteSelected', { count: selectedCount })}
               </>
             )}
           </Button>
@@ -149,7 +151,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
                       <p className="text-sm font-medium text-foreground/60">No requests found</p>
-                      <p className="text-xs mt-0.5">Submit a new device request to get started</p>
+                      <p className="text-xs mt-0.5">{t('table.noDataSubmitRequest')}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -158,10 +160,12 @@ export function DataTable<TData extends { id: string }, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex items-center justify-end space-x-2 py-3">
         <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('table.rowsSelected', {
+            count: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
         </div>
         <Button
           variant="outline"
@@ -169,7 +173,7 @@ export function DataTable<TData extends { id: string }, TValue>({
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          Previous
+          {t('table.previous')}
         </Button>
         <Button
           variant="outline"
@@ -177,7 +181,7 @@ export function DataTable<TData extends { id: string }, TValue>({
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          Next
+          {t('table.next')}
         </Button>
       </div>
     </div>

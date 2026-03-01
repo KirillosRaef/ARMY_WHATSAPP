@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState, type SetStateAction } from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import ImageUploadCrop from '../../components/image_upload_crop';
 import { AdminShell } from '../../components/admin_shell';
@@ -110,6 +111,7 @@ const selectStyles = {
 };
 
 function RouteComponent() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedDeviceType, setSelectedDeviceType] = useState<SingleValue<Option>>(null);
   const [serialNumber, setSerialNumber] = useState('');
@@ -164,11 +166,11 @@ function RouteComponent() {
   const handleSubmitRequest = async () => {
     setSubmitError('');
     if (!selectedDeviceType || !selectedUsage || !serialNumber || !selectedMilitaryUnit || !selectedMilitaryUnitBranch || !username) {
-      setSubmitError('Please fill in all fields before submitting.');
+      setSubmitError(t('forms.fillAllFields'));
       return;
     }
     if (!serialNumberPhotoFile.name || !devicePhotoFile.name) {
-      setSubmitError('Please upload both the serial number and device photos.');
+      setSubmitError(t('forms.uploadBothPhotos'));
       return;
     }
     setIsSubmitting(true);
@@ -195,13 +197,13 @@ function RouteComponent() {
         }),
       });
       if (!deviceRes.ok) {
-        setSubmitError('Failed to submit request. Please try again.');
+        setSubmitError(t('forms.failedSubmitRequest'));
         return;
       }
       setSubmitSuccess(true);
       setTimeout(() => navigate({ to: '/admin_page' }), 1500);
     } catch (err) {
-      setSubmitError('Failed to submit request. Please try again.');
+      setSubmitError(t('forms.failedSubmitRequest'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -225,9 +227,9 @@ function RouteComponent() {
               <PackagePlus className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Equipment Registration</h1>
-              <p className="text-muted-foreground text-sm mt-1">
-                Complete the requirements below to submit a new device to the network.
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t('forms.equipmentRegistration')}</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+                {t('forms.equipmentRegistrationDesc')}
               </p>
             </div>
           </div>
@@ -236,7 +238,7 @@ function RouteComponent() {
         {submitSuccess && (
           <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400 animate-fade-in">
             <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-            Request submitted successfully! Redirecting...
+            {t('forms.requestSubmittedSuccess')}
           </div>
         )}
         {submitError && (
@@ -252,14 +254,14 @@ function RouteComponent() {
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">1</div>
               <div>
-                <CardTitle className="text-lg font-medium text-foreground">Equipment Identifiers</CardTitle>
-                <CardDescription className="text-sm mt-1">Select the classification and unique serial</CardDescription>
+                <CardTitle className="text-lg font-medium text-foreground">{t('forms.equipmentIdentifiers')}</CardTitle>
+                <CardDescription className="text-sm mt-1">{t('forms.equipmentIdentifiersDesc')}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-8 px-8 pb-8 space-y-8">
             <div className="space-y-3">
-              <Label className="text-foreground font-medium text-sm">Classification Group</Label>
+              <Label className="text-foreground font-medium text-sm">{t('forms.deviceType')}</Label>
               <Select
                 onValueChange={
                   (value) => setSelectedDeviceType({
@@ -267,7 +269,7 @@ function RouteComponent() {
                     label: deviceTypeOptions.find((option) => option.value === value)!.label
                   })}>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Select a device type..." />
+                  <SelectValue placeholder={t('forms.deviceTypePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                   <SelectGroup>
@@ -290,7 +292,7 @@ function RouteComponent() {
             </div>
 
             <div className="space-y-3">
-              <Label className="w-full text-foreground font-medium text-sm">Condition Status</Label>
+              <Label className="w-full text-foreground font-medium text-sm">{t('forms.usage')}</Label>
               <Select
                 onValueChange={
                   (value) => setSelectedUsage({
@@ -299,7 +301,7 @@ function RouteComponent() {
                   })
                 }>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Select operational status..." />
+                  <SelectValue placeholder={t('forms.usagePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                   <SelectGroup>
@@ -315,12 +317,12 @@ function RouteComponent() {
 
             <div className="space-y-3">
               <Label htmlFor="serial" className="text-foreground font-medium text-sm">
-                Serial Number
+                {t('forms.serialNumber')}
               </Label>
               <Input
                 id="serial"
                 type="text"
-                placeholder="e.g. SN-1234567890"
+                placeholder={t('forms.serialNumberPlaceholder')}
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
                 className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
@@ -328,7 +330,7 @@ function RouteComponent() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-foreground font-medium text-sm">Classification Group</Label>
+              <Label className="text-foreground font-medium text-sm">{t('forms.militaryUnit')}</Label>
               <Select
                 onValueChange={
                   (value) => setSelectedMilitaryUnit({
@@ -336,7 +338,7 @@ function RouteComponent() {
                     label: militaryUnitMainOptions.find((option) => option.value === value)!.label
                   })}>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Select a military unit..." />
+                  <SelectValue placeholder={t('forms.militaryUnitPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                   <SelectGroup>
@@ -352,10 +354,10 @@ function RouteComponent() {
 
             {!selectedMilitaryUnit!.value && (
               <div className="space-y-3">
-                <Label className="text-foreground font-medium text-sm">Military Unit Branch</Label>
+                <Label className="text-foreground font-medium text-sm">{t('forms.militaryUnitBranch')}</Label>
                 <Select>
                   <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                    <SelectValue placeholder="Choose a military unit first..." />
+                    <SelectValue placeholder={t('forms.militaryUnitBranchPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                     {/* <SelectGroup>
@@ -372,7 +374,7 @@ function RouteComponent() {
 
             {selectedMilitaryUnit!.value && (
             <div className="space-y-3">
-              <Label className="text-foreground font-medium text-sm">Military Unit Branch</Label>
+              <Label className="text-foreground font-medium text-sm">{t('forms.militaryUnitBranch')}</Label>
               <Select
                 onValueChange={
                   (value) => setSelectedMilitaryUnitBranch({
@@ -380,7 +382,7 @@ function RouteComponent() {
                     label: militaryUnitBranchOptions.find((option) => option.value === value)!.label
                   })}>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Choose a military unit first..." />
+                  <SelectValue placeholder={t('forms.militaryUnitBranchPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                   <SelectGroup>
@@ -397,12 +399,12 @@ function RouteComponent() {
 
             <div className="space-y-3">
               <Label htmlFor="username" className="text-foreground font-medium text-sm">
-                Username
+                {t('forms.username')}
               </Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="e.g. SN-1234567890"
+                placeholder={t('forms.usernamePlaceholder')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
@@ -417,22 +419,22 @@ function RouteComponent() {
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">2</div>
               <div>
-                <CardTitle className="text-lg font-medium text-foreground">Visual Verification</CardTitle>
-                <CardDescription className="text-sm mt-1">Upload required photographic evidence</CardDescription>
+                <CardTitle className="text-lg font-medium text-foreground">{t('forms.visualVerification')}</CardTitle>
+                <CardDescription className="text-sm mt-1">{t('forms.visualVerificationDesc')}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-8 px-8 pb-8">
             <div className="grid grid-cols-2 gap-6">
               <ImageUploadCrop
-                title="Serial Number Photo"
-                label="Drop or click to upload"
+                title={t('forms.serialNumberPhoto')}
+                label={t('forms.dropOrClickToUpload')}
                 aspect={1}
                 onImageCropped={setSerialNumberPhotoFile}
               />
               <ImageUploadCrop
-                title="Device Photo"
-                label="Drop or click to upload"
+                title={t('forms.devicePhoto')}
+                label={t('forms.dropOrClickToUpload')}
                 aspect={1}
                 onImageCropped={setDevicePhotoFile}
               />
@@ -452,15 +454,15 @@ function RouteComponent() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin relative z-10" />
-                <span className="relative z-10">Processing Registration...</span>
+                <span className="relative z-10">{t('forms.processingRegistration')}</span>
               </>
             ) : submitSuccess ? (
               <>
                 <CheckCircle2 className="mr-2 h-4 w-4 relative z-10" />
-                <span className="relative z-10">Registration Completed</span>
+                <span className="relative z-10">{t('forms.registrationCompleted')}</span>
               </>
             ) : (
-              <span className="relative z-10">Submit Registration</span>
+              <span className="relative z-10">{t('forms.submitRegistration')}</span>
             )}
           </Button>
         </div>

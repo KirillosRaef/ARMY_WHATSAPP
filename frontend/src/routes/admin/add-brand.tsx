@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/admin/add-brand')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { t } = useTranslation();
   const [brandLogoFile, setBrandLogoFile] = useState<File>(new File([], ''));
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +24,7 @@ function RouteComponent() {
   const handleAddBrand = async () => {
     setSubmitError('');
     if (!brandLogoFile.name) {
-      setSubmitError('Please upload a brand logo.');
+      setSubmitError(t('brand.pleaseUploadLogo'));
       return;
     }
     setIsSubmitting(true);
@@ -38,7 +40,7 @@ function RouteComponent() {
       setSubmitSuccess(true);
       setTimeout(() => navigate({ to: '/admin_page' }), 1500);
     } catch (error) {
-      setSubmitError('Failed to upload brand logo.');
+      setSubmitError(t('brand.failedUploadLogo'));
       console.error('Error uploading brand logo:', error);
     } finally {
       setIsSubmitting(false);
@@ -54,28 +56,28 @@ function RouteComponent() {
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">2</div>
               <div>
-                <CardTitle className="text-lg font-medium text-foreground">Visual Verification</CardTitle>
-                <CardDescription className="text-sm mt-1">Upload required photographic evidence</CardDescription>
+                <CardTitle className="text-lg font-medium text-foreground">{t('brand.visualVerification')}</CardTitle>
+                <CardDescription className="text-sm mt-1">{t('brand.uploadEvidence')}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-8 px-8 pb-8">
             <div className="grid grid-cols-2 gap-6">
               <ImageUploadCrop
-                title="Brand Logo"
-                label="Drop or click to upload"
+                title={t('table.brandLogo')}
+                label={t('forms.dropOrClickToUpload')}
                 aspect={1}
                 onImageCropped={setBrandLogoFile}
               />
             </div>
             <div className="space-y-3">
             <Label htmlFor="name" className="text-foreground font-medium text-sm">
-              Brand Name
+              {t('brand.brandName')}
             </Label>
             <Input
               id="brandName"
               type="text"
-              placeholder="e.g. Dell"
+              placeholder={t('brand.placeholder')}
               value={brandName}
               onChange={(e) => setBrandName(e.target.value)}
               className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
@@ -83,7 +85,7 @@ function RouteComponent() {
           </div>
           </CardContent>
         </Card>  
-        <Button onClick={handleAddBrand}>Add Brand</Button>
+        <Button onClick={handleAddBrand}>{t('brand.addBrand')}</Button>
       </div>
     </AdminShell>
   )

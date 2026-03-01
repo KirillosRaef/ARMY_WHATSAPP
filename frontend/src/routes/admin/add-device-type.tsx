@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -45,6 +45,7 @@ const getBrands = async () => {
 }
 
 function RouteComponent() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -73,7 +74,7 @@ function RouteComponent() {
   const handleSubmitRequest = async () => {
     setSubmitError('');
     if (!selectedBrand || !brandName || !deviceKind || !description) {
-      setSubmitError('Please fill in all fields before submitting.');
+      setSubmitError(t('forms.fillAllFields'));
       return;
     }
     setIsSubmitting(true);
@@ -92,7 +93,7 @@ function RouteComponent() {
       setSubmitSuccess(true);
       setTimeout(() => navigate({ to: '/admin_page' }), 1500);
     } catch (err) {
-      setSubmitError('Failed to submit request. Please try again.');
+      setSubmitError(t('forms.failedSubmitRequest'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -116,9 +117,9 @@ function RouteComponent() {
             <PackagePlus className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Equipment Registration</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t('forms.equipmentRegistration')}</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Complete the requirements below to submit a new device type to the network.
+              {t('forms.equipmentRegistrationDeviceTypeDesc')}
             </p>
           </div>
         </div>
@@ -127,7 +128,7 @@ function RouteComponent() {
       {submitSuccess && (
         <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400 animate-fade-in">
           <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-          Request submitted successfully! Redirecting...
+          {t('forms.requestSubmittedSuccess')}
         </div>
       )}
       {submitError && (
@@ -143,14 +144,14 @@ function RouteComponent() {
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">1</div>
             <div>
-              <CardTitle className="text-lg font-medium text-foreground">Add a new Device Type</CardTitle>
+              <CardTitle className="text-lg font-medium text-foreground">{t('forms.addNewDeviceType')}</CardTitle>
               {/* <CardDescription className="text-sm mt-1">Ch</CardDescription> */}
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-8 px-8 pb-8 space-y-8">
           <div className="space-y-3">
-              <Label className="text-foreground font-medium text-sm">Brand</Label>
+              <Label className="text-foreground font-medium text-sm">{t('table.brandName')}</Label>
               <Select
                 onValueChange={
                 (value) => {
@@ -163,7 +164,7 @@ function RouteComponent() {
                 }
               >
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Select a device type..." />
+                  <SelectValue placeholder={t('forms.selectBrand')} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                   <SelectGroup>
@@ -191,12 +192,12 @@ function RouteComponent() {
 
           <div className="space-y-3">
             <Label htmlFor="brandName" className="text-foreground font-medium text-sm">
-              Brand Name
+              {t('table.brandName')}
             </Label>
             <Input
               id="brandName"
               type="text"
-              placeholder="e.g. Dell"
+              placeholder={t('brand.placeholder')}
               value={brandName}
               // onChange={(e) => setBrandName(e.target.value)}
               className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
@@ -204,12 +205,12 @@ function RouteComponent() {
           </div>
           <div className="space-y-3">
             <Label htmlFor="deviceKind" className="text-foreground font-medium text-sm">
-              Device Kind
+              {t('table.deviceKind')}
             </Label>
             <Input
               id="deviceKind"
               type="text"
-              placeholder="e.g. Laptop"
+              placeholder={t('forms.deviceKindPlaceholder')}
               value={deviceKind}
               onChange={(e) => setDeviceKind(e.target.value)}
               className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
@@ -217,12 +218,12 @@ function RouteComponent() {
           </div>
           <div className="space-y-3">
             <Label htmlFor="description" className="text-foreground font-medium text-sm">
-              Description
+              {t('table.description')}
             </Label>
             <Input
               id="description"
               type="text"
-              placeholder="e.g. Intel Core i7-9750H, 16GB RAM"
+              placeholder={t('forms.descriptionPlaceholder')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
@@ -243,15 +244,15 @@ function RouteComponent() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin relative z-10" />
-                <span className="relative z-10">Processing Registration...</span>
+                <span className="relative z-10">{t('forms.processingRegistration')}</span>
               </>
             ) : submitSuccess ? (
               <>
                 <CheckCircle2 className="mr-2 h-4 w-4 relative z-10" />
-                <span className="relative z-10">Registration Completed</span>
+                <span className="relative z-10">{t('forms.registrationCompleted')}</span>
               </>
             ) : (
-              <span className="relative z-10">Submit Registration</span>
+              <span className="relative z-10">{t('forms.submitRegistration')}</span>
             )}
           </Button>
         </div>

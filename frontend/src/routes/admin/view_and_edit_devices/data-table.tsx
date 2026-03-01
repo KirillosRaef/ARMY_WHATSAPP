@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   type ColumnDef,
   type SortingState,
@@ -31,12 +32,6 @@ import type { SingleValue } from 'react-select';
 
 type Option = { value: string; label: string };
 
-const usageOptions: Option[] = [
-  { value: 'New', label: '✨ New' },
-  { value: 'Used', label: '🔄 Used' },
-  { value: 'Broken', label: '⚠️ Broken' },
-];
-
 
 
 const deleteSelection = async (ids: string[]) => {
@@ -58,6 +53,12 @@ export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation();
+  const usageOptions: Option[] = [
+    { value: 'New', label: t('usageBadge.new') },
+    { value: 'Used', label: t('usageBadge.used') },
+    { value: 'Broken', label: t('usageBadge.broken') },
+  ];
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -110,61 +111,53 @@ export function DataTable<TData extends { id: string }, TValue>({
             {isDeleting ? (
               <>
                 <div className="h-3.5 w-3.5 rounded-full border-2 border-red-500/40 border-t-red-500 animate-spin" />
-                Deleting...
+                {t('table.deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="h-3.5 w-3.5" />
-                Delete {selectedCount} selected
+                {t('table.deleteSelected', { count: selectedCount })}
               </>
             )}
           </Button>
         )}
       </div>
 
-      <div className="flex items-center py-4">
+      <div className="flex items-center gap-3 flex-wrap">
         <Input
-          placeholder="Filter brand name..."
+          placeholder={t('table.filterBrandName')}
           value={(table.getColumn("brandName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("brandName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-      </div>
-      <div className="flex items-center py-4">
         <Input
-          placeholder="Filter device type..."
+          placeholder={t('table.filterDeviceType')}
           value={(table.getColumn("deviceKind")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("deviceKind")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-      </div>
-      <div className="flex items-center py-4">
         <Input
-          placeholder="Filter description..."
+          placeholder={t('table.filterDescription')}
           value={(table.getColumn("description")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("description")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-      </div>
-      <div className="flex items-center py-4">
         <Input
-          placeholder="Filter serial number..."
+          placeholder={t('table.filterSerialNumber')}
           value={(table.getColumn("serialNumber")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("serialNumber")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-      </div>
-      <div className="flex items-center py-4">
         <Input
-          placeholder="Filter usage..."
+          placeholder={t('table.filterUsage')}
           value={(table.getColumn("usage")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("usage")?.setFilterValue(event.target.value)
@@ -188,7 +181,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                 }
               }}>
                 <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder="Filter condition..." />
+                  <SelectValue placeholder={t('table.filterCondition')} />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
                   <SelectGroup>
@@ -252,7 +245,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
                       <p className="text-sm font-medium text-foreground/60">No requests found</p>
-                      <p className="text-xs mt-0.5">Submit a new device request to get started</p>
+                      <p className="text-xs mt-0.5">{t('table.noDataSubmitDevice')}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -261,10 +254,12 @@ export function DataTable<TData extends { id: string }, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex items-center justify-end space-x-2 py-3">
         <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('table.rowsSelected', {
+            count: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
         </div>
         <Button
           variant="outline"
@@ -272,7 +267,7 @@ export function DataTable<TData extends { id: string }, TValue>({
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          Previous
+          {t('table.previous')}
         </Button>
         <Button
           variant="outline"
@@ -280,7 +275,7 @@ export function DataTable<TData extends { id: string }, TValue>({
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          Next
+          {t('table.next')}
         </Button>
       </div>
     </div>

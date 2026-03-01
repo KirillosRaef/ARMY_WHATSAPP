@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -156,8 +157,14 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
     color-scheme: dark;
+  }
+  html[dir='rtl'] {
+    font-family: 'Noto Sans Arabic', 'Inter', system-ui, sans-serif;
   }
   body {
     @apply bg-background text-foreground;
@@ -196,6 +203,11 @@
   }
 
   .glass-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px 0 oklch(0 0 0 / 0.06);
+  }
+  .dark .glass-card {
     background: oklch(0 0 0 / 20%);
     backdrop-filter: blur(16px);
     border: 1px solid oklch(1 0 0 / 10%);
@@ -210,6 +222,9 @@
   }
 
   .gradient-bg {
+    background: radial-gradient(circle at top center, oklch(0.97 0.005 280) 0%, oklch(0.92 0.01 280) 100%);
+  }
+  .dark .gradient-bg {
     background: radial-gradient(circle at top center, oklch(0.18 0.02 280) 0%, oklch(0.12 0.01 280) 100%);
   }
 

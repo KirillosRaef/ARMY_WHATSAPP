@@ -1,3 +1,4 @@
+import './i18n';
 import './index.css';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -6,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { hotkeysDevtoolsPlugin } from '@tanstack/react-hotkeys-devtools';
 
+import { ThemeProvider } from './contexts/ThemeContext';
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
@@ -30,10 +32,12 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
+        </QueryClientProvider>
+      </ThemeProvider>
     </StrictMode>,
   );
 }

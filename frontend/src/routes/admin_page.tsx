@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { AdminShell } from '../components/admin_shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,20 +11,21 @@ export const Route = createFileRoute('/admin_page')({
 });
 
 function AdminDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const stats = [
-    { label: 'Add a Brand', route: '/admin/add-brand', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    { label: 'View Brands', route: '/admin/view_and_remove_brands/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    { label: 'Add a Military Unit', route: '/admin/add-military-unit', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    { label: 'Add a branch', route: '/admin/add-branch', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    { label: 'View Military Units', route: '/admin/view_and_remove_military_units/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    { label: 'Add a User', route: '/admin/add-user', icon: User, color: 'oklch(0.55 0.18 290)' },
-    { label: 'View Users', route: '/admin/view_and_remove_users/page', icon: User, color: 'oklch(0.55 0.18 290)' },
-    { label: 'Add a Device Type', route: '/admin/add-device-type', icon: Users, color: 'oklch(0.55 0.18 290)' },
-    { label: 'View Device Types', route: '/admin/view_and_remove_device_types/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
-    { label: 'View Requests', route: '/admin/view-accept-reject-requests/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
-    { label: 'Add a Device', route: '/admin/add-device', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
-    { label: 'View Devices', route: '/admin/view_and_edit_devices/page', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
+    { labelKey: 'nav.addBrand', route: '/admin/add-brand', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { labelKey: 'nav.viewBrands', route: '/admin/view_and_remove_brands/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { labelKey: 'nav.addMilitaryUnit', route: '/admin/add-military-unit', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { labelKey: 'nav.addBranch', route: '/admin/add-branch', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { labelKey: 'nav.viewMilitaryUnits', route: '/admin/view_and_remove_military_units/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { labelKey: 'nav.addUser', route: '/admin/add-user', icon: User, color: 'oklch(0.55 0.18 290)' },
+    { labelKey: 'nav.viewUsers', route: '/admin/view_and_remove_users/page', icon: User, color: 'oklch(0.55 0.18 290)' },
+    { labelKey: 'nav.addDeviceType', route: '/admin/add-device-type', icon: Users, color: 'oklch(0.55 0.18 290)' },
+    { labelKey: 'nav.viewDeviceTypes', route: '/admin/view_and_remove_device_types/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
+    { labelKey: 'nav.viewRequests', route: '/admin/view-accept-reject-requests/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { labelKey: 'nav.addDevice', route: '/admin/add-device', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
+    { labelKey: 'nav.viewDevices', route: '/admin/view_and_edit_devices/page', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
   ];
 
   //TODO: 1) ADMIN CAN ADD/REMOVE BRANDLOGO (DONE)
@@ -60,24 +62,24 @@ function AdminDashboard() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">Admin Dashboard</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('dashboard.adminTitle')}</h1>
               <Badge className="bg-primary/20 text-primary border-primary/30 font-semibold">
-                Admin
+                {t('dashboard.adminBadge')}
               </Badge>
             </div>
             <p className="text-muted-foreground text-sm mt-0.5">
-              Overview of all devices, requests, and user accounts
+              {t('dashboard.adminOverview')}
             </p>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-3 max-w-3xl">
-          {stats.map(({ label,route, icon: Icon, color }) => (
-            <Card key={label} className="glass-card border-white/8"
+          {stats.map(({ labelKey, route, icon: Icon, color }) => (
+            <Card key={labelKey} className="glass-card border-white/8"
             onClick={() => {navigate({to: route})}}>
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t(labelKey)}</CardTitle>
                 <div
                   className="flex h-8 w-8 items-center justify-center rounded-lg"
                   style={{ background: `${color}20` }}
@@ -92,13 +94,13 @@ function AdminDashboard() {
         {/* Placeholder content */}
         <Card className="glass-card border-white/8 max-w-3xl">
           <CardHeader>
-            <CardTitle className="text-base">Pending Reviews</CardTitle>
-            <CardDescription>Device requests awaiting admin approval</CardDescription>
+            <CardTitle className="text-base">{t('dashboard.pendingReviews')}</CardTitle>
+            <CardDescription>{t('dashboard.pendingReviewsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
               <ClipboardList className="h-10 w-10 opacity-30" />
-              <p className="text-sm">Admin management features coming soon</p>
+              <p className="text-sm">{t('dashboard.adminFeaturesComingSoon')}</p>
             </div>
           </CardContent>
         </Card>

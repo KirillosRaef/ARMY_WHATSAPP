@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -13,7 +14,7 @@ export const Route = createFileRoute('/admin/add-military-unit')({
 })
 
 function RouteComponent() {
-  // const [militaryUnitLogoFile, setMilitaryUnitLogoFile] = useState<File>(new File([], ''));
+  const { t } = useTranslation();
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -48,8 +49,8 @@ function RouteComponent() {
       setSubmitSuccess(true);
       setTimeout(() => navigate({ to: '/admin_page' }), 1500);
     } catch (error) {
-      setSubmitError('Failed to upload brand logo.');
-      console.error('Error uploading brand logo:', error);
+      setSubmitError(t('forms.failedAddMilitaryUnit'));
+      console.error('Error adding military unit:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -62,22 +63,22 @@ function RouteComponent() {
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <CardHeader className="border-b border-white/5 bg-white/[0.02] pb-6 pt-6 px-8">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">2</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">1</div>
               <div>
-                <CardTitle className="text-lg font-medium text-foreground">Visual Verification</CardTitle>
-                <CardDescription className="text-sm mt-1">Upload required photographic evidence</CardDescription>
+                <CardTitle className="text-lg font-medium text-foreground">{t('forms.unitDetails')}</CardTitle>
+                <CardDescription className="text-sm mt-1">{t('forms.enterMilitaryUnitName')}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-8 px-8 pb-8">
             <div className="space-y-3">
               <Label htmlFor="name" className="text-foreground font-medium text-sm">
-                Military Unit Name
+                {t('forms.militaryUnitName')}
               </Label>
               <Input
                 id="militaryUnitName"
                 type="text"
-                placeholder="e.g. 1st Armored Division"
+                placeholder={t('forms.militaryUnitNamePlaceholder')}
                 value={militaryUnitName}
                 onChange={(e) => setMilitaryUnitName(e.target.value)}
                 className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
@@ -97,15 +98,15 @@ function RouteComponent() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin relative z-10" />
-                <span className="relative z-10">Processing Registration...</span>
+                <span className="relative z-10">{t('forms.processingRegistration')}</span>
               </>
             ) : submitSuccess ? (
               <>
                 <CheckCircle2 className="mr-2 h-4 w-4 relative z-10" />
-                <span className="relative z-10">Registration Completed</span>
+                <span className="relative z-10">{t('forms.registrationCompleted')}</span>
               </>
             ) : (
-              <span className="relative z-10">Submit Registration</span>
+              <span className="relative z-10">{t('forms.submitRegistration')}</span>
             )}
           </Button>
         </div>  

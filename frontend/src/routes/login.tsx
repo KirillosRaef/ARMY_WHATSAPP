@@ -1,9 +1,12 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Loader2, Lock, Mail, MonitorSmartphone } from 'lucide-react';
 
 export const Route = createFileRoute('/login')({
@@ -11,6 +14,7 @@ export const Route = createFileRoute('/login')({
 });
 
 function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +40,7 @@ function LoginPage() {
 
       navigate({ to: '/', reloadDocument: true });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+      setError(err instanceof Error ? err.message : t('login.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -44,6 +48,10 @@ function LoginPage() {
 
   return (
     <div className="relative min-h-dvh flex items-center justify-center overflow-hidden gradient-bg">
+      <div className="absolute top-4 end-4 z-20 flex items-center gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+      </div>
       {/* Dynamic ambient background orbs */}
       <div
         className="pointer-events-none absolute -top-[40%] -left-[10%] h-[800px] w-[800px] rounded-full opacity-20"
@@ -67,8 +75,8 @@ function LoginPage() {
             style={{ background: 'linear-gradient(135deg, oklch(0.52 0.22 264), oklch(0.48 0.22 290))' }}>
             <MonitorSmartphone className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight gradient-text mb-2">AMRY Device Manager</h1>
-          <p className="text-muted-foreground text-sm">Secure device management platform</p>
+          <h1 className="text-3xl font-semibold tracking-tight gradient-text mb-2">{t('login.title')}</h1>
+          <p className="text-muted-foreground text-sm">{t('login.subtitle')}</p>
         </div>
 
         {/* Login Card */}
@@ -76,9 +84,9 @@ function LoginPage() {
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           
           <CardHeader className="space-y-1 pb-6 pt-8 px-8 border-b border-border/50">
-            <CardTitle className="text-xl text-foreground font-medium">Welcome back</CardTitle>
+            <CardTitle className="text-xl text-foreground font-medium">{t('login.welcomeBack')}</CardTitle>
             <CardDescription className="text-muted-foreground text-sm">
-              Enter your credentials to continue
+              {t('login.enterCredentials')}
             </CardDescription>
           </CardHeader>
 
@@ -91,7 +99,7 @@ function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground/80 font-medium text-sm">Email Address</Label>
+                <Label htmlFor="email" className="text-foreground/80 font-medium text-sm">{t('login.emailAddress')}</Label>
                 <div className="relative group">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input
@@ -108,7 +116,7 @@ function LoginPage() {
 
               <div className="space-y-2 pt-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-foreground/80 font-medium text-sm">Password</Label>
+                  <Label htmlFor="password" className="text-foreground/80 font-medium text-sm">{t('login.password')}</Label>
                 </div>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -137,10 +145,10 @@ function LoginPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin relative z-10" />
-                      <span className="relative z-10">Signing in...</span>
+                      <span className="relative z-10">{t('login.signingIn')}</span>
                     </>
                   ) : (
-                    <span className="relative z-10">Sign in</span>
+                    <span className="relative z-10">{t('login.signIn')}</span>
                   )}
                 </Button>
               </div>
@@ -149,7 +157,7 @@ function LoginPage() {
         </Card>
 
         <p className="mt-8 text-center text-xs text-muted-foreground/50">
-          © 2025 AMRY Device Manager. All rights reserved.
+          {t('login.footer')}
         </p>
       </div>
     </div>

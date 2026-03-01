@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { UserShell } from '../components/user_shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, ClipboardList, ArrowRight, MonitorSmartphone, Shield } from 'lucide-react';
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/user_page')({
 });
 
 function UserDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -25,13 +27,13 @@ function UserDashboard() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">User Dashboard</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('dashboard.userTitle')}</h1>
               <Badge className="bg-primary/20 text-primary border-primary/30 font-semibold">
-                User
+                {t('dashboard.userBadge')}
               </Badge>
             </div>
             <p className="text-muted-foreground text-sm mt-0.5">
-              Overview of your devices and requests
+              {t('dashboard.userOverview')}
             </p>
           </div>
         </div>
@@ -50,9 +52,9 @@ function UserDashboard() {
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 mb-6 group-hover:scale-110 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(var(--primary),0.3)]">
                 <PlusCircle className="h-7 w-7 text-primary" />
               </div>
-              <CardTitle className="text-2xl text-foreground font-medium">Register New Device</CardTitle>
+              <CardTitle className="text-2xl text-foreground font-medium">{t('userDashboard.registerNewDevice')}</CardTitle>
               <CardDescription className="text-base text-muted-foreground mt-2 max-w-md">
-                Initiate a secure registration protocol for incoming hardware assets. Upload photographic verification and serial identifiers.
+                {t('userDashboard.registerDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 px-8 pb-8 relative z-10 mt-auto">
@@ -63,7 +65,7 @@ function UserDashboard() {
                   navigate({ to: '/request_to_add_device' });
                 }}
               >
-                Start registration <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                {t('userDashboard.startRegistration')} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </CardContent>
           </Card>
@@ -81,9 +83,9 @@ function UserDashboard() {
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 mb-6 group-hover:scale-110 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(var(--primary),0.3)]">
                 <ClipboardList className="h-7 w-7 text-primary" />
               </div>
-              <CardTitle className="text-2xl text-foreground font-medium">Active Records</CardTitle>
+              <CardTitle className="text-2xl text-foreground font-medium">{t('pages.activeRecords')}</CardTitle>
               <CardDescription className="text-base text-muted-foreground mt-2">
-                Monitor and manage the authorization status of your submitted fleet items.
+                {t('userDashboard.activeRecordsDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 px-8 pb-8 relative z-10">
@@ -94,7 +96,7 @@ function UserDashboard() {
                   navigate({ to: '/view-and-edit-requests/page' });
                 }}
               >
-                Access logs <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                {t('userDashboard.accessLogs')} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </CardContent>
           </Card>
@@ -105,8 +107,8 @@ function UserDashboard() {
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
           <MonitorSmartphone className="h-5 w-5 text-primary flex-shrink-0" />
           <p className="text-sm text-foreground/80 leading-relaxed">
-            <strong className="text-foreground font-medium">Tip:</strong>{' '}
-            For seamless verification, ensure both the serial tag macro shot and the full device overview are sharply focused and fully illuminated.
+            <strong className="text-foreground font-medium">{t('userDashboard.tip')}</strong>{' '}
+            {t('userDashboard.tipVerification')}
           </p>
         </div>
       </div>
