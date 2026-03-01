@@ -23,6 +23,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input"
 import { Trash2, AlertTriangle } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { SingleValue } from 'react-select';
+
+
+type Option = { value: string; label: string };
+
+const usageOptions: Option[] = [
+  { value: 'New', label: '✨ New' },
+  { value: 'Used', label: '🔄 Used' },
+  { value: 'Broken', label: '⚠️ Broken' },
+];
+
 
 const deleteSelection = async (ids: string[]) => {
   const delRes = await fetch('http://localhost:5173/api/requests', {
@@ -47,6 +60,7 @@ export function DataTable<TData extends { id: string }, TValue>({
   const [rowSelection, setRowSelection] = React.useState({});
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [selectedUsage, setSelectedUsage] = React.useState<SingleValue<Option>>(null);
 
   const table = useReactTable({
     data,
@@ -160,6 +174,36 @@ export function DataTable<TData extends { id: string }, TValue>({
           }
           className="max-w-sm"
         />
+        {/* <div className="space-y-3">
+              <Label className="max-w-sm w-full text-foreground font-medium text-sm">Condition Status</Label>
+              <Select
+                onValueChange={(value) => {
+                setSelectedUsage({
+                  value,
+                  label: usageOptions.find((option) => option.value === value)!.label
+                })
+              
+              if (value == selectedUsage?.value) {
+                  console.log("value === selectedUsage?.value")
+                  table.getColumn("usage")?.setFilterValue(null);
+                } else {
+                  table.getColumn("usage")?.setFilterValue(value);
+                }
+              }}>
+                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                  <SelectValue placeholder="Filter condition..." />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                  <SelectGroup>
+                    {usageOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="rounded-lg focus:bg-white/5 my-0.5 cursor-pointer">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div> */}
       </div>
 
       {/* Table */}

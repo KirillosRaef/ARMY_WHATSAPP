@@ -28,13 +28,16 @@ function AdminDashboard() {
   //TODO: 3) ADMIN CAN CREATE/DELETE/EDIT DEVICETYPES (DONE)
   //TODO: 4) ADMIN CAN VIEW then ACCEPT/REJECT REQUESTS TO ADD DEVICES (DONE)
 
-  //TODO: 5) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES
-  //TODO: 6) ADMIN CAN SEARCH AND FILTER DEVICES
+  //TODO: 5) ADMIN CAN VIEW CREATE/DELETE/EDIT DEVICES (DONE)
+  //TODO: 6) ADMIN CAN SEARCH AND FILTER DEVICES (DONE)
   //TODO: 7) MAKE SURE THE ADMIN MENU IS NOT THE USER MENU (DONE)
+
 
   //TODO: 8) ASK AI TO REDO WITH PLANNING THE UI
   //TODO: 9) Translate into arabic/english
   //TODO: 10) Clickable images
+  //TODO: 11) fix your filters/searches if possible
+  //TODO: 12) LIGHT/DARK MODE
   return (
     <AdminShell>
       <div className="space-y-8 animate-slide-up">
