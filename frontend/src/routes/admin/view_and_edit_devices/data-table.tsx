@@ -94,13 +94,6 @@ export function DataTable<TData extends { id: string }, TValue>({
     <div className="space-y-3">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {selectedCount > 0 ? (
-            <span className="text-foreground font-medium">{selectedCount} selected</span>
-          ) : (
-            <span>{totalCount} row{totalCount !== 1 ? 's' : ''} total</span>
-          )}
-        </p>
 
         {selectedCount > 0 && (
           <Button
@@ -263,6 +256,10 @@ export function DataTable<TData extends { id: string }, TValue>({
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="text-muted-foreground flex-1 text-sm">
+        {table.getFilteredSelectedRowModel().rows.length} of{" "}
+        {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
     </div>
   );
