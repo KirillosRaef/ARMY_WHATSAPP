@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
+import ViewImage from '@/components/view_image';
 
 export type DeviceType = {
   id: string;
@@ -52,12 +53,7 @@ export const columns: ColumnDef<DeviceType>[] = [
     cell: ({ row }) => {
       const fileName = row.original.brandLogo;
       return (
-        <img
-          src={`${LOGO_URL}/${fileName}`}
-          alt="Logo"
-          className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
-          loading="lazy"
-        />
+        <ViewImage src={`${LOGO_URL}/${fileName}`} alt="Brand Logo" />
       );
     },
   },

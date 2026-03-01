@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
+import ViewImage from '@/components/view_image';
 
 export type RequestModifiedType = {
   id: string;
@@ -136,8 +137,6 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
       </div>
     ),
   },
-  //TODO: MAKE THE IMAGE CLICKABLE AND OPEN IN A MODAL 
-  //TODO: AND/OR MAKE THE IMAGE LARGER AND CHANGE TABLE DESIGN
   {
     accessorKey: 'devicePhoto',
     header: () => (
@@ -146,12 +145,7 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
     cell: ({ row }) => {
       const fileName = row.original.devicePhoto;
       return (
-        <img
-          src={`${DEVICE_URL}/${fileName}`}
-          alt="Device"
-          className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
-          loading="lazy"
-        />
+        <ViewImage src={`${DEVICE_URL}/${fileName}`} alt="Device" />
       );
     },
   },
@@ -163,12 +157,7 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
     cell: ({ row }) => {
       const fileName = row.original.serialNumberPhoto;
       return (
-        <img
-          src={`${SERIAL_NUMBER_URL}/${fileName}`}
-          alt="Serial Number"
-          className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
-          loading="lazy"
-        />
+        <ViewImage src={`${SERIAL_NUMBER_URL}/${fileName}`} alt="Serial Number" />
       );
     },
   },
