@@ -6,8 +6,8 @@ import {
   type SortingState,
   flexRender,
   getCoreRowModel,
-  getSortedRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 
@@ -20,30 +20,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, AlertTriangle, Check } from 'lucide-react';
+import { Trash2, AlertTriangle } from 'lucide-react';
 
 
-//TODO: CHECK THE FUNCTIONALITY OF THESE BUTTONS
+//TODO: TOOTOTOTOOTOTOTOTO
 const deleteSelection = async (ids: string[]) => {
-  const delRes = await fetch('http://localhost:5173/api/requests', {
+  await fetch('http://localhost:5173/api/military-units-id', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ requestIds: ids }),
+    body: JSON.stringify({ militaryUnitIds: ids }),
   });
-  if (!delRes.ok) throw new Error('Failed to delete selected requests');
+  console.log(ids);
 };
-
-const acceptSelection = async (ids: string[]) => {
-  deleteSelection(ids);
-  const accRes = await fetch('http://localhost:5173/api/accept-requests', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ requestIds: ids }),
-  });
-  // if (!accRes.ok) throw new Error('Failed to accept selected requests');
-}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -57,7 +46,6 @@ export function DataTable<TData extends { id: string }, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const [isAccepting, setIsAccepting] = React.useState(false);
 
   const table = useReactTable({
     data,
@@ -86,17 +74,6 @@ export function DataTable<TData extends { id: string }, TValue>({
     }
   };
 
-  const handleAccept = async () => {
-    if (selectedIds.length === 0) return;
-    setIsAccepting(true);
-    try {
-      await acceptSelection(selectedIds);
-      window.location.reload();
-    } finally {
-      setIsAccepting(false);
-    }
-  };
-
   return (
     <div className="space-y-3">
       {/* Toolbar */}
@@ -119,27 +96,6 @@ export function DataTable<TData extends { id: string }, TValue>({
               <>
                 <Trash2 className="h-3.5 w-3.5" />
                 Delete {selectedCount} selected
-              </>
-            )}
-          </Button>
-        )}
-        {selectedCount > 0 && (
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleAccept}
-            disabled={isAccepting}
-            className="gap-2 animate-fade-in bg-green-500/15 text-green-500 hover:bg-green-500/30 hover:text-green-400 border border-green-500/20 h-9 rounded-lg px-4 transition-all"
-          >
-            {isAccepting ? (
-              <>
-                <div className="h-3.5 w-3.5 rounded-full border-2 border-green-500/40 border-t-green-500 animate-spin" />
-                Accepting...
-              </>
-            ) : (
-              <>
-                <Check className="h-3.5 w-3.5" />
-                Accept {selectedCount} selected
               </>
             )}
           </Button>
@@ -194,8 +150,8 @@ export function DataTable<TData extends { id: string }, TValue>({
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
-                      <p className="text-sm font-medium text-foreground/60">No requests found</p>
-                      <p className="text-xs mt-0.5">Submit a new device request to get started</p>
+                      <p className="text-sm font-medium text-foreground/60">No users found</p>
+                      <p className="text-xs mt-0.5">Submit a new user to get started</p>
                     </div>
                   </div>
                 </TableCell>

@@ -9,13 +9,17 @@ import ViewImage from '@/components/view_image';
 
 export type RequestModifiedType = {
   id: string;
+  brandLogo: string;
+  deviceDescription: string;
   deviceTypeId: string;
+  militaryUnitId: string;
   serialNumber: string;
   usage: string;
+  militaryUnitName: string;
+  branch: string;
+  username: string;
   devicePhoto: string;
   serialNumberPhoto: string;
-  deviceDescription: string;
-  brandLogo: string;
 };
 
 const DEVICE_URL = 'http://localhost:5173/api/image/devices';
@@ -108,7 +112,7 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
         className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Serial Number
+        Condition
         <ArrowUpDown className="h-3 w-3" />
       </Button>
     ),
@@ -135,6 +139,63 @@ export const columns: ColumnDef<RequestModifiedType>[] = [
       <div className="flex">
         <UsageBadge usage={row.original.usage} />
       </div>
+    ),
+  },
+  {
+    accessorKey: 'militaryUnitName',
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Military Unit
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+        {row.original.militaryUnitName}
+      </code>
+    ),
+  },
+  {
+    accessorKey: 'branch',
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Branch
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+        {row.original.branch}
+      </code>
+    ),
+  },
+  {
+    accessorKey: 'username',
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Username
+        <ArrowUpDown className="h-3 w-3" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+        {row.original.username}
+      </code>
     ),
   },
   {

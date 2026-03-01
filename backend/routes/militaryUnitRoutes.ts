@@ -22,7 +22,7 @@ export const militaryUnitRoutes = new Elysia();
       }, {
         body: t.Omit(createInsertMilitaryUnit, ['id']),
       })
-      .delete('/military-units', async ({ body: { militaryUnitIds } }) => {
+      .delete('/military-units-id', async ({ body: { militaryUnitIds } }) => {
         const result = await db.delete(militaryUnit).where(inArray(militaryUnit.id, militaryUnitIds));
         return result;
       }, {

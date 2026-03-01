@@ -64,7 +64,7 @@ export const device = sqliteTable('device', {
   militaryUnitId: text('military_unit_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
   usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
-  userName: text('user_name'),
+  username: text('username'),
   devicePhoto: text('device_photo'),
   serialNumberPhoto: text('serial_number_photo'),
 });
@@ -80,7 +80,7 @@ export const request = sqliteTable('request', {
   militaryUnitId: text('military_unit_id').notNull(),
   serialNumber: text('serial_number').notNull().unique(),
   usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
-  userName: text('user_name'),
+  username: text('username'),
   devicePhoto: text('device_photo'),
   serialNumberPhoto: text('serial_number_photo'),
 });

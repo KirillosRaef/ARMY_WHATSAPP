@@ -14,6 +14,9 @@ function AdminDashboard() {
   const stats = [
     { label: 'Add a Brand', route: '/admin/add-brand', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
     { label: 'View Brands', route: '/admin/view_and_remove_brands/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { label: 'Add a Military Unit', route: '/admin/add-military-unit', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { label: 'Add a branch', route: '/admin/add-branch', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+    { label: 'View Military Units', route: '/admin/view_and_remove_military_units/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
     { label: 'Add a User', route: '/admin/add-user', icon: User, color: 'oklch(0.55 0.18 290)' },
     { label: 'View Users', route: '/admin/view_and_remove_users/page', icon: User, color: 'oklch(0.55 0.18 290)' },
     { label: 'Add a Device Type', route: '/admin/add-device-type', icon: Users, color: 'oklch(0.55 0.18 290)' },
@@ -43,6 +46,7 @@ function AdminDashboard() {
   //TODO: 14) Table can make image columns invisible and others like unit and far3
   //TODO: 15) Next and previous buttons (DONE)
   //TODO: 16) Make sure the total count is present in the table, even when searching (DONE)
+  //TODO: 17) HANDLES CASCADING DELETES PROPERLY
   return (
     <AdminShell>
       <div className="space-y-8 animate-slide-up">

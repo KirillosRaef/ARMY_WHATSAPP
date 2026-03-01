@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { createInsertDevice, createInsertDeviceType, createInsertRequest, device, deviceType, profile, request, user } from "./schema";
+import { createInsertDevice, createInsertDeviceType, createInsertRequest, device, deviceType, militaryUnit, profile, request, user } from "./schema";
 import { db } from "./database";
 import { auth } from "./auth";
 import { eq, and, sql, inArray, ne } from "drizzle-orm";
@@ -123,7 +123,11 @@ app
       .post(
         '/device',
         async ({ body }) => {
-          const data = await db.insert(device).values(body);
+          const data = await db.select().from(device).where(eq(device.serialNumber, body.serialNumber));
+          if (data.length > 0) {
+            throw new Error('Serial number already exists');
+          }
+          await db.insert(device).values(body);
           return body;
         },
         {
@@ -133,7 +137,11 @@ app
       .post(
         '/request',
         async ({ body }) => {
-          const data = await db.insert(request).values(body);
+          const data = await db.select().from(request).where(eq(request.serialNumber, body.serialNumber));
+          if (data.length > 0) {
+            throw new Error('Serial number already exists');
+          }
+          await db.insert(request).values(body);
           return body;
         },
         {
@@ -257,12 +265,15 @@ app
           .select({
             id: request.id,
             deviceTypeId: request.deviceTypeId,
+            militaryUnitId: request.militaryUnitId,
             serialNumber: request.serialNumber,
             usage: request.usage,
             devicePhoto: request.devicePhoto,
             serialNumberPhoto: request.serialNumberPhoto,
             brandLogo: deviceType.brandLogo,
-
+            username: request.username,
+            militaryUnitName: militaryUnit.militaryUnitName,
+            branch: militaryUnit.branch,
             deviceDescription:  sql<string>`
               ${deviceType.brandName} || ' ' ||
               ${deviceType.deviceKind} || ' ' ||
@@ -270,7 +281,8 @@ app
             `.as('deviceDescription')
           })
           .from(request)
-          .leftJoin(deviceType, eq(request.deviceTypeId, deviceType.id));
+          .leftJoin(deviceType, eq(request.deviceTypeId, deviceType.id))
+          .leftJoin(militaryUnit, eq(request.militaryUnitId, militaryUnit.id));
       })
       .get('/requests/:userId', async ({ params: { userId } }) => {
         return db.select().from(request).where(eq(request.userId, userId));
@@ -280,12 +292,15 @@ app
           .select({
             id: request.id,
             deviceTypeId: request.deviceTypeId,
+            militaryUnitId: request.militaryUnitId,
             serialNumber: request.serialNumber,
             usage: request.usage,
             devicePhoto: request.devicePhoto,
             serialNumberPhoto: request.serialNumberPhoto,
             brandLogo: deviceType.brandLogo,
-
+            username: request.username,
+            militaryUnitName: militaryUnit.militaryUnitName,
+            branch: militaryUnit.branch,
             deviceDescription:  sql<string>`
               ${deviceType.brandName} || ' ' ||
               ${deviceType.deviceKind} || ' ' ||
@@ -294,6 +309,7 @@ app
           })
           .from(request)
           .leftJoin(deviceType, eq(request.deviceTypeId, deviceType.id))
+          .leftJoin(militaryUnit, eq(request.militaryUnitId, militaryUnit.id))
           .where(eq(request.userId, userId));
         })
       .get('/role/:id', async ({ params: { id } }) => {
