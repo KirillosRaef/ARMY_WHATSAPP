@@ -3,16 +3,16 @@ import { Button } from "./ui/button";
 import { Fullscreen, X } from "lucide-react";
 
 
-export default function ViewImage({ src, alt }: { src: string, alt: string }) {
+export default function ViewImage({ src, alt, imageClassName }: { src: string, alt: string, imageClassName?: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
   <div>
-    <Button onClick={() => setIsModalOpen(true)} variant="ghost">
+    <Button onClick={() => setIsModalOpen(true)} variant="ghost" className="h-auto w-auto p-0 hover:bg-transparent">
       <img
         src={src}
         alt={alt}
-        className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
+        className={imageClassName || "w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"}
         loading="lazy"
       />
     </Button>

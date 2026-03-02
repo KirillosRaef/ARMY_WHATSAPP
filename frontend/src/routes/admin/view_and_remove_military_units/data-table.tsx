@@ -169,7 +169,7 @@ export function DataTable<TData extends { id: string }, TValue>({
             total: table.getFilteredRowModel().rows.length,
           })}
         </div>
-        <div className="flex items-center gap-2 rtl:flex-row-reverse">
+        <div className="flex items-center gap-2">
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"

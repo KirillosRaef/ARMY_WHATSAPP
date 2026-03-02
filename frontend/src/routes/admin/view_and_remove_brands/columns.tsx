@@ -45,7 +45,13 @@ export function useBrandColumns(): ColumnDef<Brands>[] {
         cell: ({ row }) => {
           const fileName = row.original.brandName;
           return (
-            <ViewImage src={`${LOGO_URL}/${fileName}`} alt={t('table.brandLogo')} />
+            <div className="flex justify-end pr-8">
+              <ViewImage
+                src={`${LOGO_URL}/${fileName}`}
+                alt={t('table.brandLogo')}
+                imageClassName="w-16 h-16 sm:w-24 sm:h-24 object-contain rounded-xl border border-border/50 bg-white/5 shadow-md p-1 hover:scale-105 transition-transform"
+              />
+            </div>
           );
         },
       },
@@ -56,7 +62,7 @@ export function useBrandColumns(): ColumnDef<Brands>[] {
           <Button
             variant="ghost"
             size="sm"
-            className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+            className="gap-2 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs w-full justify-start pl-8"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             {t('table.brandName')}
@@ -66,9 +72,11 @@ export function useBrandColumns(): ColumnDef<Brands>[] {
         cell: ({ row }) => {
           const fileName = row.original.brandName;
           return (
-            <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
-              {fileName.split('.')[0].charAt(0).toUpperCase() + fileName.split('.')[0].slice(1)}
-            </code>
+            <div className="flex justify-start pl-8">
+              <code className="rounded-md bg-muted/50 px-3 py-1.5 text-sm font-mono text-foreground/80 font-semibold shadow-sm border border-border/40">
+                {fileName.split('.')[0].charAt(0).toUpperCase() + fileName.split('.')[0].slice(1)}
+              </code>
+            </div>
           );
         },
       },

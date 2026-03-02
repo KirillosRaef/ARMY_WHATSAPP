@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useDropzone } from 'react-dropzone';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
@@ -127,7 +128,7 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
       </div>
 
       {/* Crop Modal - theme-aware for light and dark mode */}
-      {isModalOpen && tempImage && (
+      {isModalOpen && tempImage && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div
             className="relative flex flex-col rounded-2xl border border-border bg-card text-card-foreground shadow-2xl overflow-hidden"
@@ -196,7 +197,8 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
