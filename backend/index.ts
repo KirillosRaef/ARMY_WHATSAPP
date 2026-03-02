@@ -205,6 +205,8 @@ app
       .delete(
         '/device-types',
         async ({ body: { deviceTypeIds } }) => {
+          const data = await db.delete(device).where(inArray(device.deviceTypeId, deviceTypeIds));
+          const data2 = await db.delete(request).where(inArray(request.deviceTypeId, deviceTypeIds));
           return await db.delete(deviceType).where(inArray(deviceType.id, deviceTypeIds));
         },
         {

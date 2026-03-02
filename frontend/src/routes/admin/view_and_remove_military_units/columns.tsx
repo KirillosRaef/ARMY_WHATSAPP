@@ -27,7 +27,7 @@ export function useMilitaryUnitColumns(): ColumnDef<MilitaryUnitType>[] {
             }
             onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
             aria-label={t('common.selectAll')}
-            className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
           />
         ),
         cell: ({ row }) => (
@@ -35,7 +35,7 @@ export function useMilitaryUnitColumns(): ColumnDef<MilitaryUnitType>[] {
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
             aria-label={t('common.selectRow')}
-            className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary translate-y-[2px]"
+            className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary translate-y-[2px]"
           />
         ),
       },

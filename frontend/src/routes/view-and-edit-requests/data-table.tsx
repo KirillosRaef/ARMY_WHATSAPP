@@ -149,7 +149,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
-                      <p className="text-sm font-medium text-foreground/60">No requests found</p>
+                      <p className="text-sm font-medium text-foreground/60">{t('table.noRequestsFound')}</p>
                       <p className="text-xs mt-0.5">{t('table.noDataSubmitRequest')}</p>
                     </div>
                   </div>
@@ -166,7 +166,7 @@ export function DataTable<TData extends { id: string }, TValue>({
             total: table.getFilteredRowModel().rows.length,
           })}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
@@ -175,6 +175,12 @@ export function DataTable<TData extends { id: string }, TValue>({
           >
             {t('table.previous')}
           </Button>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {t('table.pageOf', {
+              page: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
+          </span>
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"

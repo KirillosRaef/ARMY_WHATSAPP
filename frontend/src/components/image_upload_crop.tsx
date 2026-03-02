@@ -11,9 +11,10 @@ type Props = {
   label: string;
   aspect?: number;
   onImageCropped: (file: File) => void;
+  isStyle?: boolean;
 };
 
-export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropped }: Props) {
+export default function ImageUploadCrop({ title, isStyle, label, aspect = 1, onImageCropped }: Props) {
   const [preview, setPreview] = useState<string | null>(null);
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [actualFileName, setActualFileName] = useState<string>('');
@@ -91,7 +92,9 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
             ? 'border-transparent'
             : 'hover:border-primary/40 hover:bg-muted/30 focus-visible:ring-ring/50 focus-visible:ring-2',
         ].join(' ')}
-        style={{ width: '100%', aspectRatio: aspect === 1 ? '1/1' : '16/9', minHeight: 100 }}
+        style={
+          isStyle ? { width: '100%', height: 350 } : { width: '100%', aspectRatio: aspect === 1 ? '1/1' : '16/9', minHeight: 100 }
+        }
       >
         <input {...getInputProps()} />
         {preview ? (

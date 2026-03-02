@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { db } from '../database';
-import { createInsertMilitaryUnit, militaryUnit } from '../schema';
+import { createInsertMilitaryUnit, device, militaryUnit, request } from '../schema';
 import { inArray } from 'drizzle-orm';
 
 export const militaryUnitRoutes = new Elysia();
@@ -23,6 +23,8 @@ export const militaryUnitRoutes = new Elysia();
         body: t.Omit(createInsertMilitaryUnit, ['id']),
       })
       .delete('/military-units-id', async ({ body: { militaryUnitIds } }) => {
+        const data = await db.delete(device).where(inArray(device.militaryUnitId, militaryUnitIds));
+        const data2 = await db.delete(request).where(inArray(request.militaryUnitId, militaryUnitIds));
         const result = await db.delete(militaryUnit).where(inArray(militaryUnit.id, militaryUnitIds));
         return result;
       }, {

@@ -37,13 +37,12 @@ const deleteSelection = async (ids: string[]) => {
 
 const acceptSelection = async (ids: string[]) => {
   deleteSelection(ids);
-  const accRes = await fetch('http://localhost:5173/api/accept-requests', {
+  await fetch('http://localhost:5173/api/accept-requests', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ requestIds: ids }),
   });
-  // if (!accRes.ok) throw new Error('Failed to accept selected requests');
 }
 
 interface DataTableProps<TData, TValue> {
@@ -75,7 +74,7 @@ export function DataTable<TData extends { id: string }, TValue>({
 
   const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
   const selectedCount = selectedIds.length;
-  const totalCount = table.getFilteredRowModel().rows.length;
+
 
   const handleDelete = async () => {
     if (selectedIds.length === 0) return;
@@ -136,12 +135,12 @@ export function DataTable<TData extends { id: string }, TValue>({
             {isAccepting ? (
               <>
                 <div className="h-3.5 w-3.5 rounded-full border-2 border-green-500/40 border-t-green-500 animate-spin" />
-                Accepting...
+                {t('table.accepting')}
               </>
             ) : (
               <>
                 <Check className="h-3.5 w-3.5" />
-                Accept {selectedCount} selected
+                {t('table.acceptSelected', { count: selectedCount })}
               </>
             )}
           </Button>
@@ -196,7 +195,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
-                      <p className="text-sm font-medium text-foreground/60">No requests found</p>
+                      <p className="text-sm font-medium text-foreground/60">{t('table.noRequestsFound')}</p>
                       <p className="text-xs mt-0.5">{t('table.noDataSubmitRequest')}</p>
                     </div>
                   </div>
@@ -213,7 +212,7 @@ export function DataTable<TData extends { id: string }, TValue>({
             total: table.getFilteredRowModel().rows.length,
           })}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
@@ -222,6 +221,12 @@ export function DataTable<TData extends { id: string }, TValue>({
           >
             {t('table.previous')}
           </Button>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {t('table.pageOf', {
+              page: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
+          </span>
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"

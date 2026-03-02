@@ -109,7 +109,7 @@ function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 h-11 bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 placeholder:text-muted-foreground/40 rounded-xl transition-all"
+                    className="pl-10 h-11 bg-muted/50 border-border focus-visible:border-primary/60 focus-visible:ring-primary/20 placeholder:text-muted-foreground/40 rounded-xl transition-all"
                   />
                 </div>
               </div>
@@ -127,7 +127,7 @@ function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="pl-10 h-11 bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 placeholder:text-muted-foreground/40 rounded-xl transition-all"
+                    className="pl-10 h-11 bg-muted/50 border-border focus-visible:border-primary/60 focus-visible:ring-primary/20 placeholder:text-muted-foreground/40 rounded-xl transition-all"
                   />
                 </div>
               </div>
@@ -135,8 +135,7 @@ function LoginPage() {
               <div className="pt-4">
                 <Button
                   type="submit"
-                  className="w-full h-11 font-medium bg-gradient-to-r from-primary via-blue-500 to-indigo-600 text-white hover:opacity-90 shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all duration-300 rounded-xl relative overflow-hidden group border-0"
-                  style={{ background: 'linear-gradient(135deg, oklch(0.52 0.22 264), oklch(0.48 0.22 290))' }}
+                  className="w-full h-11 font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30 transition-all duration-300 rounded-xl relative overflow-hidden group border-0"
                   disabled={isLoading}
                 >
                   {/* Subtle shine effect on hover */}

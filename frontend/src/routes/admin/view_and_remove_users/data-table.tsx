@@ -62,7 +62,7 @@ export function DataTable<TData extends { id: string }, TValue>({
 
   const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
   const selectedCount = selectedIds.length;
-  const totalCount = table.getFilteredRowModel().rows.length;
+
 
   const handleDelete = async () => {
     if (selectedIds.length === 0) return;
@@ -151,7 +151,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
-                      <p className="text-sm font-medium text-foreground/60">No users found</p>
+                      <p className="text-sm font-medium text-foreground/60">{t('table.noUsersFound')}</p>
                       <p className="text-xs mt-0.5">{t('table.noDataSubmitUser')}</p>
                     </div>
                   </div>

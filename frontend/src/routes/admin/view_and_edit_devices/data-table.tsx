@@ -83,10 +83,9 @@ export function DataTable<TData extends { id: string }, TValue>({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
-
         {selectedCount > 0 && (
           <Button
             variant="destructive"
@@ -110,22 +109,15 @@ export function DataTable<TData extends { id: string }, TValue>({
         )}
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
+      {/* Compact Filters Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
         <Input
           placeholder={t('table.filterBrandName')}
           value={(table.getColumn("brandName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("brandName")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
-        />
-        <Input
-          placeholder={t('table.filterDeviceType')}
-          value={(table.getColumn("deviceKind")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("deviceKind")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
+          className="h-9 text-sm"
         />
         <Input
           placeholder={t('table.filterDescription')}
@@ -133,7 +125,7 @@ export function DataTable<TData extends { id: string }, TValue>({
           onChange={(event) =>
             table.getColumn("description")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="h-9 text-sm"
         />
         <Input
           placeholder={t('table.filterSerialNumber')}
@@ -141,46 +133,16 @@ export function DataTable<TData extends { id: string }, TValue>({
           onChange={(event) =>
             table.getColumn("serialNumber")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="h-9 text-sm"
         />
         <Input
-          placeholder={t('table.filterUsage')}
-          value={(table.getColumn("usage")?.getFilterValue() as string) ?? ""}
+          placeholder={t('table.filterMilitaryUnitName')}
+          value={(table.getColumn("militaryUnitName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("usage")?.setFilterValue(event.target.value)
+            table.getColumn("militaryUnitName")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="h-9 text-sm"
         />
-        {/* <div className="space-y-3">
-              <Label className="max-w-sm w-full text-foreground font-medium text-sm">Condition Status</Label>
-              <Select
-                onValueChange={(value) => {
-                setSelectedUsage({
-                  value,
-                  label: usageOptions.find((option) => option.value === value)!.label
-                })
-              
-              if (value == selectedUsage?.value) {
-                  console.log("value === selectedUsage?.value")
-                  table.getColumn("usage")?.setFilterValue(null);
-                } else {
-                  table.getColumn("usage")?.setFilterValue(value);
-                }
-              }}>
-                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
-                  <SelectValue placeholder={t('table.filterCondition')} />
-                </SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
-                  <SelectGroup>
-                    {usageOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="rounded-lg focus:bg-white/5 my-0.5 cursor-pointer">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
       </div>
 
       {/* Table */}
@@ -195,7 +157,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="text-muted-foreground text-xs font-semibold uppercase tracking-wider h-12 px-4"
+                    className="text-muted-foreground text-xs font-semibold uppercase tracking-wider h-11 px-3"
                   >
                     {header.isPlaceholder
                       ? null
@@ -219,7 +181,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   ].join(' ')}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="p-4 align-middle text-sm text-foreground/90">
+                    <TableCell key={cell.id} className="px-3 py-3 align-middle text-sm text-foreground/90">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -231,7 +193,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <AlertTriangle className="h-8 w-8 opacity-40" />
                     <div>
-                      <p className="text-sm font-medium text-foreground/60">No requests found</p>
+                      <p className="text-sm font-medium text-foreground/60">{t('table.noDevicesFound')}</p>
                       <p className="text-xs mt-0.5">{t('table.noDataSubmitDevice')}</p>
                     </div>
                   </div>
@@ -241,14 +203,16 @@ export function DataTable<TData extends { id: string }, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex flex-col gap-3 py-3 px-5 sm:flex-row sm:items-center sm:justify-between">
+
+      {/* Pagination */}
+      <div className="flex flex-col gap-3 py-3 px-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-muted-foreground text-sm">
           {t('table.rowsSelected', {
             count: table.getFilteredSelectedRowModel().rows.length,
             total: table.getFilteredRowModel().rows.length,
           })}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
@@ -257,6 +221,12 @@ export function DataTable<TData extends { id: string }, TValue>({
           >
             {t('table.previous')}
           </Button>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {t('table.pageOf', {
+              page: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
+          </span>
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
@@ -270,3 +240,4 @@ export function DataTable<TData extends { id: string }, TValue>({
     </div>
   );
 }
+

@@ -54,7 +54,7 @@ function RouteComponent() {
 
   return (
     <AdminShell>
-      <div className="space-y-4 max-w-lg mx-auto w-full animate-slide-up">
+      <div className="space-y-4 max-w-xl mx-auto w-full animate-slide-up">
         <div className="flex flex-col gap-2 pb-3 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
@@ -107,8 +107,9 @@ function RouteComponent() {
                 className="h-9 rounded-md text-sm"
               />
             </div>
-            <div className="space-y-2 w-full max-w-[200px]">
+            <div className="space-y-2 w-full">
               <ImageUploadCrop
+                isStyle={true}
                 title={t('table.brandLogo')}
                 label={t('forms.dropOrClickToUpload')}
                 aspect={1}

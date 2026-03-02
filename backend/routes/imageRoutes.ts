@@ -1,4 +1,7 @@
 import { Elysia, t } from 'elysia';
+import { device, deviceType, request } from '../schema';
+import { inArray } from 'drizzle-orm';
+import { db } from '../database';
 
 export const imageRoutes = new Elysia();
 
@@ -54,16 +57,37 @@ export const imageRoutes = new Elysia();
       return logos.split('\n').filter(Boolean);
     })
       .delete('/logos', async ({ body: { brands } }) => {
-              const filePath = `images/logos`;
-              for (const brand of brands) {
-                await Bun.$`rm -f ${filePath}/${brand}`.nothrow();
-              }
-              // return { filePath, brands };
-            },
-            {
-              body: t.Object({
-                brands: t.Array(t.String()),
-              }),
-            },
+        const deleteDevices = await db.delete(device)
+        .where(
+          inArray(
+            device.deviceTypeId,
+            db
+              .select({ id: deviceType.id })
+              .from(deviceType)
+              .where(inArray(deviceType.brandLogo, brands))
           )
+        );
+        const deleteRequests = await db.delete(request)
+          .where(
+            inArray(
+              request.deviceTypeId,
+              db
+                .select({ id: deviceType.id })
+                .from(deviceType)
+                .where(inArray(deviceType.brandLogo, brands))
+            )
+          )
+        const deleteDeviceTypes = await db.delete(deviceType).where(inArray(deviceType.brandLogo, brands));
+        const filePath = `images/logos`;
+        for (const brand of brands) {
+          await Bun.$`rm -f ${filePath}/${brand}`.nothrow();
+        }
+        // return { filePath, brands };
+    },
+    {
+      body: t.Object({
+        brands: t.Array(t.String()),
+      }),
+    },
+  )
   );
