@@ -349,3 +349,7 @@ app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });
 
+// DB_FILE_NAME=database.db
+// BETTER_AUTH_SECRET=W662PCUJYbwOpA3kcjtpnIWth48kls55
+// BETTER_AUTH_URL=http://localhost:3000 # Base URL of your app
+
