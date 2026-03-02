@@ -168,6 +168,23 @@
     "pendingReviewsDesc": "Device requests awaiting admin approval",
     "adminFeaturesComingSoon": "Admin management features coming soon"
   },
+  "adminDashboard": {
+    "addBrandDesc": "Register a new brand and upload its logo for the device catalog.",
+    "viewBrandsDesc": "Browse, edit, or remove existing brands from the system.",
+    "addMilitaryUnitDesc": "Create a new military unit in the organization hierarchy.",
+    "addBranchDesc": "Add a new branch under an existing military unit.",
+    "viewMilitaryUnitsDesc": "Manage military units and their branches.",
+    "addUserDesc": "Create a new user account with email and role.",
+    "viewUsersDesc": "View, edit, or remove user accounts.",
+    "addDeviceTypeDesc": "Add a new device type (brand, kind, description) to the catalog.",
+    "viewDeviceTypesDesc": "Manage device types and their definitions.",
+    "viewRequestsDesc": "Review and approve or reject pending device registration requests.",
+    "addDeviceDesc": "Register a new device directly with photos and identifiers.",
+    "viewDevicesDesc": "Search, filter, and manage all registered devices.",
+    "open": "Open",
+    "tip": "Tip:",
+    "tipText": "Review device requests promptly and ensure brand logos and device types are up to date for a smooth catalog."
+  },
   "pages": {
     "activeRecords": "Active Records",
     "authorizedDevicesFound": "{{count}} authorized device(s) found in your log",

@@ -39,7 +39,7 @@ function UserDashboard() {
         </div>
 
         {/* Action cards */}
-        <div className="grid gap-6 md:grid-cols-2 max-w-full">
+        <div className="grid gap-4 sm:grid-cols-2 max-w-2xl">
           {/* Request device card */}
           <Card
             className="group relative flex flex-col overflow-hidden cursor-pointer border-white/10 glass-card hover:border-primary/50 transition-all duration-500"
@@ -48,16 +48,16 @@ function UserDashboard() {
             {/* Animated hover gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
-            <CardHeader className="pb-4 relative z-10 pt-8 px-8">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 mb-6 group-hover:scale-110 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(var(--primary),0.3)]">
-                <PlusCircle className="h-7 w-7 text-primary" />
+            <CardHeader className="pb-2 relative z-10 pt-5 px-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 mb-3 group-hover:scale-110 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(var(--primary),0.3)]">
+                <PlusCircle className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-2xl text-foreground font-medium">{t('userDashboard.registerNewDevice')}</CardTitle>
-              <CardDescription className="text-base text-muted-foreground mt-2 max-w-md">
+              <CardTitle className="text-lg text-foreground font-medium">{t('userDashboard.registerNewDevice')}</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-1 max-w-md">
                 {t('userDashboard.registerDescription')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 px-8 pb-8 relative z-10 mt-auto">
+            <CardContent className="pt-2 px-5 pb-5 relative z-10 mt-auto">
               <div
                 className="inline-flex items-center gap-2 text-foreground font-medium text-sm group-hover:text-primary transition-colors mt-auto"
                 onClick={(e) => {
@@ -79,16 +79,16 @@ function UserDashboard() {
           >
             <div className="absolute inset-0 bg-gradient-to-bl from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
-            <CardHeader className="pb-4 relative z-10 pt-8 px-8">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 mb-6 group-hover:scale-110 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(var(--primary),0.3)]">
-                <ClipboardList className="h-7 w-7 text-primary" />
+            <CardHeader className="pb-2 relative z-10 pt-5 px-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 mb-3 group-hover:scale-110 transition-transform duration-500 group-hover:shadow-[0_0_30px_rgba(var(--primary),0.3)]">
+                <ClipboardList className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-2xl text-foreground font-medium">{t('pages.activeRecords')}</CardTitle>
-              <CardDescription className="text-base text-muted-foreground mt-2">
+              <CardTitle className="text-lg text-foreground font-medium">{t('pages.activeRecords')}</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-1">
                 {t('userDashboard.activeRecordsDescription')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 px-8 pb-8 relative z-10">
+            <CardContent className="pt-2 px-5 pb-5 relative z-10">
               <div
                 className="inline-flex items-center gap-2 text-foreground font-medium text-sm group-hover:text-primary transition-colors mt-auto"
                 onClick={(e) => {
@@ -102,11 +102,11 @@ function UserDashboard() {
           </Card>
         </div>
 
-        {/* Quick info strip */}
-        <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md px-6 py-5 max-w-full overflow-hidden relative">
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-          <MonitorSmartphone className="h-5 w-5 text-primary flex-shrink-0" />
-          <p className="text-sm text-foreground/80 leading-relaxed">
+        {/* Tip strip - compact */}
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-2.5 max-w-2xl overflow-hidden relative">
+          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary rounded-l-xl" />
+          <MonitorSmartphone className="h-4 w-4 text-primary shrink-0 ml-0.5" />
+          <p className="text-xs text-foreground/85 leading-snug">
             <strong className="text-foreground font-medium">{t('userDashboard.tip')}</strong>{' '}
             {t('userDashboard.tipVerification')}
           </p>

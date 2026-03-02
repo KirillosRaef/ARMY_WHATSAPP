@@ -218,15 +218,15 @@ function RouteComponent() {
 
   return (
     <UserShell>
-      <div className="space-y-8 max-w-5xl mx-auto w-full animate-slide-up">
-        <div className="flex flex-col gap-2 pb-6 border-b border-white/5">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 flex-shrink-0 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
-              <PackagePlus className="h-6 w-6 text-primary" />
+      <div className="space-y-4 max-w-6xl mx-auto w-full animate-slide-up">
+        <div className="flex flex-col gap-2 pb-3 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
+              <PackagePlus className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t('forms.equipmentRegistration')}</h1>
-              <p className="text-muted-foreground text-sm mt-1">
+              <h1 className="text-lg font-semibold tracking-tight text-foreground">{t('forms.equipmentRegistration')}</h1>
+              <p className="text-muted-foreground text-xs mt-0.5">
                 {t('forms.equipmentRegistrationDesc')}
               </p>
             </div>
@@ -234,31 +234,33 @@ function RouteComponent() {
         </div>
 
         {submitSuccess && (
-          <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400 animate-fade-in">
-            <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+          <div className="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-2 text-sm text-green-400 animate-fade-in">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
             {t('forms.requestSubmittedSuccess')}
           </div>
         )}
         {submitError && (
-          <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive animate-fade-in">
-            <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <div className="flex items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive animate-fade-in">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             {submitError}
           </div>
         )}
 
-        <Card className="glass-card shadow-2xl overflow-hidden rounded-2xl border-white/10 relative">
-          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-          <CardHeader className="border-b border-white/5 bg-white/[0.02] pb-6 pt-6 px-8">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">1</div>
-              <div>
-                <CardTitle className="text-lg font-medium text-foreground">{t('forms.equipmentIdentifiers')}</CardTitle>
-                <CardDescription className="text-sm mt-1">{t('forms.equipmentIdentifiersDesc')}</CardDescription>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+        <Card className="glass-card overflow-hidden rounded-xl border border-border relative flex flex-col min-w-0">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <CardHeader className="border-b border-border bg-muted/30 py-3 px-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-[10px]">1</div>
+              <div className="min-w-0">
+                <CardTitle className="text-sm font-medium text-foreground">{t('forms.equipmentIdentifiers')}</CardTitle>
+                <CardDescription className="text-[11px] mt-0.5 leading-tight">{t('forms.equipmentIdentifiersDesc')}</CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-8 px-8 pb-8 space-y-8">
-            <div className="space-y-3">
+          <CardContent className="pt-4 px-4 pb-4 flex-1 min-h-0">
+            <div className="grid gap-3 grid-cols-2">
+            <div className="space-y-2">
               <Label className="text-foreground font-medium text-sm">{t('forms.classificationGroup')}</Label>
               <Select
                 onValueChange={
@@ -266,10 +268,10 @@ function RouteComponent() {
                     value,
                     label: deviceTypeOptions.find((option) => option.value === value)!.label
                   })}>
-                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                <SelectTrigger className="w-full h-9 rounded-md">
                   <SelectValue placeholder={t('forms.deviceTypePlaceholder')} />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                <SelectContent>
                   <SelectGroup>
                     {deviceTypeOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
@@ -277,7 +279,7 @@ function RouteComponent() {
                           <img
                             src={`${LOGO_URL}/${deviceTypes!.find((dt) => dt.id === option.value)?.brandLogo}`}
                             alt="Device"
-                            className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
+                            className="w-10 h-10 object-cover rounded-lg border border-border shadow-sm"
                             loading="lazy"
                           />
                         </div>
@@ -289,7 +291,7 @@ function RouteComponent() {
               </Select>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="w-full text-foreground font-medium text-sm">{t('forms.conditionStatus')}</Label>
               <Select
                 onValueChange={
@@ -298,13 +300,13 @@ function RouteComponent() {
                     label: usageOptions.find((option) => option.value === value)!.label
                   })
                 }>
-                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                <SelectTrigger className="w-full h-9 rounded-md">
                   <SelectValue placeholder={t('forms.selectOperationalStatus')} />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                <SelectContent>
                   <SelectGroup>
                     {usageOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="rounded-lg focus:bg-white/5 my-0.5 cursor-pointer">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -313,7 +315,7 @@ function RouteComponent() {
               </Select>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label htmlFor="serial" className="text-foreground font-medium text-sm">
                 {t('forms.serialNumber')}
               </Label>
@@ -323,11 +325,11 @@ function RouteComponent() {
                 placeholder={t('forms.serialNumberPlaceholder')}
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
-                className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
+                className="h-9 rounded-md font-mono text-sm"
               />
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-foreground font-medium text-sm">{t('forms.classificationGroup')}</Label>
               <Select
                 onValueChange={
@@ -335,10 +337,10 @@ function RouteComponent() {
                     value,
                     label: militaryUnitMainOptions.find((option) => option.value === value)!.label
                   })}>
-                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                <SelectTrigger className="w-full h-9 rounded-md">
                   <SelectValue placeholder={t('forms.militaryUnitPlaceholder')} />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                <SelectContent>
                   <SelectGroup>
                     {militaryUnitMainOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
@@ -351,27 +353,20 @@ function RouteComponent() {
             </div>
 
             {!selectedMilitaryUnit!.value && (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Label className="text-foreground font-medium text-sm">{t('forms.militaryUnitBranch')}</Label>
                 <Select>
-                  <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                  <SelectTrigger className="w-full h-9 rounded-md">
                     <SelectValue placeholder={t('forms.militaryUnitBranchPlaceholder')} />
                   </SelectTrigger>
-                  <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
-                    {/* <SelectGroup>
-                      {militaryUnitBranchOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup> */}
+                  <SelectContent>
                   </SelectContent>
                 </Select>
               </div>
             )}
 
             {selectedMilitaryUnit!.value && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-foreground font-medium text-sm">{t('forms.militaryUnitBranch')}</Label>
               <Select
                 onValueChange={
@@ -379,10 +374,10 @@ function RouteComponent() {
                     value,
                     label: militaryUnitBranchOptions.find((option) => option.value === value)!.label
                   })}>
-                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                <SelectTrigger className="w-full h-9 rounded-md">
                   <SelectValue placeholder={t('forms.militaryUnitBranchPlaceholder')} />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                <SelectContent>
                   <SelectGroup>
                     {militaryUnitBranchOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
@@ -395,7 +390,7 @@ function RouteComponent() {
             </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-2 col-span-2">
               <Label htmlFor="username" className="text-foreground font-medium text-sm">
                 {t('table.username')}
               </Label>
@@ -405,25 +400,26 @@ function RouteComponent() {
                 placeholder={t('forms.usernamePlaceholder')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
+                className="h-9 rounded-md text-sm"
               />
+            </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card shadow-2xl overflow-hidden rounded-2xl border-white/10 relative">
-          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-          <CardHeader className="border-b border-white/5 bg-white/[0.02] pb-6 pt-6 px-8">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">2</div>
-              <div>
-                <CardTitle className="text-lg font-medium text-foreground">{t('forms.visualVerification')}</CardTitle>
-                <CardDescription className="text-sm mt-1">{t('forms.visualVerificationDesc')}</CardDescription>
+        <Card className="glass-card overflow-hidden rounded-xl border border-border relative flex flex-col min-w-0">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <CardHeader className="border-b border-border bg-muted/30 py-3 px-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-[10px]">2</div>
+              <div className="min-w-0">
+                <CardTitle className="text-sm font-medium text-foreground">{t('forms.visualVerification')}</CardTitle>
+                <CardDescription className="text-[11px] mt-0.5 leading-tight">{t('forms.visualVerificationDesc')}</CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-8 px-8 pb-8">
-            <div className="grid grid-cols-2 gap-6">
+          <CardContent className="pt-4 px-4 pb-4 flex-1 min-h-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <ImageUploadCrop
                 title={t('forms.serialNumberPhoto')}
                 label={t('forms.dropOrClickToUpload')}
@@ -439,8 +435,9 @@ function RouteComponent() {
             </div>
           </CardContent>
         </Card>
+        </div>
 
-        <div className="flex justify-end pt-6">
+        <div className="flex justify-end pt-3">
           <Button
             id="submit-request-btn"
             onClick={handleSubmitRequest}

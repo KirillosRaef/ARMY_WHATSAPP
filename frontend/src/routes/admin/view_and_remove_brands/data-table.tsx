@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 
@@ -42,7 +43,7 @@ export function DataTable<TData extends { brandName: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-
+  const { t } = useTranslation()
   const [rowSelection, setRowSelection] = React.useState({})
   const [isDeleting, setIsDeleting] = React.useState(false);
   const table = useReactTable({
@@ -57,7 +58,6 @@ export function DataTable<TData extends { brandName: string }, TValue>({
   })
   const selectedBrands = table.getSelectedRowModel().rows.map((row) => row.original.brandName);
   const selectedCount = selectedBrands.length;
-  const totalCount = table.getFilteredRowModel().rows.length;
 
   const handleDelete = async () => {
     if (selectedBrands.length === 0) return;
@@ -98,11 +98,11 @@ export function DataTable<TData extends { brandName: string }, TValue>({
           </Button>
         )}
       </div>
-      <div>
+      <div className="rounded-xl border border-border overflow-hidden bg-card p-0">
         <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="border-b border-border bg-muted/20 hover:bg-muted/20">
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead key={header.id}>
@@ -141,6 +141,32 @@ export function DataTable<TData extends { brandName: string }, TValue>({
           )}
         </TableBody>
       </Table>
+      </div>
+      <div className="flex flex-col gap-3 py-3 px-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-muted-foreground text-sm">
+          {t('table.rowsSelected', {
+            count: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
+        </div>
+        <div className="flex items-center gap-2 rtl:flex-row-reverse">
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {t('table.previous')}
+          </Button>
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {t('table.next')}
+          </Button>
+        </div>
       </div>
     </div>
   )

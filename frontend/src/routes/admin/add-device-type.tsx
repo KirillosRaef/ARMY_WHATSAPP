@@ -110,63 +110,61 @@ function RouteComponent() {
   
   return (
     <AdminShell>
-    <div className="space-y-8 max-w-5xl mx-auto w-full animate-slide-up">
-      <div className="flex flex-col gap-2 pb-6 border-b border-white/5">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 flex-shrink-0 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
-            <PackagePlus className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t('forms.equipmentRegistration')}</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              {t('forms.equipmentRegistrationDeviceTypeDesc')}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {submitSuccess && (
-        <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400 animate-fade-in">
-          <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-          {t('forms.requestSubmittedSuccess')}
-        </div>
-      )}
-      {submitError && (
-        <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive animate-fade-in">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
-          {submitError}
-        </div>
-      )}
-
-      <Card className="glass-card shadow-2xl overflow-hidden rounded-2xl border-white/10 relative">
-        <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-        <CardHeader className="border-b border-white/5 bg-white/[0.02] pb-6 pt-6 px-8">
+      <div className="space-y-4 max-w-2xl mx-auto w-full animate-slide-up">
+        <div className="flex flex-col gap-2 pb-3 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-sm">1</div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
+              <PackagePlus className="h-4 w-4 text-primary" />
+            </div>
             <div>
-              <CardTitle className="text-lg font-medium text-foreground">{t('forms.addNewDeviceType')}</CardTitle>
-              {/* <CardDescription className="text-sm mt-1">Ch</CardDescription> */}
+              <h1 className="text-lg font-semibold tracking-tight text-foreground">{t('nav.addDeviceType')}</h1>
+              <p className="text-muted-foreground text-xs mt-0.5">
+                {t('forms.equipmentRegistrationDeviceTypeDesc')}
+              </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="pt-8 px-8 pb-8 space-y-8">
-          <div className="space-y-3">
+        </div>
+
+        {submitSuccess && (
+          <div className="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-2 text-sm text-green-400 animate-fade-in">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            {t('forms.requestSubmittedSuccess')}
+          </div>
+        )}
+        {submitError && (
+          <div className="flex items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive animate-fade-in">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {submitError}
+          </div>
+        )}
+
+        <Card className="glass-card overflow-hidden rounded-xl border border-border relative">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <CardHeader className="border-b border-border bg-muted/30 py-3 px-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold text-[10px]">1</div>
+              <div className="min-w-0">
+                <CardTitle className="text-sm font-medium text-foreground">{t('forms.addNewDeviceType')}</CardTitle>
+                <CardDescription className="text-[11px] mt-0.5 leading-tight">{t('forms.equipmentRegistrationDeviceTypeDesc')}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4 px-4 pb-4 space-y-4">
+            <div className="space-y-2">
               <Label className="text-foreground font-medium text-sm">{t('table.brandName')}</Label>
               <Select
-                onValueChange={
-                (value) => {
+                onValueChange={(value) => {
                   setSelectedBrand({
-                    value: value,
+                    value,
                     label: value.split('.')[0].charAt(0).toUpperCase() + value.split('.')[0].slice(1),
-                  })
-                  setBrandName(value.split('.')[0].charAt(0).toUpperCase() + value.split('.')[0].slice(1))
-                }
-                }
+                  });
+                  setBrandName(value.split('.')[0].charAt(0).toUpperCase() + value.split('.')[0].slice(1));
+                }}
               >
-                <SelectTrigger className="w-full border-white/10 bg-black/20 focus:ring-primary h-11 rounded-xl transition-all">
+                <SelectTrigger className="w-full h-9 rounded-md">
                   <SelectValue placeholder={t('forms.selectBrand')} />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#121212] rounded-xl shadow-xl">
+                <SelectContent>
                   <SelectGroup>
                     {brandOptions.map((option: Option) => (
                       <SelectItem key={option.value} value={option.value}>
@@ -174,71 +172,61 @@ function RouteComponent() {
                           <img
                             src={`${LOGO_URL}/${option.value}`}
                             alt={option.label}
-                            className="w-10 h-10 object-cover rounded-lg border border-white/10 shadow-sm"
+                            className="w-10 h-10 object-cover rounded-lg border border-border shadow-sm"
                             loading="lazy"
                           />
                         </div>
-                        {/* 
-                          TODO: STORE THE BRAND NAME WITH THE BRANDLOGO IN THE DATABASE
-                          TODO: LINK THE BRANDLOGO WITH THE BRAND NAME
-                        */}
-                        {/* {option.label.split('.')[0].charAt(0).toUpperCase() + option.label.split('.')[0].slice(1)} */}
                       </SelectItem>
                     ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="brandName" className="text-foreground font-medium text-sm">{t('table.brandName')}</Label>
+              <Input
+                id="brandName"
+                type="text"
+                placeholder={t('brand.placeholder')}
+                value={brandName}
+                readOnly
+                className="h-9 rounded-md text-sm bg-muted/50"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="deviceKind" className="text-foreground font-medium text-sm">{t('table.deviceKind')}</Label>
+                <Input
+                  id="deviceKind"
+                  type="text"
+                  placeholder={t('forms.deviceKindPlaceholder')}
+                  value={deviceKind}
+                  onChange={(e) => setDeviceKind(e.target.value)}
+                  className="h-9 rounded-md text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-foreground font-medium text-sm">{t('table.description')}</Label>
+                <Input
+                  id="description"
+                  type="text"
+                  placeholder={t('forms.descriptionPlaceholder')}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="h-9 rounded-md text-sm"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-3">
-            <Label htmlFor="brandName" className="text-foreground font-medium text-sm">
-              {t('table.brandName')}
-            </Label>
-            <Input
-              id="brandName"
-              type="text"
-              placeholder={t('brand.placeholder')}
-              value={brandName}
-              // onChange={(e) => setBrandName(e.target.value)}
-              className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
-            />
-          </div>
-          <div className="space-y-3">
-            <Label htmlFor="deviceKind" className="text-foreground font-medium text-sm">
-              {t('table.deviceKind')}
-            </Label>
-            <Input
-              id="deviceKind"
-              type="text"
-              placeholder={t('forms.deviceKindPlaceholder')}
-              value={deviceKind}
-              onChange={(e) => setDeviceKind(e.target.value)}
-              className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
-            />
-          </div>
-          <div className="space-y-3">
-            <Label htmlFor="description" className="text-foreground font-medium text-sm">
-              {t('table.description')}
-            </Label>
-            <Input
-              id="description"
-              type="text"
-              placeholder={t('forms.descriptionPlaceholder')}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-black/20 border-white/10 focus-visible:border-primary/60 focus-visible:ring-primary/20 h-11 rounded-xl font-mono tracking-wide placeholder:text-muted-foreground/40 transition-all"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-end pt-6">
+        <div className="flex justify-end pt-3">
           <Button
             id="submit-request-btn"
             onClick={handleSubmitRequest}
             disabled={isSubmitting || submitSuccess}
             size="lg"
-            className="px-8 font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all rounded-xl relative overflow-hidden group h-12"
+            className="px-6 font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all rounded-xl relative overflow-hidden group h-10 text-sm"
           >
             <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12" />
             {isSubmitting ? (
@@ -256,7 +244,7 @@ function RouteComponent() {
             )}
           </Button>
         </div>
-    </div>
-  </AdminShell>
+      </div>
+    </AdminShell>
   );
 }

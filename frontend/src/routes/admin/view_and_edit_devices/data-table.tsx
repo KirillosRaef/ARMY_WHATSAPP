@@ -25,12 +25,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input"
 import { Trash2, AlertTriangle } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { SingleValue } from 'react-select';
-
-
-type Option = { value: string; label: string };
 
 
 
@@ -54,16 +48,10 @@ export function DataTable<TData extends { id: string }, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
-  const usageOptions: Option[] = [
-    { value: 'New', label: t('usageBadge.new') },
-    { value: 'Used', label: t('usageBadge.used') },
-    { value: 'Broken', label: t('usageBadge.broken') },
-  ];
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [selectedUsage, setSelectedUsage] = React.useState<SingleValue<Option>>(null);
 
   const table = useReactTable({
     data,
@@ -81,7 +69,6 @@ export function DataTable<TData extends { id: string }, TValue>({
 
   const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
   const selectedCount = selectedIds.length;
-  const totalCount = table.getFilteredRowModel().rows.length;
 
   const handleDelete = async () => {
     if (selectedIds.length === 0) return;
@@ -197,13 +184,13 @@ export function DataTable<TData extends { id: string }, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-white/8 overflow-hidden glass-card">
+      <div className="rounded-xl border border-border overflow-hidden bg-card p-0">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="border-b border-white/10 bg-black/40 hover:bg-black/40"
+                className="border-b border-border bg-muted/20 hover:bg-muted/20"
               >
                 {headerGroup.headers.map((header) => (
                   <TableHead
@@ -254,29 +241,31 @@ export function DataTable<TData extends { id: string }, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-3">
-        <div className="text-muted-foreground flex-1 text-sm">
+      <div className="flex flex-col gap-3 py-3 px-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-muted-foreground text-sm">
           {t('table.rowsSelected', {
             count: table.getFilteredSelectedRowModel().rows.length,
             total: table.getFilteredRowModel().rows.length,
           })}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {t('table.previous')}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          {t('table.next')}
-        </Button>
+        <div className="flex items-center gap-2 rtl:flex-row-reverse">
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {t('table.previous')}
+          </Button>
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {t('table.next')}
+          </Button>
+        </div>
       </div>
     </div>
   );

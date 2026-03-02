@@ -83,14 +83,14 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
       <div
         {...getRootProps()}
         className={[
-          'relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 overflow-hidden',
+          'relative flex flex-col items-center justify-center rounded-md border border-input bg-transparent cursor-pointer transition-all duration-200 overflow-hidden',
           isDragActive
-            ? 'border-primary/60 bg-primary/10 scale-[1.01]'
+            ? 'border-primary/60 bg-primary/5 scale-[1.01]'
             : preview
             ? 'border-transparent'
-            : 'border-white/15 bg-white/4 hover:border-primary/40 hover:bg-primary/5',
+            : 'hover:border-primary/40 hover:bg-muted/30 focus-visible:ring-ring/50 focus-visible:ring-2',
         ].join(' ')}
-        style={{ width: '100%', aspectRatio: aspect === 1 ? '1/1' : '16/9', minHeight: 150 }}
+        style={{ width: '100%', aspectRatio: aspect === 1 ? '1/1' : '16/9', minHeight: 100 }}
       >
         <input {...getInputProps()} />
         {preview ? (
@@ -126,45 +126,46 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
         )}
       </div>
 
-      {/* Crop Modal */}
+      {/* Crop Modal - theme-aware for light and dark mode */}
       {isModalOpen && tempImage && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-          style={{ background: 'oklch(0 0 0 / 75%)', backdropFilter: 'blur(8px)' }}
-        >
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div
-            className="relative flex flex-col rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
-            style={{ background: 'oklch(0.155 0.02 264)', width: 500, maxWidth: '95vw' }}
+            className="relative flex flex-col rounded-2xl border border-border bg-card text-card-foreground shadow-2xl overflow-hidden"
+            style={{ width: 500, maxWidth: '95vw' }}
           >
             {/* Modal header */}
-            <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div className="flex items-center gap-2">
                 <ZoomIn className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold text-foreground">Crop Image</span>
               </div>
               <button
                 onClick={handleCancel}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-white/8 hover:text-foreground transition-colors"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Crop area */}
-            <div style={{ position: 'relative', width: '100%', height: 380 }}>
+            {/* Crop area - no grey frame: overlay matches modal background */}
+            <div className="relative w-full bg-card" style={{ height: 380 }}>
               <Cropper
                 image={tempImage}
                 crop={crop}
                 zoom={zoom}
                 aspect={aspect}
+                objectFit="cover"
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
+                style={{
+                  cropAreaStyle: { boxShadow: '0 0 0 9999em var(--card)' },
+                }}
               />
             </div>
 
-            {/* Zoom slider */}
-            <div className="px-5 py-3 border-t border-white/8">
+            {/* Zoom slider - theme-aware track and thumb */}
+            <div className="px-5 py-3 border-t border-border">
               <div className="flex items-center gap-3">
                 <span className="text-xs text-muted-foreground w-10">Zoom</span>
                 <input
@@ -174,23 +175,21 @@ export default function ImageUploadCrop({ title, label, aspect = 1, onImageCropp
                   step={0.05}
                   value={zoom}
                   onChange={(e) => setZoom(Number(e.target.value))}
-                  className="flex-1 h-1.5 appearance-none rounded-full cursor-pointer"
-                  style={{ accentColor: 'oklch(0.6 0.22 264)' }}
+                  className="flex-1 h-1.5 appearance-none rounded-full cursor-pointer bg-muted accent-primary [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary"
                 />
                 <span className="text-xs text-muted-foreground w-10 text-right">{zoom.toFixed(1)}x</span>
               </div>
             </div>
 
             {/* Modal actions */}
-            <div className="flex items-center justify-end gap-3 border-t border-white/8 px-5 py-4">
+            <div className="flex items-center justify-end gap-3 border-t border-border px-5 py-4">
               <Button variant="ghost" size="sm" onClick={handleCancel} className="text-muted-foreground hover:text-foreground">
                 Cancel
               </Button>
               <Button
                 size="sm"
                 onClick={handleConfirm}
-                className="px-5 font-semibold"
-                style={{ background: 'linear-gradient(135deg, oklch(0.52 0.22 264), oklch(0.48 0.22 290))' }}
+                className="px-5 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl"
               >
                 <Check className="mr-1.5 h-3.5 w-3.5" />
                 Confirm crop

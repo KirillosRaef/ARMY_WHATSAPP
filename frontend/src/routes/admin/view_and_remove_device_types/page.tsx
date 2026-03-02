@@ -63,9 +63,7 @@ function RouteComponent() {
           </div>
         </div>
 
-        <div className="glass-card rounded-2xl border-white/10 shadow-2xl overflow-hidden">
-          <DataTable columns={columns} data={deviceTypes || []} />
-        </div>
+        <DataTable columns={columns} data={deviceTypes || []} />
       </div>
     </AdminShell>
   );
