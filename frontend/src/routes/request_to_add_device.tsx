@@ -167,19 +167,44 @@ function RouteComponent() {
       setSubmitError(t('forms.fillAllFields'));
       return;
     }
-    if (!serialNumberPhotoFile.name || !devicePhotoFile.name) {
-      setSubmitError(t('forms.uploadBothPhotos'));
-      return;
-    }
+    // if (!serialNumberPhotoFile.name || !devicePhotoFile.name) {
+    //   setSubmitError(t('forms.uploadBothPhotos'));
+    //   return;
+    // }
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('imageFile', serialNumberPhotoFile);
-      formData.append('uploadDir', 'images/serial-numbers');
-      await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
-      formData.set('imageFile', devicePhotoFile);
-      formData.set('uploadDir', 'images/devices');
-      await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
+      let serialNumberPhotoName = 'no-image.png';
+      let devicePhotoName = 'no-image.png';
+
+      // Upload serial number image (optional)
+      if (serialNumberPhotoFile.name) {
+        const formData = new FormData();
+        formData.append('imageFile', serialNumberPhotoFile);
+        formData.append('uploadDir', 'images/serial-numbers');
+
+        const res = await fetch('http://localhost:5173/api/image/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!res.ok) throw new Error('Serial number image upload failed');
+        serialNumberPhotoName = serialNumberPhotoFile.name;
+      }
+
+      // Upload device image (optional)
+      if (devicePhotoFile.name) {
+        const formData = new FormData();
+        formData.append('imageFile', devicePhotoFile);
+        formData.append('uploadDir', 'images/devices');
+
+        const res = await fetch('http://localhost:5173/api/image/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error('Device image upload failed');
+
+        devicePhotoName = devicePhotoFile.name;
+      }
       const userID = await fetch('http://localhost:5173/api/user-id');
       if (!userID.ok) throw new Error('Failed to fetch user id');
       const userIDText = await userID.text();
@@ -194,8 +219,8 @@ function RouteComponent() {
           serialNumber,
           usage: selectedUsage.value,
           username,
-          devicePhoto: devicePhotoFile.name,
-          serialNumberPhoto: serialNumberPhotoFile.name,
+          devicePhoto: devicePhotoName,
+          serialNumberPhoto: serialNumberPhotoName,
         }),
       });
       setSubmitSuccess(true);

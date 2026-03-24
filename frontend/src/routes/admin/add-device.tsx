@@ -169,19 +169,29 @@ function RouteComponent() {
       setSubmitError(t('forms.fillAllFields'));
       return;
     }
-    if (!serialNumberPhotoFile.name || !devicePhotoFile.name) {
-      setSubmitError(t('forms.uploadBothPhotos'));
-      return;
-    }
+    // if (!serialNumberPhotoFile.name || !devicePhotoFile.name) {
+    //   setSubmitError(t('forms.uploadBothPhotos'));
+    //   return;
+    // }
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('imageFile', serialNumberPhotoFile);
-      formData.append('uploadDir', 'images/serial-numbers');
-      await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
-      formData.set('imageFile', devicePhotoFile);
-      formData.set('uploadDir', 'images/devices');
-      await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
+      let serialNumberPhotoName = 'no-image.png';
+      let devicePhotoName = 'no-image.png';
+      if (serialNumberPhotoFile.name) {
+        formData.append('imageFile', serialNumberPhotoFile);
+        formData.append('uploadDir', 'images/serial-numbers');
+        const res = await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('Serial number image upload failed');
+        serialNumberPhotoName = serialNumberPhotoFile.name;
+      }
+      if (devicePhotoFile.name) {
+        formData.set('imageFile', devicePhotoFile);
+        formData.set('uploadDir', 'images/devices');
+        const res = await fetch('http://localhost:5173/api/image/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('Device image upload failed');
+        devicePhotoName = devicePhotoFile.name;
+      }
       const deviceRes = await fetch('http://localhost:5173/api/device', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -192,8 +202,8 @@ function RouteComponent() {
           militaryUnitId: selectedMilitaryUnitBranch!.value,
           usage: selectedUsage.value,
           username,
-          devicePhoto: devicePhotoFile.name,
-          serialNumberPhoto: serialNumberPhotoFile.name,
+          devicePhoto: devicePhotoName,
+          serialNumberPhoto: serialNumberPhotoName,
         }),
       });
       if (!deviceRes.ok) {
