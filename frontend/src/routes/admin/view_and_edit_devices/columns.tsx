@@ -195,8 +195,16 @@ export function useDeviceColumns(): ColumnDef<DeviceModifiedType>[] {
         ),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
+            <ViewImage
+              src={`${DEVICE_URL}/${row.original.devicePhoto}`}
+              alt={t('table.photo')}
               imageClassName="w-10 h-10 object-cover rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)]"
+            />
+            <ViewImage
+              src={`${SERIAL_NUMBER_URL}/${row.original.serialNumberPhoto}`}
+              alt={t('table.snPhoto')}
               imageClassName="w-10 h-10 object-cover rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)]"
+            />
           </div>
         ),
       },
