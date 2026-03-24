@@ -35,7 +35,8 @@ function RouteComponent() {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      const newFile = new File([brandLogoFile], brandName.trim() + '.png');
+      const ext = brandLogoFile.name.split('.').pop() || 'png';
+      const newFile = new File([brandLogoFile], brandName.trim() + '.' + ext, { type: brandLogoFile.type });
       formData.append('imageFile', newFile);
       formData.append('uploadDir', 'images/logos');
       await fetch(`http://localhost:5173/api/image/upload`, {

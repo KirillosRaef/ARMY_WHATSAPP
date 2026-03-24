@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
-import { Trash2, AlertTriangle, Image as ImageIcon, Sparkles } from "lucide-react"
+import { Trash2, Image as ImageIcon, Sparkles } from "lucide-react"
 import ViewImage from "@/components/view_image"
 
 interface DataTableProps<TData, TValue> {
@@ -149,7 +149,7 @@ export function DataTable<TData extends { brandName: string }, TValue>({
                       <ViewImage
                         src={`${LOGO_URL}/${fileName}`}
                         alt={displayName}
-                        imageClassName={`w-24 h-24 sm:w-28 sm:h-28 object-contain rounded-2xl border transition-all duration-500 shadow-xl ${isSelected ? 'border-primary/50 bg-primary/5' : 'border-white/10 bg-white/5 group-hover:border-primary/30'} p-3`}
+                        imageClassName={`w-24 h-24 sm:w-28 sm:h-28 object-contain rounded-2xl border border-black/5 dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.01] dark:to-white/[0.04] backdrop-blur-xl shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] transition-all duration-500 ${isSelected ? 'scale-105 ring-2 ring-primary/60 border-primary/30 shadow-[0_8px_20px_rgba(var(--primary),0.15)]' : 'group-hover:scale-105 group-hover:border-black/10 dark:group-hover:border-white/20 group-hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.15)] dark:group-hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]'} p-3.5`}
                         isClickable={false}
                       />
                     </div>

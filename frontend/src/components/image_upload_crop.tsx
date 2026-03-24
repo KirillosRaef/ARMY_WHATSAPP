@@ -22,15 +22,26 @@ export default function ImageUploadCrop({ title, isStyle, label, aspect = 1, onI
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [naturalAspect, setNaturalAspect] = useState<number>(1);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
     const imageUrl = URL.createObjectURL(file);
-    setTempImage(imageUrl);
-    setActualFileName(file.name);
-    setIsModalOpen(true);
-  }, []);
+    
+    const img = new window.Image();
+    img.onload = () => {
+      const w = img.width || 1;
+      const h = img.height || 1;
+      setNaturalAspect(w / h);
+      setTempImage(imageUrl);
+      setActualFileName(file.name);
+      
+      setPreview(imageUrl);
+      onImageCropped(file); // Do not crop initially, use the original image
+    };
+    img.src = imageUrl;
+  }, [onImageCropped]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -42,6 +53,7 @@ export default function ImageUploadCrop({ title, isStyle, label, aspect = 1, onI
     setCroppedAreaPixels(croppedArea);
   };
 
+
   const getCroppedImg = async (imageSrc: string, crop: Area): Promise<Blob> => {
     const image = new Image();
     image.src = imageSrc;
@@ -52,7 +64,7 @@ export default function ImageUploadCrop({ title, isStyle, label, aspect = 1, onI
     canvas.height = crop.height;
     ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
     return new Promise((resolve) => {
-      canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.9);
+      canvas.toBlob((blob) => resolve(blob!), 'image/png', 1);
     });
   };
 
@@ -61,7 +73,7 @@ export default function ImageUploadCrop({ title, isStyle, label, aspect = 1, onI
     const blob = await getCroppedImg(tempImage, croppedAreaPixels);
     const previewUrl = URL.createObjectURL(blob);
     setPreview(previewUrl);
-    onImageCropped(new File([blob], actualFileName, { type: 'image/jpeg' }));
+    onImageCropped(new File([blob], actualFileName, { type: 'image/png' }));
     setIsModalOpen(false);
     setTempImage(null);
   };
@@ -99,10 +111,22 @@ export default function ImageUploadCrop({ title, isStyle, label, aspect = 1, onI
         <input {...getInputProps()} />
         {preview ? (
           <>
-            <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+            <img src={preview} alt="Preview" className="w-full h-full object-contain" />
             {/* Overlay on hover */}
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 gap-3">
               <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsModalOpen(true);
+                }}
+                className="flex items-center gap-2 rounded-lg bg-white/15 px-3 py-2 text-xs font-medium text-white backdrop-blur-sm hover:bg-white/25 transition-colors"
+              >
+                <ZoomIn className="h-3.5 w-3.5" />
+                Crop
+              </button>
+              <button
+                type="button"
                 onClick={handleReupload}
                 className="flex items-center gap-2 rounded-lg bg-white/15 px-3 py-2 text-xs font-medium text-white backdrop-blur-sm hover:bg-white/25 transition-colors"
               >
@@ -157,7 +181,7 @@ export default function ImageUploadCrop({ title, isStyle, label, aspect = 1, onI
                 image={tempImage}
                 crop={crop}
                 zoom={zoom}
-                aspect={aspect}
+                aspect={naturalAspect}
                 objectFit="cover"
                 onCropChange={setCrop}
                 onZoomChange={setZoom}

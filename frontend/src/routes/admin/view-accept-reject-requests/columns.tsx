@@ -96,7 +96,7 @@ export function useAcceptRejectRequestColumns(): ColumnDef<RequestModifiedType>[
             <img
               src={`${LOGO_URL}/${row.original.brandLogo}`}
               alt={t('table.brandLogo')}
-              className="w-9 h-9 object-contain rounded-lg border border-border/50 bg-white/5 p-0.5 shrink-0"
+              className="w-9 h-9 object-contain rounded-lg p-0.5 shrink-0"
               loading="lazy"
             />
             <p className="text-sm font-medium text-foreground truncate">{row.original.deviceDescription}</p>

@@ -48,7 +48,7 @@ export const imageRoutes = new Elysia();
         return new Response(file.stream(), {
           headers: {
             'Content-Type': file.type || 'application/octet-stream',
-            'Cache-Control': 'public, max-age=31536000',
+            'Cache-Control': 'no-cache, must-revalidate',
           },
         });
       })

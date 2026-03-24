@@ -55,7 +55,7 @@ function RouteComponent() {
   const [brandName, setBrandName] = useState('');
   const [deviceKind, setDeviceKind] = useState('');
   const [description, setDescription] = useState('');
-  const [brandLogo, setBrandLogo] = useState('');
+
 
   const { data: brands, isLoading, error } = useQuery({
     queryKey: ['brands'],

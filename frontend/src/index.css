@@ -52,6 +52,7 @@
   --sidebar-accent-foreground: oklch(0.2 0.02 280);
   --sidebar-border: oklch(0.88 0.01 280);
   --sidebar-ring: oklch(0.52 0.22 264);
+  --checkerboard-color: #e8e8e8;
 }
 
 .dark {
@@ -88,6 +89,7 @@
   --sidebar-accent-foreground: oklch(0.9 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.65 0.2 265);
+  --checkerboard-color: #e0e0e0;
 }
 
 @theme inline {

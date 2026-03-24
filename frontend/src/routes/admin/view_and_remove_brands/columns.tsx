@@ -49,7 +49,7 @@ export function useBrandColumns(): ColumnDef<Brands>[] {
               <ViewImage
                 src={`${LOGO_URL}/${fileName}`}
                 alt={t('table.brandLogo')}
-                imageClassName="w-16 h-16 sm:w-24 sm:h-24 object-contain rounded-xl border border-border/50 bg-white/5 shadow-md p-1 hover:scale-105 transition-transform"
+                imageClassName="w-16 h-16 sm:w-24 sm:h-24 object-contain rounded-[14px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] backdrop-blur-sm p-2 hover:scale-105 transition-all duration-300 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_-4px_rgba(0,0,0,0.2)]"
               />
             </div>
           );

@@ -67,48 +67,6 @@ const getDeviceTypes = async () => {
   return res.json();
 };
 
-const selectStyles = {
-  control: (base: object, state: { isFocused: boolean }) => ({
-    ...base,
-    background: 'hsl(var(--background))',
-    border: state.isFocused
-      ? '1px solid hsl(var(--primary))'
-      : '1px solid hsl(var(--border))',
-    borderRadius: '0.375rem',
-    boxShadow: state.isFocused ? '0 0 0 1px hsl(var(--primary))' : 'none',
-    color: 'hsl(var(--foreground))',
-    minHeight: '40px',
-    transition: 'all 0.15s',
-    '&:hover': { border: '1px solid hsl(var(--primary) / 0.5)' },
-  }),
-  singleValue: (base: object) => ({ ...base, color: 'hsl(var(--foreground))' }),
-  placeholder: (base: object) => ({ ...base, color: 'hsl(var(--muted-foreground))' }),
-  menu: (base: object) => ({
-    ...base,
-    background: 'hsl(var(--card))',
-    border: '1px solid hsl(var(--border))',
-    borderRadius: '0.375rem',
-    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-    zIndex: 50,
-  }),
-  option: (base: object, state: { isSelected: boolean; isFocused: boolean }) => ({
-    ...base,
-    background: state.isSelected
-      ? 'hsl(var(--primary) / 0.2)'
-      : state.isFocused
-      ? 'hsl(var(--muted))'
-      : 'transparent',
-    color: state.isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-    borderRadius: '0.25rem',
-    margin: '2px 4px',
-    width: 'calc(100% - 8px)',
-    cursor: 'pointer',
-    transition: 'all 0.1s',
-  }),
-  input: (base: object) => ({ ...base, color: 'hsl(var(--foreground))' }),
-  indicatorSeparator: () => ({ display: 'none' }),
-  dropdownIndicator: (base: object) => ({ ...base, color: 'hsl(var(--muted-foreground))' }),
-};
 
 function RouteComponent() {
   const { t } = useTranslation();
@@ -127,7 +85,7 @@ function RouteComponent() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
 
-  const { data: militaryUnits, isLoading: militaryUnitsLoading, error: militaryUnitsError } = useQuery({
+  const { data: militaryUnits } = useQuery({
     queryKey: ['militaryUnits'],
     queryFn: getMilitaryUnits as () => Promise<MilitaryUnit[]>,
     staleTime: 0,

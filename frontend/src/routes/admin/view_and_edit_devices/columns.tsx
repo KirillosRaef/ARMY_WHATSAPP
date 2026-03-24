@@ -100,7 +100,7 @@ export function useDeviceColumns(): ColumnDef<DeviceModifiedType>[] {
             <img
               src={`${LOGO_URL}/${row.original.brandLogo}`}
               alt={row.original.brandName}
-              className="w-9 h-9 object-contain rounded-lg border border-border/50 bg-white/5 p-0.5 shrink-0"
+              className="w-9 h-9 object-contain rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] p-1 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)] shrink-0 group-hover:bg-black/[0.06] dark:group-hover:bg-white/[0.08] transition-colors"
               loading="lazy"
             />
             <div className="min-w-0">
@@ -195,16 +195,8 @@ export function useDeviceColumns(): ColumnDef<DeviceModifiedType>[] {
         ),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <ViewImage
-              src={`${DEVICE_URL}/${row.original.devicePhoto}`}
-              alt={t('table.photo')}
-              imageClassName="w-10 h-10 object-cover rounded-lg border border-border/50 shadow-sm"
-            />
-            <ViewImage
-              src={`${SERIAL_NUMBER_URL}/${row.original.serialNumberPhoto}`}
-              alt={t('table.snPhoto')}
-              imageClassName="w-10 h-10 object-cover rounded-lg border border-border/50 shadow-sm"
-            />
+              imageClassName="w-10 h-10 object-cover rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)]"
+              imageClassName="w-10 h-10 object-cover rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)]"
           </div>
         ),
       },
