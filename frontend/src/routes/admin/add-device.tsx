@@ -30,11 +30,7 @@ const LOGO_URL = 'http://localhost:5173/api/image/logos';
 
 type Option = { value: string; label: string };
 
-const usageOptions: Option[] = [
-  { value: 'New', label: '✨ New' },
-  { value: 'Used', label: '🔄 Used' },
-  { value: 'Broken', label: '⚠️ Broken' },
-];
+// usageOptions moved inside the component to use `t()`
 
 type MilitaryUnit = {
   id: string;
@@ -70,6 +66,11 @@ const getDeviceTypes = async () => {
 
 function RouteComponent() {
   const { t } = useTranslation();
+  const usageOptions: Option[] = [
+    { value: 'New', label: t('usageBadge.new') },
+    { value: 'Used', label: t('usageBadge.used') },
+    { value: 'Broken', label: t('usageBadge.broken') },
+  ];
   const navigate = useNavigate();
   const [selectedDeviceType, setSelectedDeviceType] = useState<SingleValue<Option>>(null);
   const [serialNumber, setSerialNumber] = useState('');

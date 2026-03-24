@@ -157,7 +157,22 @@
     "deleteSelected": "Delete {{count}} selected",
     "accepting": "Accepting...",
     "acceptSelected": "Accept {{count}} selected",
-    "pageOf": "Page {{page}} of {{total}}"
+    "pageOf": "Page {{page}} of {{total}}",
+    "downloadPDF": "Download PDF",
+    "pdfExportTitle": "Export to PDF",
+    "pdfExportDescription": "Choose which columns to include in the exported PDF report.",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "export": "Export",
+    "no": "No.",
+    "pdfBrand": "Brand",
+    "pdfDeviceKind": "Device Kind",
+    "pdfDescription": "Description",
+    "pdfSerialNumber": "Serial Number",
+    "pdfUsage": "Usage",
+    "pdfMilitaryUnit": "Military Unit",
+    "pdfBranch": "Branch",
+    "pdfUsername": "Username"
   },
   "usageBadge": {
     "new": "✨ New",

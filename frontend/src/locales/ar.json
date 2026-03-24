@@ -157,7 +157,22 @@
     "deleteSelected": "حذف {{count}} المحدد",
     "accepting": "جاري القبول...",
     "acceptSelected": "قبول {{count}} المحدد",
-    "pageOf": "صفحة {{page}} من {{total}}"
+    "pageOf": "صفحة {{page}} من {{total}}",
+    "downloadPDF": "تحميل PDF",
+    "pdfExportTitle": "تصدير إلى PDF",
+    "pdfExportDescription": "اختر الأعمدة التي تريد تضمينها في تقرير PDF.",
+    "selectAll": "تحديد الكل",
+    "deselectAll": "إلغاء تحديد الكل",
+    "export": "تصدير",
+    "no": "م.",
+    "pdfBrand": "العلامة",
+    "pdfDeviceKind": "نوع الجهاز",
+    "pdfDescription": "الوصف",
+    "pdfSerialNumber": "الرقم التسلسلي",
+    "pdfUsage": "الحالة",
+    "pdfMilitaryUnit": "الوحدة العسكرية",
+    "pdfBranch": "الفرع",
+    "pdfUsername": "اسم المستخدم"
   },
   "usageBadge": {
     "new": "✨ جديد",

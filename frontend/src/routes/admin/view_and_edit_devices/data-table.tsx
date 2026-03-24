@@ -214,71 +214,9 @@ export function DataTable<TData extends { id: string }, TValue>({
           })}
         </div>
         <div className="flex items-center gap-3">
-          {/* <Button
-            size="sm"
-            className="bg-red-500 text-primary-foreground hover:bg-red-600 shadow-lg shadow-red-500/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
-            onClick={() => {
-              <div>
-                <DownloadPdfModal
-                  alt="Download PDF"
-                />
-              </div>
-            }}
-          >
-            {t('table.downloadPDFDiv')} */}
-          {/* </Button> */}
           <DownloadPdfModal
-            alt={t('table.downloadPDF')}
             data={table.getFilteredRowModel().rows.map((row) => row.original)}
-            headers={[
-              'No.',
-              'Brand',
-              'Device Kind',
-              'Description',
-              'Serial Number',
-              'Usage',
-              'Military Unit',
-              'Branch',
-              'Username',
-            ]}
           />
-
-          {/* <Button
-            size="sm"
-            className="bg-red-500 text-primary-foreground hover:bg-red-600 shadow-lg shadow-red-500/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
-            onClick={() => {
-              const doc = new jsPDF();
-              let headers = [
-                'No.',
-                'Brand',
-                'Device Kind',
-                'Description',
-                'Serial Number',
-                'Usage',
-                'Military Unit',
-                'Branch',
-                'Username',
-              ];
-              let i = 1;
-              autoTable(doc, {
-                head: [headers],
-                body: table.getFilteredRowModel().rows.map((row) => [
-                  i++,
-                  row.original.brandName,
-                  row.original.deviceKind,
-                  row.original.description,
-                  row.original.serialNumber,
-                  row.original.usage,
-                  row.original.militaryUnitName,
-                  row.original.branch,
-                  row.original.username,
-                ]),
-              });
-              doc.save('devices.pdf');
-            }}
-          >
-            {t('table.downloadPDF')}
-          </Button> */}
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"

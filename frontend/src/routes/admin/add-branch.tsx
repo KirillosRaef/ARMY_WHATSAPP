@@ -168,7 +168,7 @@ function RouteComponent() {
               <Input
                 id="branch"
                 type="text"
-                placeholder={t('table.militaryUnitNamePlaceholder')}
+                placeholder={t('forms.militaryUnitNamePlaceholder')}
                 value={branch}
                 onChange={(e) => setBranch(e.target.value)}
                 className="h-9 rounded-md text-sm"

@@ -48,7 +48,7 @@ export function DataTable<TData extends { id: string; militaryUnitName: string; 
     getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
     state: { sorting, rowSelection },
-    initialState: { columnVisibility: { id: false } },
+    initialState: { columnVisibility: { id: false }, pagination: { pageSize: 12 } },
   });
 
   const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id);

@@ -1,13 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ChevronsUpDown } from 'lucide-react';
+
 import { AdminShell } from '@/components/admin_shell';
 import { AlertCircle, CheckCircle2, Loader2, PackagePlus } from 'lucide-react';
 import { useState } from 'react';
@@ -50,6 +45,7 @@ function RouteComponent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [brandPickerOpen, setBrandPickerOpen] = useState(false);
 
   const [selectedBrand, setSelectedBrand] = useState<SingleValue<Option>>(null);
   const [brandName, setBrandName] = useState('');
@@ -152,35 +148,66 @@ function RouteComponent() {
           <CardContent className="pt-4 px-4 pb-4 space-y-4">
             <div className="space-y-2">
               <Label className="text-foreground font-medium text-sm">{t('table.brandName')}</Label>
-              <Select
-                onValueChange={(value) => {
-                  setSelectedBrand({
-                    value,
-                    label: value.split('.')[0].charAt(0).toUpperCase() + value.split('.')[0].slice(1),
-                  });
-                  setBrandName(value.split('.')[0].charAt(0).toUpperCase() + value.split('.')[0].slice(1));
-                }}
-              >
-                <SelectTrigger className="w-full h-9 rounded-md">
-                  <SelectValue placeholder={t('forms.selectBrand')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {brandOptions.map((option: Option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div>
+              <Popover open={brandPickerOpen} onOpenChange={setBrandPickerOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-colors hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    {selectedBrand ? (
+                      <div className="flex items-center gap-2.5">
+                        <img
+                          src={`${LOGO_URL}/${selectedBrand.value}`}
+                          alt={brandName}
+                          className="w-5 h-5 object-contain shrink-0"
+                        />
+                        <span className="text-foreground font-medium">{brandName}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">{t('forms.selectBrand')}</span>
+                    )}
+                    <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2" align="start" sideOffset={4}>
+                  <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[240px] overflow-y-auto [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden p-1">
+                    {brandOptions.map((option: Option) => {
+                      const isActive = selectedBrand?.value === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedBrand({ value: option.value, label: option.label });
+                            setBrandName(option.value.split('.')[0].charAt(0).toUpperCase() + option.value.split('.')[0].slice(1));
+                            setBrandPickerOpen(false);
+                          }}
+                          className={[
+                            'group relative flex items-center justify-center rounded-xl p-2.5 transition-all duration-200 cursor-pointer aspect-square',
+                            isActive
+                              ? 'ring-2 ring-primary ring-offset-1 ring-offset-background bg-primary/8 dark:bg-primary/15 shadow-lg shadow-primary/15'
+                              : 'border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 hover:shadow-md hover:scale-[1.03]',
+                          ].join(' ')}
+                        >
                           <img
                             src={`${LOGO_URL}/${option.value}`}
                             alt={option.label}
-                            className="w-10 h-10 object-cover rounded-lg border border-border shadow-sm"
+                            className="w-12 h-12 object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-105"
                             loading="lazy"
                           />
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+                          {isActive && (
+                            <div className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                              <svg className="h-2 w-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label htmlFor="brandName" className="text-foreground font-medium text-sm">{t('table.brandName')}</Label>

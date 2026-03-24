@@ -12,6 +12,9 @@ import ViewImage from '@/components/view_image';
 export type RequestModifiedType = {
   id: string;
   brandLogo: string;
+  brandName: string;
+  deviceKind: string;
+  description: string;
   deviceDescription: string;
   deviceTypeId: string;
   militaryUnitId: string;
@@ -77,9 +80,11 @@ export function useRequestColumns(): ColumnDef<RequestModifiedType>[] {
         header: t('table.id'),
         enableHiding: true,
       },
-      // ─── Device (with logo) ───
+      // ─── MERGED: Brand + Device Kind ───
       {
-        accessorKey: 'deviceDescription',
+        id: 'brandName',
+        accessorKey: 'brandName',
+        accessorFn: (row) => `${row.brandName} ${row.deviceKind}`,
         header: ({ column }) => (
           <Button
             variant="ghost"
@@ -95,11 +100,34 @@ export function useRequestColumns(): ColumnDef<RequestModifiedType>[] {
           <div className="flex items-center gap-3 min-w-0">
             <ViewImage
               src={`${LOGO_URL}/${row.original.brandLogo}`}
-              alt={t('table.brandLogo')}
-              imageClassName="w-9 h-9 object-contain rounded-lg p-0.5 shrink-0"
+              alt={row.original.brandName}
+              imageClassName="w-9 h-9 object-contain rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] p-1 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)] shrink-0 group-hover:bg-black/[0.06] dark:group-hover:bg-white/[0.08] transition-colors"
             />
-            <p className="text-sm font-medium text-foreground truncate">{row.original.deviceDescription}</p>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{row.original.brandName}</p>
+              <p className="text-xs text-muted-foreground truncate">{row.original.deviceKind}</p>
+            </div>
           </div>
+        ),
+      },
+      // ─── Description ───
+      {
+        accessorKey: 'description',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 -ml-2 font-semibold text-muted-foreground hover:text-foreground h-auto px-2 py-1.5 uppercase tracking-wider text-[11px]"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            {t('table.description')}
+            <ArrowUpDown className="h-3 w-3" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <p className="text-xs text-foreground/80 max-w-[180px] truncate" title={row.original.description}>
+            {row.original.description || '—'}
+          </p>
         ),
       },
       // ─── Serial + Usage ───
