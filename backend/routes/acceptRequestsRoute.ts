@@ -11,14 +11,14 @@ acceptRequestsRoute.onError((e) => {
       
   const data = await db.select({
     deviceTypeId: request.deviceTypeId,
-    militaryUnitId: militaryUnit.id,
+    militaryUnitId: request.militaryUnitId,
     serialNumber: request.serialNumber,
     usage: request.usage,
     username: request.username,
     devicePhoto: request.devicePhoto,
     serialNumberPhoto: request.serialNumberPhoto,
-  }).from(request).where(inArray(request.id, requestIds))
-    .innerJoin(militaryUnit, eq(request.militaryUnitId, militaryUnit.id));
+  }).from(request).where(inArray(request.id, requestIds));
+    // .innerJoin(militaryUnit, eq(request.militaryUnitId, militaryUnit.id));
   
   await db.insert(device).values(data);
   return { Success: true };
