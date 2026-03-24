@@ -97,11 +97,10 @@ export function useDeviceColumns(): ColumnDef<DeviceModifiedType>[] {
         ),
         cell: ({ row }) => (
           <div className="flex items-center gap-3 min-w-0">
-            <img
+            <ViewImage
               src={`${LOGO_URL}/${row.original.brandLogo}`}
               alt={row.original.brandName}
-              className="w-9 h-9 object-contain rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] p-1 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)] shrink-0 group-hover:bg-black/[0.06] dark:group-hover:bg-white/[0.08] transition-colors"
-              loading="lazy"
+              imageClassName="w-9 h-9 object-contain rounded-[10px] border border-black/[0.04] dark:border-white/10 bg-gradient-to-br from-black/[0.01] to-black/[0.04] dark:from-white/[0.02] dark:to-white/[0.06] p-1 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-4px_rgba(0,0,0,0.2)] shrink-0 group-hover:bg-black/[0.06] dark:group-hover:bg-white/[0.08] transition-colors"
             />
             <div className="min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{row.original.brandName}</p>

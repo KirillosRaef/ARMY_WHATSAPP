@@ -93,11 +93,10 @@ export function useAcceptRejectRequestColumns(): ColumnDef<RequestModifiedType>[
         ),
         cell: ({ row }) => (
           <div className="flex items-center gap-3 min-w-0">
-            <img
+            <ViewImage
               src={`${LOGO_URL}/${row.original.brandLogo}`}
               alt={t('table.brandLogo')}
-              className="w-9 h-9 object-contain rounded-lg p-0.5 shrink-0"
-              loading="lazy"
+              imageClassName="w-9 h-9 object-contain rounded-lg p-0.5 shrink-0"
             />
             <p className="text-sm font-medium text-foreground truncate">{row.original.deviceDescription}</p>
           </div>
