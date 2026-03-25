@@ -1,131 +1,197 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
-import { X } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "@/components/ui/field"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { FileDown, Check, X } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import { amiriFont } from "@/assets/Amiri-Regular.ttf";
 
-export default function DownloadPdfModal({ alt, headers, data }: { alt: string, headers: string[], data: any[] }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const doc = new jsPDF();
-  let chosenHeaders: { header: string, pdf: boolean }[] = [];
-  headers.forEach((header) => {
-    chosenHeaders.push({ 'header': header, 'pdf': true });
-  });
+/** Each exportable column: translation key for the header + accessor to pull data */
+interface PdfColumn {
+  key: string;
+  labelKey: string;
+  accessor: (row: any) => string | number;
+}
 
+const PDF_COLUMNS: PdfColumn[] = [
+  { key: "brandName", labelKey: "table.pdfBrand", accessor: (r) => r.brandName ?? "" },
+  { key: "deviceKind", labelKey: "table.pdfDeviceKind", accessor: (r) => r.deviceKind ?? "" },
+  { key: "description", labelKey: "table.pdfDescription", accessor: (r) => r.description ?? "" },
+  { key: "serialNumber", labelKey: "table.pdfSerialNumber", accessor: (r) => r.serialNumber ?? "" },
+  { key: "usage", labelKey: "table.pdfUsage", accessor: (r) => r.usage ?? "" },
+  { key: "militaryUnit", labelKey: "table.pdfMilitaryUnit", accessor: (r) => r.militaryUnitName ?? "" },
+  { key: "branch", labelKey: "table.pdfBranch", accessor: (r) => r.branch ?? "" },
+  { key: "username", labelKey: "table.pdfUsername", accessor: (r) => r.username ?? "" },
+];
 
-  const handleDownload = () => {
-    let i = 1;
-    const finalHeaders = chosenHeaders.filter((h) => h.pdf).map((h) => h.header);
-    autoTable(doc, {
-      head: [finalHeaders],
-      body: data.map((item) => [
-        i++,
-        item.brandName,
-        item.deviceKind,
-        item.description,
-        item.serialNumber,
-        item.usage,
-        item.militaryUnitName,
-        item.branch,
-        item.username,
-      ])
-    });
-    doc.save('devices.pdf');
+import { ArabicShaper } from "arabic-persian-reshaper";
+
+const processArabicText = (text: string | number) => {
+  if (text === null || text === undefined) return "";
+  const str = String(text);
+  const arabicRegex =
+    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+
+  if (!arabicRegex.test(str)) {
+    return str; // Leave English completely untouched
+  }
+
+  // Shape Arabic characters into their correct presentation forms
+  const shaped = ArabicShaper.convertArabic(str);
+
+  // jsPDF 2.x with Identity-H handles RTL internally, so no manual reversal needed
+  return shaped;
+};
+
+export default function DownloadPdfModal({ data }: { data: any[] }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(PDF_COLUMNS.map((c) => [c.key, true]))
+  );
+
+  const allSelected = PDF_COLUMNS.every((c) => selected[c.key]);
+  const noneSelected = PDF_COLUMNS.every((c) => !selected[c.key]);
+
+  const toggleAll = () => {
+    const nextValue = !allSelected;
+    setSelected(Object.fromEntries(PDF_COLUMNS.map((c) => [c.key, nextValue])));
   };
 
+  const toggle = (key: string) => {
+    setSelected((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleExport = () => {
+    const activeCols = PDF_COLUMNS.filter((c) => selected[c.key]);
+    if (activeCols.length === 0) return;
+
+    const doc = new jsPDF();
+    doc.addFileToVFS('Amiri-Regular.ttf', amiriFont);
+    doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal', 'Identity-H');
+    doc.setFont('Amiri');
+
+    let rowNum = 1;
+
+    autoTable(doc, {
+      head: [[
+        processArabicText(t("table.no")),
+        ...activeCols.map((c) => processArabicText(t(c.labelKey)))
+      ]],
+      body: data.map((item) => [
+        processArabicText(rowNum++),
+        ...activeCols.map((c) => processArabicText(c.accessor(item)))
+      ]),
+      styles: { font: 'Amiri', fontSize: 9, halign: 'right' },
+      headStyles: { fillColor: [30, 41, 59], halign: 'right' },
+    });
+    doc.save("devices.pdf");
+    setOpen(false);
+  };
+
+
   return (
-    <div>
-      <Button
-        onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
-        size="sm"
-        className="bg-red-500 text-primary-foreground hover:bg-red-600 shadow-lg shadow-red-500/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
-      >
-        {alt}
-      </Button>
-
-      {isModalOpen && createPortal(
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center"
-          onClick={() => setIsModalOpen(false)}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0 transition-all"
         >
-          {/* Cinematic backdrop */}
-          <div
-            className="absolute inset-0 transition-opacity duration-300"
-            style={{
-              background: 'rgba(0, 0, 0, 0.82)',
-              backdropFilter: 'blur(20px) saturate(0.5)',
-              WebkitBackdropFilter: 'blur(20px) saturate(0.5)',
-            }}
-          />
+          <FileDown className="h-3.5 w-3.5" />
+          {t("table.downloadPDF")}
+        </Button>
+      </DialogTrigger>
 
-          {/* Close button - floating top right */}
-          <Button
-            onClick={() => setIsModalOpen(false)}
-            className="absolute top-5 right-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-200 backdrop-blur-sm"
-          >
-            <X className="h-5 w-5" />
-          </Button>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <FileDown className="h-5 w-5 text-primary" />
+            {t("table.pdfExportTitle")}
+          </DialogTitle>
+          <DialogDescription>
+            {t("table.pdfExportDescription")}
+          </DialogDescription>
+        </DialogHeader>
 
-          {/* Image container */}
-          <div
-            className="relative flex items-center justify-center p-8"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '90vw', maxHeight: '90vh' }}
+        {/* Select All / Deselect All toggle */}
+        <div className="flex items-center justify-between px-1 pt-1">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
           >
-            <FieldSet>
-              <FieldLegend variant="label">
-                Show these items on the desktop:
-              </FieldLegend>
-              <FieldDescription>
-                Select the items you want to show on the desktop.
-              </FieldDescription>
-              <FieldGroup className="gap-3">
-                {headers.map((header) => (
-                  <Field orientation="horizontal">
-                    <Checkbox
-                      id={header}
-                      name={header}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          chosenHeaders.find((h) => h.header === header)!.pdf = true;
-                        } else {
-                          chosenHeaders.find((h) => h.header === header)!.pdf = false;
-                        }
-                      }}
-                      defaultChecked
-                    />
-                    <FieldLabel
-                      htmlFor={header}
-                      className="font-normal"
-                    >
-                      {header}
-                    </FieldLabel>
-                  </Field>
-                ))}
-              </FieldGroup>
-            </FieldSet>
-            <Button
-              onClick={handleDownload}
-              size="sm"
-              className="bg-red-500 text-primary-foreground hover:bg-red-600 shadow-lg shadow-red-500/20 rounded-xl px-5 py-2 text-sm font-medium h-9 border-0"
+            {allSelected ? (
+              <>
+                <X className="h-3.5 w-3.5" />
+                {t("table.deselectAll")}
+              </>
+            ) : (
+              <>
+                <Check className="h-3.5 w-3.5" />
+                {t("table.selectAll")}
+              </>
+            )}
+          </button>
+          <span className="text-xs text-muted-foreground">
+            {PDF_COLUMNS.filter((c) => selected[c.key]).length}/{PDF_COLUMNS.length}
+          </span>
+        </div>
+
+        {/* Column checkboxes */}
+        <div className="grid grid-cols-2 gap-2.5 py-2">
+          {PDF_COLUMNS.map((col) => (
+            <label
+              key={col.key}
+              className={[
+                "flex items-center gap-2.5 rounded-lg border px-3 py-2.5 cursor-pointer transition-all duration-150",
+                selected[col.key]
+                  ? "border-primary/30 bg-primary/5 dark:bg-primary/10"
+                  : "border-border bg-muted/30 hover:bg-muted/50",
+              ].join(" ")}
             >
-              {alt}
-            </Button>
-            
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
+              <Checkbox
+                id={col.key}
+                checked={selected[col.key]}
+                onCheckedChange={() => toggle(col.key)}
+                className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <span className="text-sm font-normal text-foreground select-none">
+                {t(col.labelKey)}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOpen(false)}
+            className="rounded-xl"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleExport}
+            disabled={noneSelected}
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-5 text-sm font-medium border-0 transition-all"
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            {t("table.export")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
