@@ -3,13 +3,33 @@ import react from '@vitejs/plugin-react';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import path from 'path';
 import tailwindcss from '@tailwindcss/vite';
+import os from 'os';
+
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+
+  for (const name of Object.keys(interfaces)) {
+    for (const net of interfaces[name] || []) {
+      if (
+        net.family === 'IPv4' &&
+        !net.internal
+      ) {
+        return net.address;
+      }
+    }
+  }
+
+  return 'localhost';
+}
+
+const ip = getLocalIP();
 
 // https://vite.dev/config/
 export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: `http://${ip}:3000`,
       },
     },
   },

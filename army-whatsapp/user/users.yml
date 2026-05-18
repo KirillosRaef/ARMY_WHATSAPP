@@ -1,0 +1,21 @@
+info:
+  name: users
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: http://192.168.1.111:3000/api/users
+  body:
+    type: json
+    data: |-
+      {
+        "userIds": ["Ql9pIwESv16tLIq181DnX2aoEFOyD8qX"]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -19,18 +19,8 @@ import type { ReactNode } from 'react';
 
 const navItems = [
   { to: '/admin_page' as const, labelKey: 'nav.dashboard', icon: LayoutDashboard },
-  { to: '/admin/add-brand' as const, labelKey: 'nav.addBrand', icon: PlusCircle },
-  { to: '/admin/view_and_remove_brands/page' as const, labelKey: 'nav.viewBrands', icon: ClipboardList },
-  { to: '/admin/add-military-unit' as const, labelKey: 'nav.addMilitaryUnit', icon: PlusCircle },
-  { to: '/admin/add-branch' as const, labelKey: 'nav.addBranch', icon: PlusCircle },
-  { to: '/admin/view_and_remove_military_units/page' as const, labelKey: 'nav.viewMilitaryUnits', icon: ClipboardList },
   { to: '/admin/add-user' as const, labelKey: 'nav.addUser', icon: User },
   { to: '/admin/view_and_remove_users/page' as const, labelKey: 'nav.viewUsers', icon: User },
-  { to: '/admin/add-device-type' as const, labelKey: 'nav.addDeviceType', icon: Users },
-  { to: '/admin/view_and_remove_device_types/page' as const, labelKey: 'nav.viewDeviceTypes', icon: Users },
-  { to: '/admin/view-accept-reject-requests/page' as const, labelKey: 'nav.viewRequests', icon: ClipboardList },
-  { to: '/admin/add-device' as const, labelKey: 'nav.addDevice', icon: MonitorSmartphone },
-  { to: '/admin/view_and_edit_devices/page' as const, labelKey: 'nav.viewDevices', icon: MonitorSmartphone },
 ] as const;
 
 export function AdminShell({ children }: { children: ReactNode }) {

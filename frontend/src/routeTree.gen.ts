@@ -10,32 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as User_pageRouteImport } from './routes/user_page'
-import { Route as Request_to_add_deviceRouteImport } from './routes/request_to_add_device'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as Admin_pageRouteImport } from './routes/admin_page'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ViewAndEditRequestsPageRouteImport } from './routes/view-and-edit-requests/page'
 import { Route as AdminAddUserRouteImport } from './routes/admin/add-user'
-import { Route as AdminAddMilitaryUnitRouteImport } from './routes/admin/add-military-unit'
-import { Route as AdminAddDeviceTypeRouteImport } from './routes/admin/add-device-type'
-import { Route as AdminAddDeviceRouteImport } from './routes/admin/add-device'
-import { Route as AdminAddBrandRouteImport } from './routes/admin/add-brand'
-import { Route as AdminAddBranchRouteImport } from './routes/admin/add-branch'
 import { Route as AdminView_and_remove_usersPageRouteImport } from './routes/admin/view_and_remove_users/page'
-import { Route as AdminView_and_remove_military_unitsPageRouteImport } from './routes/admin/view_and_remove_military_units/page'
-import { Route as AdminView_and_remove_device_typesPageRouteImport } from './routes/admin/view_and_remove_device_types/page'
-import { Route as AdminView_and_remove_brandsPageRouteImport } from './routes/admin/view_and_remove_brands/page'
-import { Route as AdminView_and_edit_devicesPageRouteImport } from './routes/admin/view_and_edit_devices/page'
-import { Route as AdminViewAcceptRejectRequestsPageRouteImport } from './routes/admin/view-accept-reject-requests/page'
 
 const User_pageRoute = User_pageRouteImport.update({
   id: '/user_page',
   path: '/user_page',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Request_to_add_deviceRoute = Request_to_add_deviceRouteImport.update({
-  id: '/request_to_add_device',
-  path: '/request_to_add_device',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -53,39 +36,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ViewAndEditRequestsPageRoute = ViewAndEditRequestsPageRouteImport.update({
-  id: '/view-and-edit-requests/page',
-  path: '/view-and-edit-requests/page',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminAddUserRoute = AdminAddUserRouteImport.update({
   id: '/admin/add-user',
   path: '/admin/add-user',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminAddMilitaryUnitRoute = AdminAddMilitaryUnitRouteImport.update({
-  id: '/admin/add-military-unit',
-  path: '/admin/add-military-unit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminAddDeviceTypeRoute = AdminAddDeviceTypeRouteImport.update({
-  id: '/admin/add-device-type',
-  path: '/admin/add-device-type',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminAddDeviceRoute = AdminAddDeviceRouteImport.update({
-  id: '/admin/add-device',
-  path: '/admin/add-device',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminAddBrandRoute = AdminAddBrandRouteImport.update({
-  id: '/admin/add-brand',
-  path: '/admin/add-brand',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminAddBranchRoute = AdminAddBranchRouteImport.update({
-  id: '/admin/add-branch',
-  path: '/admin/add-branch',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminView_and_remove_usersPageRoute =
@@ -94,75 +47,21 @@ const AdminView_and_remove_usersPageRoute =
     path: '/admin/view_and_remove_users/page',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AdminView_and_remove_military_unitsPageRoute =
-  AdminView_and_remove_military_unitsPageRouteImport.update({
-    id: '/admin/view_and_remove_military_units/page',
-    path: '/admin/view_and_remove_military_units/page',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AdminView_and_remove_device_typesPageRoute =
-  AdminView_and_remove_device_typesPageRouteImport.update({
-    id: '/admin/view_and_remove_device_types/page',
-    path: '/admin/view_and_remove_device_types/page',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AdminView_and_remove_brandsPageRoute =
-  AdminView_and_remove_brandsPageRouteImport.update({
-    id: '/admin/view_and_remove_brands/page',
-    path: '/admin/view_and_remove_brands/page',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AdminView_and_edit_devicesPageRoute =
-  AdminView_and_edit_devicesPageRouteImport.update({
-    id: '/admin/view_and_edit_devices/page',
-    path: '/admin/view_and_edit_devices/page',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AdminViewAcceptRejectRequestsPageRoute =
-  AdminViewAcceptRejectRequestsPageRouteImport.update({
-    id: '/admin/view-accept-reject-requests/page',
-    path: '/admin/view-accept-reject-requests/page',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
-  '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/admin/add-branch': typeof AdminAddBranchRoute
-  '/admin/add-brand': typeof AdminAddBrandRoute
-  '/admin/add-device': typeof AdminAddDeviceRoute
-  '/admin/add-device-type': typeof AdminAddDeviceTypeRoute
-  '/admin/add-military-unit': typeof AdminAddMilitaryUnitRoute
   '/admin/add-user': typeof AdminAddUserRoute
-  '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
-  '/admin/view-accept-reject-requests/page': typeof AdminViewAcceptRejectRequestsPageRoute
-  '/admin/view_and_edit_devices/page': typeof AdminView_and_edit_devicesPageRoute
-  '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
-  '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
-  '/admin/view_and_remove_military_units/page': typeof AdminView_and_remove_military_unitsPageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
-  '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/admin/add-branch': typeof AdminAddBranchRoute
-  '/admin/add-brand': typeof AdminAddBrandRoute
-  '/admin/add-device': typeof AdminAddDeviceRoute
-  '/admin/add-device-type': typeof AdminAddDeviceTypeRoute
-  '/admin/add-military-unit': typeof AdminAddMilitaryUnitRoute
   '/admin/add-user': typeof AdminAddUserRoute
-  '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
-  '/admin/view-accept-reject-requests/page': typeof AdminViewAcceptRejectRequestsPageRoute
-  '/admin/view_and_edit_devices/page': typeof AdminView_and_edit_devicesPageRoute
-  '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
-  '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
-  '/admin/view_and_remove_military_units/page': typeof AdminView_and_remove_military_unitsPageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRoutesById {
@@ -170,20 +69,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
-  '/request_to_add_device': typeof Request_to_add_deviceRoute
   '/user_page': typeof User_pageRoute
-  '/admin/add-branch': typeof AdminAddBranchRoute
-  '/admin/add-brand': typeof AdminAddBrandRoute
-  '/admin/add-device': typeof AdminAddDeviceRoute
-  '/admin/add-device-type': typeof AdminAddDeviceTypeRoute
-  '/admin/add-military-unit': typeof AdminAddMilitaryUnitRoute
   '/admin/add-user': typeof AdminAddUserRoute
-  '/view-and-edit-requests/page': typeof ViewAndEditRequestsPageRoute
-  '/admin/view-accept-reject-requests/page': typeof AdminViewAcceptRejectRequestsPageRoute
-  '/admin/view_and_edit_devices/page': typeof AdminView_and_edit_devicesPageRoute
-  '/admin/view_and_remove_brands/page': typeof AdminView_and_remove_brandsPageRoute
-  '/admin/view_and_remove_device_types/page': typeof AdminView_and_remove_device_typesPageRoute
-  '/admin/view_and_remove_military_units/page': typeof AdminView_and_remove_military_unitsPageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRouteTypes {
@@ -192,60 +79,24 @@ export interface FileRouteTypes {
     | '/'
     | '/admin_page'
     | '/login'
-    | '/request_to_add_device'
     | '/user_page'
-    | '/admin/add-branch'
-    | '/admin/add-brand'
-    | '/admin/add-device'
-    | '/admin/add-device-type'
-    | '/admin/add-military-unit'
     | '/admin/add-user'
-    | '/view-and-edit-requests/page'
-    | '/admin/view-accept-reject-requests/page'
-    | '/admin/view_and_edit_devices/page'
-    | '/admin/view_and_remove_brands/page'
-    | '/admin/view_and_remove_device_types/page'
-    | '/admin/view_and_remove_military_units/page'
     | '/admin/view_and_remove_users/page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin_page'
     | '/login'
-    | '/request_to_add_device'
     | '/user_page'
-    | '/admin/add-branch'
-    | '/admin/add-brand'
-    | '/admin/add-device'
-    | '/admin/add-device-type'
-    | '/admin/add-military-unit'
     | '/admin/add-user'
-    | '/view-and-edit-requests/page'
-    | '/admin/view-accept-reject-requests/page'
-    | '/admin/view_and_edit_devices/page'
-    | '/admin/view_and_remove_brands/page'
-    | '/admin/view_and_remove_device_types/page'
-    | '/admin/view_and_remove_military_units/page'
     | '/admin/view_and_remove_users/page'
   id:
     | '__root__'
     | '/'
     | '/admin_page'
     | '/login'
-    | '/request_to_add_device'
     | '/user_page'
-    | '/admin/add-branch'
-    | '/admin/add-brand'
-    | '/admin/add-device'
-    | '/admin/add-device-type'
-    | '/admin/add-military-unit'
     | '/admin/add-user'
-    | '/view-and-edit-requests/page'
-    | '/admin/view-accept-reject-requests/page'
-    | '/admin/view_and_edit_devices/page'
-    | '/admin/view_and_remove_brands/page'
-    | '/admin/view_and_remove_device_types/page'
-    | '/admin/view_and_remove_military_units/page'
     | '/admin/view_and_remove_users/page'
   fileRoutesById: FileRoutesById
 }
@@ -253,20 +104,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   Admin_pageRoute: typeof Admin_pageRoute
   LoginRoute: typeof LoginRoute
-  Request_to_add_deviceRoute: typeof Request_to_add_deviceRoute
   User_pageRoute: typeof User_pageRoute
-  AdminAddBranchRoute: typeof AdminAddBranchRoute
-  AdminAddBrandRoute: typeof AdminAddBrandRoute
-  AdminAddDeviceRoute: typeof AdminAddDeviceRoute
-  AdminAddDeviceTypeRoute: typeof AdminAddDeviceTypeRoute
-  AdminAddMilitaryUnitRoute: typeof AdminAddMilitaryUnitRoute
   AdminAddUserRoute: typeof AdminAddUserRoute
-  ViewAndEditRequestsPageRoute: typeof ViewAndEditRequestsPageRoute
-  AdminViewAcceptRejectRequestsPageRoute: typeof AdminViewAcceptRejectRequestsPageRoute
-  AdminView_and_edit_devicesPageRoute: typeof AdminView_and_edit_devicesPageRoute
-  AdminView_and_remove_brandsPageRoute: typeof AdminView_and_remove_brandsPageRoute
-  AdminView_and_remove_device_typesPageRoute: typeof AdminView_and_remove_device_typesPageRoute
-  AdminView_and_remove_military_unitsPageRoute: typeof AdminView_and_remove_military_unitsPageRoute
   AdminView_and_remove_usersPageRoute: typeof AdminView_and_remove_usersPageRoute
 }
 
@@ -277,13 +116,6 @@ declare module '@tanstack/react-router' {
       path: '/user_page'
       fullPath: '/user_page'
       preLoaderRoute: typeof User_pageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/request_to_add_device': {
-      id: '/request_to_add_device'
-      path: '/request_to_add_device'
-      fullPath: '/request_to_add_device'
-      preLoaderRoute: typeof Request_to_add_deviceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -307,53 +139,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/view-and-edit-requests/page': {
-      id: '/view-and-edit-requests/page'
-      path: '/view-and-edit-requests/page'
-      fullPath: '/view-and-edit-requests/page'
-      preLoaderRoute: typeof ViewAndEditRequestsPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/add-user': {
       id: '/admin/add-user'
       path: '/admin/add-user'
       fullPath: '/admin/add-user'
       preLoaderRoute: typeof AdminAddUserRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/add-military-unit': {
-      id: '/admin/add-military-unit'
-      path: '/admin/add-military-unit'
-      fullPath: '/admin/add-military-unit'
-      preLoaderRoute: typeof AdminAddMilitaryUnitRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/add-device-type': {
-      id: '/admin/add-device-type'
-      path: '/admin/add-device-type'
-      fullPath: '/admin/add-device-type'
-      preLoaderRoute: typeof AdminAddDeviceTypeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/add-device': {
-      id: '/admin/add-device'
-      path: '/admin/add-device'
-      fullPath: '/admin/add-device'
-      preLoaderRoute: typeof AdminAddDeviceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/add-brand': {
-      id: '/admin/add-brand'
-      path: '/admin/add-brand'
-      fullPath: '/admin/add-brand'
-      preLoaderRoute: typeof AdminAddBrandRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/add-branch': {
-      id: '/admin/add-branch'
-      path: '/admin/add-branch'
-      fullPath: '/admin/add-branch'
-      preLoaderRoute: typeof AdminAddBranchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/view_and_remove_users/page': {
@@ -363,41 +153,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminView_and_remove_usersPageRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/view_and_remove_military_units/page': {
-      id: '/admin/view_and_remove_military_units/page'
-      path: '/admin/view_and_remove_military_units/page'
-      fullPath: '/admin/view_and_remove_military_units/page'
-      preLoaderRoute: typeof AdminView_and_remove_military_unitsPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/view_and_remove_device_types/page': {
-      id: '/admin/view_and_remove_device_types/page'
-      path: '/admin/view_and_remove_device_types/page'
-      fullPath: '/admin/view_and_remove_device_types/page'
-      preLoaderRoute: typeof AdminView_and_remove_device_typesPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/view_and_remove_brands/page': {
-      id: '/admin/view_and_remove_brands/page'
-      path: '/admin/view_and_remove_brands/page'
-      fullPath: '/admin/view_and_remove_brands/page'
-      preLoaderRoute: typeof AdminView_and_remove_brandsPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/view_and_edit_devices/page': {
-      id: '/admin/view_and_edit_devices/page'
-      path: '/admin/view_and_edit_devices/page'
-      fullPath: '/admin/view_and_edit_devices/page'
-      preLoaderRoute: typeof AdminView_and_edit_devicesPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/view-accept-reject-requests/page': {
-      id: '/admin/view-accept-reject-requests/page'
-      path: '/admin/view-accept-reject-requests/page'
-      fullPath: '/admin/view-accept-reject-requests/page'
-      preLoaderRoute: typeof AdminViewAcceptRejectRequestsPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -405,23 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   Admin_pageRoute: Admin_pageRoute,
   LoginRoute: LoginRoute,
-  Request_to_add_deviceRoute: Request_to_add_deviceRoute,
   User_pageRoute: User_pageRoute,
-  AdminAddBranchRoute: AdminAddBranchRoute,
-  AdminAddBrandRoute: AdminAddBrandRoute,
-  AdminAddDeviceRoute: AdminAddDeviceRoute,
-  AdminAddDeviceTypeRoute: AdminAddDeviceTypeRoute,
-  AdminAddMilitaryUnitRoute: AdminAddMilitaryUnitRoute,
   AdminAddUserRoute: AdminAddUserRoute,
-  ViewAndEditRequestsPageRoute: ViewAndEditRequestsPageRoute,
-  AdminViewAcceptRejectRequestsPageRoute:
-    AdminViewAcceptRejectRequestsPageRoute,
-  AdminView_and_edit_devicesPageRoute: AdminView_and_edit_devicesPageRoute,
-  AdminView_and_remove_brandsPageRoute: AdminView_and_remove_brandsPageRoute,
-  AdminView_and_remove_device_typesPageRoute:
-    AdminView_and_remove_device_typesPageRoute,
-  AdminView_and_remove_military_unitsPageRoute:
-    AdminView_and_remove_military_unitsPageRoute,
   AdminView_and_remove_usersPageRoute: AdminView_and_remove_usersPageRoute,
 }
 export const routeTree = rootRouteImport

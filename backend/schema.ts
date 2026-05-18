@@ -14,6 +14,8 @@ export const user = sqliteTable('user', {
     .$defaultFn(() => Bun.randomUUIDv7()),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
+  number: text('number').notNull().unique(),
+  role: text('role', { enum: ['Admin', 'User'] }).notNull().default('User'),
   emailVerified: integer('email_verified', { mode: 'boolean' })
     .default(false)
     .notNull(),
@@ -27,67 +29,44 @@ export const user = sqliteTable('user', {
     .notNull(),
 });
 
-export const profile = sqliteTable('profile', {
-  id: text('user_id')
-    .notNull(),
-  role: text('role', { enum: ['Admin', 'User'] }).notNull().default('User'),
+export const conversation = sqliteTable('conversations', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => Bun.randomUUIDv7()),
+  type: text('type', { enum: ['Private', 'Group'] }).notNull(),
+  name: text('name').notNull(),
+  createdBy: text('created_by').notNull(),
+  image: text('image'),
 });
 
-export const militaryUnit = sqliteTable('military_unit', {
+export const conversationInsertSchema = createInsertSchema(conversation);
+
+export const conversationMembers = sqliteTable('conversation_members', {
   id: text('id')
     .primaryKey()
     .$defaultFn(() => Bun.randomUUIDv7()),
-  militaryUnitName: text('military_unit_name').notNull(),
-  branch: text('branch').default('-'),
-  // militaryUnitLogo: text('military_unit_logo'),
-}, (t) => [uniqueIndex('unique_military_unit').on(t.militaryUnitName, t.branch)]);
-
-export const createInsertMilitaryUnit = createInsertSchema(militaryUnit);
-
-export const deviceType = sqliteTable('device_type', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => Bun.randomUUIDv7()),
-  brandName: text('brand_name').notNull(),
-  deviceKind: text('device_kind').notNull(),
-  description: text('description'),
-  brandLogo: text('brand_logo'),
-}, (t) => [uniqueIndex('unique_brand_device').on(t.brandName, t.deviceKind, t.description)]);
-
-export const createInsertDeviceType = createInsertSchema(deviceType);
-
-export const device = sqliteTable('device', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => Bun.randomUUIDv7()),
-  deviceTypeId: text('device_type_id').notNull(),
-  militaryUnitId: text('military_unit_id').notNull(),
-  serialNumber: text('serial_number').notNull().unique(),
-  usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
-  username: text('username'),
-  devicePhoto: text('device_photo'),
-  serialNumberPhoto: text('serial_number_photo'),
-});
-
-export const createInsertDevice = createInsertSchema(device);
-
-export const request = sqliteTable('request', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => Bun.randomUUIDv7()),
+  conversationId: text('conversation_id').notNull(),
   userId: text('user_id').notNull(),
-  deviceTypeId: text('device_type_id').notNull(),
-  militaryUnitId: text('military_unit_id').notNull(),
-  serialNumber: text('serial_number').notNull().unique(),
-  usage: text('usage', { enum: ['New', 'Used', 'Broken'] }).notNull(),
-  username: text('username'),
-  devicePhoto: text('device_photo'),
-  serialNumberPhoto: text('serial_number_photo'),
+  joinedAt: integer('joined_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+}, (t) => [uniqueIndex('unique_conversation_member').on(t.conversationId, t.userId)]);
+
+export const conversationMembersInsertSchema = createInsertSchema(conversationMembers);
+
+export const message = sqliteTable('message', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => Bun.randomUUIDv7()),
+  conversationId: text('conversation_id').notNull(),
+  senderId: text('sender_id').notNull(),
+  content: text('content').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
 });
 
-export const createInsertRequest = createInsertSchema(request);
-
-
+export const messageInsertSchema = createInsertSchema(message);
 
 export const session = sqliteTable(
   'session',
