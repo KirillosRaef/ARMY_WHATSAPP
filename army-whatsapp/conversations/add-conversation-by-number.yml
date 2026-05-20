@@ -1,0 +1,21 @@
+info:
+  name: add-conversation-by-number
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: http://192.168.1.111:3000/api/add-conversation-by-number/bEUrvvX4nRVQuMDgl8qWXUTFAoLbyymD
+  body:
+    type: json
+    data: |-
+      {
+        "number": "111"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

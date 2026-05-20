@@ -1,0 +1,27 @@
+info:
+  name: conversation-member
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://192.168.1.111:3000/api/conversation-members
+  body:
+    type: json
+    data: |-
+      // {
+      //   "conversationId": "019e3ffc-ac27-7000-a717-7adf0703c174",
+      //   "userId": "p8inaWHtMb85YR3aSr7GdjVpSsyuq7Tx"
+      // }
+
+      {
+        "conversationId": "019e3ffc-ac27-7000-a717-7adf0703c174",
+        "userId": "bEUrvvX4nRVQuMDgl8qWXUTFAoLbyymD"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

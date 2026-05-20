@@ -10,9 +10,15 @@ import { getUsersRoute } from "./routes/user/getUsersRoute";
 import { getCurrentUserIdRoute } from "./routes/user/getCurrentUserIdRoute";
 import { getCurrentUserRoleRoute } from "./routes/user/getCurrentUserRoleRoute";
 import { conversationRoute } from "./routes/conversation/conversationRoute";
-import { conversationMembersRoute } from "./routes/conversationMembers/conversationMembersRoute";
-import { messageRoute } from "./routes/message/messageRoute";
+import { conversationMembersRoute } from "./routes/conversation/conversationMembersRoute";
+import { messageRoute } from "./routes/conversation/messageRoute";
+import { getConversationsRoute } from "./routes/conversation/getConversationsRoute";
+import { deleteConversationsRoute } from "./routes/conversation/deleteConversationsRoute";
+import { getConversationMembersRoute } from "./routes/conversation/getConversationMembersRoute.ts";
+import { getConversationsByUserIdRoute } from "./routes/conversation/conversationsByUserIdRoute.ts";
 import { ip } from "./auth.ts";
+import { addConversationByNumberRoute } from "./routes/conversation/addConversationByNumberRoute.ts";
+import { deleteConversationMembersRoute } from "./routes/conversation/deleteConversationMembersRoute.ts";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -34,7 +40,13 @@ const app = new Elysia()
   .use(getCurrentUserRoleRoute)
   .use(conversationRoute)
   .use(conversationMembersRoute)
-  .use(messageRoute);
+  .use(messageRoute)
+  .use(getConversationsRoute)
+  .use(deleteConversationsRoute)
+  .use(getConversationMembersRoute)
+  .use(getConversationsByUserIdRoute)
+  .use(addConversationByNumberRoute)
+  .use(deleteConversationMembersRoute);
 
 app.listen({
   port: 3000,

@@ -9,13 +9,13 @@ http:
   body:
     type: json
     data: |-
-      {
-        "name": "Sameh Amnoun",
-        "email": "sameh_amnoun@gmail.com",
-        "password": "midPass123",
-        "role": "Admin",
-        "number": "112"
-      }
+      // {
+      //   "name": "Sameh Amnoun",
+      //   "email": "sameh_amnoun@gmail.com",
+      //   "password": "midPass123",
+      //   "role": "Admin",
+      //   "number": "112"
+      // }
 
       // {
       //   "name": "Kirillos Raef",
@@ -24,6 +24,14 @@ http:
       //   "role": "User",
       //   "number": "113"
       // }
+
+      {
+        "name": "mnozom",
+        "email": "mnozom@military.com",
+        "password": "P@ssw0rd",
+        "role": "Admin",
+        "number": "112"
+      }
   auth: inherit
 
 settings:

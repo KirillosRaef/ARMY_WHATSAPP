@@ -34,8 +34,8 @@ export const conversation = sqliteTable('conversations', {
     .primaryKey()
     .$defaultFn(() => Bun.randomUUIDv7()),
   type: text('type', { enum: ['Private', 'Group'] }).notNull(),
-  name: text('name').notNull(),
-  createdBy: text('created_by').notNull(),
+  name: text('name').default('Private'),
+  createdById: text('created_by_id').notNull(),
   image: text('image'),
 });
 
@@ -61,6 +61,7 @@ export const message = sqliteTable('message', {
   conversationId: text('conversation_id').notNull(),
   senderId: text('sender_id').notNull(),
   content: text('content').notNull(),
+  type: text('type', { enum: ['Text', 'Image', 'File'] }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),

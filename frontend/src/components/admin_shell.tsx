@@ -18,9 +18,11 @@ import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 
 const navItems = [
-  { to: '/admin_page' as const, labelKey: 'nav.dashboard', icon: LayoutDashboard },
-  { to: '/admin/add-user' as const, labelKey: 'nav.addUser', icon: User },
+  { to: '/admin/admin_page' as const, labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { to: '/admin/add_user' as const, labelKey: 'nav.addUser', icon: User },
   { to: '/admin/view_and_remove_users/page' as const, labelKey: 'nav.viewUsers', icon: User },
+  { to: '/admin/add_conversation' as const, labelKey: 'nav.addConversation', icon: User },
+  { to: '/admin/view_and_remove_conversations/page' as const, labelKey: 'nav.viewConversations', icon: User },
 ] as const;
 
 export function AdminShell({ children }: { children: ReactNode }) {
@@ -31,7 +33,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:5173/api/logout', {
+      await fetch('/api/logout', {
         method: 'POST',
         credentials: 'include',
       });

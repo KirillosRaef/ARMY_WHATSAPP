@@ -12,6 +12,7 @@ export type UserType = {
   name: string;
   email: string;
   role: string;
+  number: string;
   image: string;
 };
 
@@ -82,6 +83,25 @@ export function useUserColumns(): ColumnDef<UserType>[] {
         cell: ({ row }) => (
           <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
             {row.original.email}
+          </code>
+        ),
+      },
+      {
+        accessorKey: 'number',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 -ml-3 font-semibold text-muted-foreground hover:text-foreground h-auto px-3 py-1.5 uppercase tracking-wider text-xs"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            {t('table.number')}
+            <ArrowUpDown className="h-3 w-3" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <code className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs font-mono text-foreground/80">
+            {row.original.number}
           </code>
         ),
       },

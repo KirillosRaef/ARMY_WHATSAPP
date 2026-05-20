@@ -6,7 +6,7 @@ export const getUsersRoute = new Elysia()
 getUsersRoute.onError(({ error }) => {
   console.log(error);
   return error;
-}).get('/api/users', () => {
+}).get('api/users', () => {
   return db.select({
     id: user.id,
     name: user.name,

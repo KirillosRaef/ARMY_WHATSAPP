@@ -1,0 +1,15 @@
+info:
+  name: conversation-members
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: http://192.168.1.111:3000/api/conversation-members
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

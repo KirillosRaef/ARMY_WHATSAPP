@@ -7,10 +7,10 @@ conversationRoute.onError(({ error }) => {
   console.log(error);
   return error;
 }).post(
-  '/conversation',
+  '/api/conversation',
   async ({ body }) => {
     const data = await db.insert(conversation).values(body);
-    return body;
+    return data;
   },
   {
     body: t.Omit(conversationInsertSchema, ['id']),

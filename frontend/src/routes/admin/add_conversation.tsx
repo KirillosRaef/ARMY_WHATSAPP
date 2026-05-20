@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next';
 import { AdminShell } from '@/components/admin_shell';
-import { AlertCircle, CheckCircle2, Loader2, PackagePlus, Lock, Mail } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, PackagePlus, Lock, Mail, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SingleValue } from 'react-select';
 
-export const Route = createFileRoute('/admin/add-user')({
+export const Route = createFileRoute('/admin/add_conversation')({
   component: RouteComponent,
 })
 
@@ -32,11 +32,12 @@ function RouteComponent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [number, setNumber] = useState('');
   const [role, setRole] = useState<SingleValue<Option>>({ value: '', label: t('forms.selectRole') });
   
   const handleSubmitRequest = async () => {
     setSubmitError('');
-    if (!name || !email || !password || !confirmPassword || !role) {
+    if (!name || !email || !password || !confirmPassword || !role || !number) {
       setSubmitError(t('forms.fillAllFields'));
       return;
     }
@@ -46,7 +47,7 @@ function RouteComponent() {
     }
     setIsSubmitting(true);
     try {
-      await fetch('http://localhost:5173/api/signup', {
+      const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -54,11 +55,17 @@ function RouteComponent() {
           name: name,
           email: email,
           password: password,
-          role: role?.value,
+          number: number,
+          role: role.value,
         }),
       });
+      if (!res.ok) {
+        const data = await res.json();
+        setSubmitError(data.message);
+        return;
+      }
       setSubmitSuccess(true);
-      setTimeout(() => navigate({ to: '/admin_page' }), 1500);
+      setTimeout(() => navigate({ to: '/admin/admin_page' }), 1500);
     } catch (err) {
       setSubmitError(t('forms.failedCreateUser'));
       console.error(err);
@@ -160,6 +167,21 @@ function RouteComponent() {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="pl-9 h-9 rounded-md text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="number" className="text-foreground font-medium text-sm">{t('forms.number')}</Label>
+              <div className="relative group">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
+                <Input
+                  id="number"
+                  type="text"
+                  placeholder={t('forms.numberPlaceholder')}
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value)}
                   required
                   className="pl-9 h-9 rounded-md text-sm"
                 />

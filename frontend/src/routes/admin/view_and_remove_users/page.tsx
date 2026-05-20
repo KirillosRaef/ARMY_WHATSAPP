@@ -15,9 +15,10 @@ export const Route = createFileRoute(
 });
 
 const getUsers = async () => {
-  const users = await fetch('http://localhost:5173/api/users');
-  if (!users.ok) throw new Error('Failed to fetch device types'); 
+  const users = await fetch('/api/users');
+  if (!users.ok) throw new Error('Failed to fetch users'); 
   const data = await users.json();
+  console.log(data);
   return data;
 };
 

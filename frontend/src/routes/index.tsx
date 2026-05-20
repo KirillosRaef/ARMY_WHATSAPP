@@ -2,14 +2,14 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {
-    const role = await fetch('http://localhost:5173/api/role', { credentials: 'include' });
+    const role = await fetch('/api/current-user-role', { credentials: 'include' });
     if (!role.ok) {
       throw redirect({ to: '/login' });
     }
 
     const roleText = await role.text();
     if(roleText == 'Admin') {
-      throw redirect({ to: '/admin_page' });
+      throw redirect({ to: '/admin/admin_page' });
     } else if(roleText == 'User') {
       throw redirect({ to: '/user_page' });
     }

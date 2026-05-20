@@ -7,7 +7,7 @@ messageRoute.onError(({ error }) => {
   console.log(error);
   return error;
 }).post(
-  '/message',
+  '/api/message',
   async ({ body }) => {
     const data = await db.insert(message).values(body);
     return body;

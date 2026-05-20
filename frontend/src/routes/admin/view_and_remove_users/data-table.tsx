@@ -26,7 +26,7 @@ import { Trash2, AlertTriangle } from 'lucide-react';
 
 //TODO: ERR HERE
 const deleteSelection = async (ids: string[]) => {
-  await fetch('http://localhost:5173/api/users', {
+  await fetch('/api/users', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

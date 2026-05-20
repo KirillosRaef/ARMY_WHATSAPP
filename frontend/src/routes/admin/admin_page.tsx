@@ -1,16 +1,14 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { AdminShell } from '../components/admin_shell';
+import { AdminShell } from '../../components/admin_shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Shield, ArrowRight, Lightbulb,
-  PackagePlus, Eye, Building2, GitBranch,
-  UserPlus, Users, Cpu, MonitorSmartphone,
-  ClipboardList,
+  UserPlus, Users
 } from 'lucide-react';
 
-export const Route = createFileRoute('/admin_page')({
+export const Route = createFileRoute('/admin/admin_page')({
   component: AdminDashboard,
 });
 
@@ -27,35 +25,17 @@ type DashboardSection = {
 
 const sections: DashboardSection[] = [
   {
-    titleKey: 'adminDashboard.sectionBrands',
-    cards: [
-      { labelKey: 'nav.addBrand', descKey: 'adminDashboard.addBrandDesc', route: '/admin/add-brand', icon: PackagePlus, color: 'oklch(0.52 0.22 264)' },
-      { labelKey: 'nav.viewBrands', descKey: 'adminDashboard.viewBrandsDesc', route: '/admin/view_and_remove_brands/page', icon: Eye, color: 'oklch(0.52 0.22 264)' },
-    ],
-  },
-  {
-    titleKey: 'adminDashboard.sectionOrganization',
-    cards: [
-      { labelKey: 'nav.addMilitaryUnit', descKey: 'adminDashboard.addMilitaryUnitDesc', route: '/admin/add-military-unit', icon: Building2, color: 'oklch(0.5 0.18 220)' },
-      { labelKey: 'nav.addBranch', descKey: 'adminDashboard.addBranchDesc', route: '/admin/add-branch', icon: GitBranch, color: 'oklch(0.5 0.18 220)' },
-      { labelKey: 'nav.viewMilitaryUnits', descKey: 'adminDashboard.viewMilitaryUnitsDesc', route: '/admin/view_and_remove_military_units/page', icon: Eye, color: 'oklch(0.5 0.18 220)' },
-    ],
-  },
-  {
     titleKey: 'adminDashboard.sectionUsers',
     cards: [
-      { labelKey: 'nav.addUser', descKey: 'adminDashboard.addUserDesc', route: '/admin/add-user', icon: UserPlus, color: 'oklch(0.55 0.18 290)' },
+      { labelKey: 'nav.addUser', descKey: 'adminDashboard.addUserDesc', route: '/admin/add_user', icon: UserPlus, color: 'oklch(0.55 0.18 290)' },
       { labelKey: 'nav.viewUsers', descKey: 'adminDashboard.viewUsersDesc', route: '/admin/view_and_remove_users/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
     ],
   },
   {
-    titleKey: 'adminDashboard.sectionDevices',
+    titleKey: 'adminDashboard.sectionConversations',
     cards: [
-      { labelKey: 'nav.addDeviceType', descKey: 'adminDashboard.addDeviceTypeDesc', route: '/admin/add-device-type', icon: Cpu, color: 'oklch(0.55 0.2 170)' },
-      { labelKey: 'nav.viewDeviceTypes', descKey: 'adminDashboard.viewDeviceTypesDesc', route: '/admin/view_and_remove_device_types/page', icon: Eye, color: 'oklch(0.55 0.2 170)' },
-      { labelKey: 'nav.addDevice', descKey: 'adminDashboard.addDeviceDesc', route: '/admin/add-device', icon: MonitorSmartphone, color: 'oklch(0.5 0.18 220)' },
-      { labelKey: 'nav.viewDevices', descKey: 'adminDashboard.viewDevicesDesc', route: '/admin/view_and_edit_devices/page', icon: Eye, color: 'oklch(0.5 0.18 220)' },
-      { labelKey: 'nav.viewRequests', descKey: 'adminDashboard.viewRequestsDesc', route: '/admin/view-accept-reject-requests/page', icon: ClipboardList, color: 'oklch(0.52 0.22 264)' },
+      { labelKey: 'nav.addConversation', descKey: 'adminDashboard.addConversationDesc', route: '/admin/add_conversation', icon: Users, color: 'oklch(0.55 0.18 290)' },
+      { labelKey: 'nav.viewConversations', descKey: 'adminDashboard.viewConversationsDesc', route: '/admin/view_and_remove_conversations/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
     ],
   },
 ];

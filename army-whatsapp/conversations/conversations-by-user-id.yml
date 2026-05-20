@@ -1,0 +1,15 @@
+info:
+  name: conversations-by-user-id
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: http://192.168.1.111:3000/api/conversations-by-user-id/p8inaWHtMb85YR3aSr7GdjVpSsyuq7Tx
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

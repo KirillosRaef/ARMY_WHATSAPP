@@ -11,9 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as User_pageRouteImport } from './routes/user_page'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as Admin_pageRouteImport } from './routes/admin_page'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminAddUserRouteImport } from './routes/admin/add-user'
+import { Route as AdminAdmin_pageRouteImport } from './routes/admin/admin_page'
+import { Route as AdminAdd_userRouteImport } from './routes/admin/add_user'
+import { Route as AdminAdd_conversationRouteImport } from './routes/admin/add_conversation'
 import { Route as AdminView_and_remove_usersPageRouteImport } from './routes/admin/view_and_remove_users/page'
 
 const User_pageRoute = User_pageRouteImport.update({
@@ -26,19 +27,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Admin_pageRoute = Admin_pageRouteImport.update({
-  id: '/admin_page',
-  path: '/admin_page',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminAddUserRoute = AdminAddUserRouteImport.update({
-  id: '/admin/add-user',
-  path: '/admin/add-user',
+const AdminAdmin_pageRoute = AdminAdmin_pageRouteImport.update({
+  id: '/admin/admin_page',
+  path: '/admin/admin_page',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAdd_userRoute = AdminAdd_userRouteImport.update({
+  id: '/admin/add_user',
+  path: '/admin/add_user',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAdd_conversationRoute = AdminAdd_conversationRouteImport.update({
+  id: '/admin/add_conversation',
+  path: '/admin/add_conversation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminView_and_remove_usersPageRoute =
@@ -50,62 +56,69 @@ const AdminView_and_remove_usersPageRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
   '/user_page': typeof User_pageRoute
-  '/admin/add-user': typeof AdminAddUserRoute
+  '/admin/add_conversation': typeof AdminAdd_conversationRoute
+  '/admin/add_user': typeof AdminAdd_userRoute
+  '/admin/admin_page': typeof AdminAdmin_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
   '/user_page': typeof User_pageRoute
-  '/admin/add-user': typeof AdminAddUserRoute
+  '/admin/add_conversation': typeof AdminAdd_conversationRoute
+  '/admin/add_user': typeof AdminAdd_userRoute
+  '/admin/admin_page': typeof AdminAdmin_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin_page': typeof Admin_pageRoute
   '/login': typeof LoginRoute
   '/user_page': typeof User_pageRoute
-  '/admin/add-user': typeof AdminAddUserRoute
+  '/admin/add_conversation': typeof AdminAdd_conversationRoute
+  '/admin/add_user': typeof AdminAdd_userRoute
+  '/admin/admin_page': typeof AdminAdmin_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin_page'
     | '/login'
     | '/user_page'
-    | '/admin/add-user'
+    | '/admin/add_conversation'
+    | '/admin/add_user'
+    | '/admin/admin_page'
     | '/admin/view_and_remove_users/page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin_page'
     | '/login'
     | '/user_page'
-    | '/admin/add-user'
+    | '/admin/add_conversation'
+    | '/admin/add_user'
+    | '/admin/admin_page'
     | '/admin/view_and_remove_users/page'
   id:
     | '__root__'
     | '/'
-    | '/admin_page'
     | '/login'
     | '/user_page'
-    | '/admin/add-user'
+    | '/admin/add_conversation'
+    | '/admin/add_user'
+    | '/admin/admin_page'
     | '/admin/view_and_remove_users/page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  Admin_pageRoute: typeof Admin_pageRoute
   LoginRoute: typeof LoginRoute
   User_pageRoute: typeof User_pageRoute
-  AdminAddUserRoute: typeof AdminAddUserRoute
+  AdminAdd_conversationRoute: typeof AdminAdd_conversationRoute
+  AdminAdd_userRoute: typeof AdminAdd_userRoute
+  AdminAdmin_pageRoute: typeof AdminAdmin_pageRoute
   AdminView_and_remove_usersPageRoute: typeof AdminView_and_remove_usersPageRoute
 }
 
@@ -125,13 +138,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_page': {
-      id: '/admin_page'
-      path: '/admin_page'
-      fullPath: '/admin_page'
-      preLoaderRoute: typeof Admin_pageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -139,11 +145,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/add-user': {
-      id: '/admin/add-user'
-      path: '/admin/add-user'
-      fullPath: '/admin/add-user'
-      preLoaderRoute: typeof AdminAddUserRouteImport
+    '/admin/admin_page': {
+      id: '/admin/admin_page'
+      path: '/admin/admin_page'
+      fullPath: '/admin/admin_page'
+      preLoaderRoute: typeof AdminAdmin_pageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/add_user': {
+      id: '/admin/add_user'
+      path: '/admin/add_user'
+      fullPath: '/admin/add_user'
+      preLoaderRoute: typeof AdminAdd_userRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/add_conversation': {
+      id: '/admin/add_conversation'
+      path: '/admin/add_conversation'
+      fullPath: '/admin/add_conversation'
+      preLoaderRoute: typeof AdminAdd_conversationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/view_and_remove_users/page': {
@@ -158,10 +178,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  Admin_pageRoute: Admin_pageRoute,
   LoginRoute: LoginRoute,
   User_pageRoute: User_pageRoute,
-  AdminAddUserRoute: AdminAddUserRoute,
+  AdminAdd_conversationRoute: AdminAdd_conversationRoute,
+  AdminAdd_userRoute: AdminAdd_userRoute,
+  AdminAdmin_pageRoute: AdminAdmin_pageRoute,
   AdminView_and_remove_usersPageRoute: AdminView_and_remove_usersPageRoute,
 }
 export const routeTree = rootRouteImport

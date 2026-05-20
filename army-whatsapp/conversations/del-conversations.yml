@@ -1,16 +1,16 @@
 info:
-  name: users
+  name: del-conversations
   type: http
-  seq: 4
+  seq: 5
 
 http:
   method: DELETE
-  url: http://192.168.1.111:3000/api/users
+  url: http://192.168.1.111:3000/api/conversations
   body:
     type: json
     data: |-
       {
-        "userIds": ["awBYGRvPFqytFWAbK64YyMSYeZfUNW1x"]
+        "conversationIds": ["019e4729-2fc4-7000-bd79-f87988dde583"]
       }
   auth: inherit
 

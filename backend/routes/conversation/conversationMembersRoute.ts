@@ -7,7 +7,7 @@ conversationMembersRoute.onError(({ error }) => {
   console.log(error);
   return error;
 }).post(
-  '/conversation-members',
+  '/api/conversation-members',
   async ({ body }) => {
     const data = await db.insert(conversationMembers).values(body);
     return body;
