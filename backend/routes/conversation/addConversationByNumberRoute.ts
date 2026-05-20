@@ -10,7 +10,7 @@ addConversationByNumberRoute.onError(({ error }) => {
 }).post(
   '/api/add-conversation-by-number/:currentUserId',
   async ({ body: { number }, params: { currentUserId } }) => {
-    const fetchedUser = await db.select({ id: user.id }).from(user)
+    const fetchedUser = await db.select({ id: user.id, role: user.role }).from(user)
       .where(eq(user.number, number)).limit(1);
     
     if (!fetchedUser[0]) {
@@ -19,6 +19,10 @@ addConversationByNumberRoute.onError(({ error }) => {
 
     if (fetchedUser[0]!.id === currentUserId) {
       return { message: 'You cannot add yourself', status: 400 };
+    }
+
+    if (fetchedUser[0]!.role === 'Admin') {
+      return { message: 'You cannot add an admin', status: 400 };
     }
     
 

@@ -26,12 +26,20 @@ http:
       // }
 
       {
-        "name": "mnozom",
-        "email": "mnozom@military.com",
-        "password": "P@ssw0rd",
-        "role": "Admin",
-        "number": "112"
+        "name": "Matat2",
+        "email": "matat2@gmail.com",
+        "password": "weakPass123",
+        "role": "User",
+        "number": "117"
       }
+
+      // {
+      //   "name": "mnozom3",
+      //   "email": "mnozom3@military.com",
+      //   "password": "P@ssw0rd",
+      //   "role": "Admin",
+      //   "number": "115"
+      // }
   auth: inherit
 
 settings:

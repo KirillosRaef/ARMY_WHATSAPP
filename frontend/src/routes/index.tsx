@@ -11,7 +11,7 @@ export const Route = createFileRoute('/')({
     if(roleText == 'Admin') {
       throw redirect({ to: '/admin/admin_page' });
     } else if(roleText == 'User') {
-      throw redirect({ to: '/user_page' });
+      throw redirect({ to: '/user/user_page' });
     }
   },
   component: Index,

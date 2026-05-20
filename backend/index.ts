@@ -3,6 +3,7 @@ import { sql} from "drizzle-orm";
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
+import { ip } from "./auth.ts";
 import { signUpRoute } from "./routes/user/signUpRoute";
 import { loginRoute } from "./routes/user/loginRoute";
 import { deleteUsersRoute } from "./routes/user/deleteUsersRoute";
@@ -16,9 +17,9 @@ import { getConversationsRoute } from "./routes/conversation/getConversationsRou
 import { deleteConversationsRoute } from "./routes/conversation/deleteConversationsRoute";
 import { getConversationMembersRoute } from "./routes/conversation/getConversationMembersRoute.ts";
 import { getConversationsByUserIdRoute } from "./routes/conversation/conversationsByUserIdRoute.ts";
-import { ip } from "./auth.ts";
 import { addConversationByNumberRoute } from "./routes/conversation/addConversationByNumberRoute.ts";
 import { deleteConversationMembersRoute } from "./routes/conversation/deleteConversationMembersRoute.ts";
+import { deleteAllConversationsRoute } from "./routes/conversation/deleteAllRoutes.ts";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -46,7 +47,8 @@ const app = new Elysia()
   .use(getConversationMembersRoute)
   .use(getConversationsByUserIdRoute)
   .use(addConversationByNumberRoute)
-  .use(deleteConversationMembersRoute);
+  .use(deleteConversationMembersRoute)
+  .use(deleteAllConversationsRoute);
 
 app.listen({
   port: 3000,

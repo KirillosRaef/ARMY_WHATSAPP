@@ -9,19 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as User_pageRouteImport } from './routes/user_page'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UserUser_pageRouteImport } from './routes/user/user_page'
 import { Route as AdminAdmin_pageRouteImport } from './routes/admin/admin_page'
 import { Route as AdminAdd_userRouteImport } from './routes/admin/add_user'
-import { Route as AdminAdd_conversationRouteImport } from './routes/admin/add_conversation'
 import { Route as AdminView_and_remove_usersPageRouteImport } from './routes/admin/view_and_remove_users/page'
 
-const User_pageRoute = User_pageRouteImport.update({
-  id: '/user_page',
-  path: '/user_page',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -30,6 +24,11 @@ const LoginRoute = LoginRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserUser_pageRoute = UserUser_pageRouteImport.update({
+  id: '/user/user_page',
+  path: '/user/user_page',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAdmin_pageRoute = AdminAdmin_pageRouteImport.update({
@@ -42,11 +41,6 @@ const AdminAdd_userRoute = AdminAdd_userRouteImport.update({
   path: '/admin/add_user',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminAdd_conversationRoute = AdminAdd_conversationRouteImport.update({
-  id: '/admin/add_conversation',
-  path: '/admin/add_conversation',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminView_and_remove_usersPageRoute =
   AdminView_and_remove_usersPageRouteImport.update({
     id: '/admin/view_and_remove_users/page',
@@ -57,29 +51,26 @@ const AdminView_and_remove_usersPageRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/user_page': typeof User_pageRoute
-  '/admin/add_conversation': typeof AdminAdd_conversationRoute
   '/admin/add_user': typeof AdminAdd_userRoute
   '/admin/admin_page': typeof AdminAdmin_pageRoute
+  '/user/user_page': typeof UserUser_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/user_page': typeof User_pageRoute
-  '/admin/add_conversation': typeof AdminAdd_conversationRoute
   '/admin/add_user': typeof AdminAdd_userRoute
   '/admin/admin_page': typeof AdminAdmin_pageRoute
+  '/user/user_page': typeof UserUser_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/user_page': typeof User_pageRoute
-  '/admin/add_conversation': typeof AdminAdd_conversationRoute
   '/admin/add_user': typeof AdminAdd_userRoute
   '/admin/admin_page': typeof AdminAdmin_pageRoute
+  '/user/user_page': typeof UserUser_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
 export interface FileRouteTypes {
@@ -87,50 +78,39 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
-    | '/user_page'
-    | '/admin/add_conversation'
     | '/admin/add_user'
     | '/admin/admin_page'
+    | '/user/user_page'
     | '/admin/view_and_remove_users/page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
-    | '/user_page'
-    | '/admin/add_conversation'
     | '/admin/add_user'
     | '/admin/admin_page'
+    | '/user/user_page'
     | '/admin/view_and_remove_users/page'
   id:
     | '__root__'
     | '/'
     | '/login'
-    | '/user_page'
-    | '/admin/add_conversation'
     | '/admin/add_user'
     | '/admin/admin_page'
+    | '/user/user_page'
     | '/admin/view_and_remove_users/page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
-  User_pageRoute: typeof User_pageRoute
-  AdminAdd_conversationRoute: typeof AdminAdd_conversationRoute
   AdminAdd_userRoute: typeof AdminAdd_userRoute
   AdminAdmin_pageRoute: typeof AdminAdmin_pageRoute
+  UserUser_pageRoute: typeof UserUser_pageRoute
   AdminView_and_remove_usersPageRoute: typeof AdminView_and_remove_usersPageRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/user_page': {
-      id: '/user_page'
-      path: '/user_page'
-      fullPath: '/user_page'
-      preLoaderRoute: typeof User_pageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -143,6 +123,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/user_page': {
+      id: '/user/user_page'
+      path: '/user/user_page'
+      fullPath: '/user/user_page'
+      preLoaderRoute: typeof UserUser_pageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/admin_page': {
@@ -159,13 +146,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdd_userRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/add_conversation': {
-      id: '/admin/add_conversation'
-      path: '/admin/add_conversation'
-      fullPath: '/admin/add_conversation'
-      preLoaderRoute: typeof AdminAdd_conversationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/view_and_remove_users/page': {
       id: '/admin/view_and_remove_users/page'
       path: '/admin/view_and_remove_users/page'
@@ -179,10 +159,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
-  User_pageRoute: User_pageRoute,
-  AdminAdd_conversationRoute: AdminAdd_conversationRoute,
   AdminAdd_userRoute: AdminAdd_userRoute,
   AdminAdmin_pageRoute: AdminAdmin_pageRoute,
+  UserUser_pageRoute: UserUser_pageRoute,
   AdminView_and_remove_usersPageRoute: AdminView_and_remove_usersPageRoute,
 }
 export const routeTree = rootRouteImport

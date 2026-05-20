@@ -30,14 +30,7 @@ const sections: DashboardSection[] = [
       { labelKey: 'nav.addUser', descKey: 'adminDashboard.addUserDesc', route: '/admin/add_user', icon: UserPlus, color: 'oklch(0.55 0.18 290)' },
       { labelKey: 'nav.viewUsers', descKey: 'adminDashboard.viewUsersDesc', route: '/admin/view_and_remove_users/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
     ],
-  },
-  {
-    titleKey: 'adminDashboard.sectionConversations',
-    cards: [
-      { labelKey: 'nav.addConversation', descKey: 'adminDashboard.addConversationDesc', route: '/admin/add_conversation', icon: Users, color: 'oklch(0.55 0.18 290)' },
-      { labelKey: 'nav.viewConversations', descKey: 'adminDashboard.viewConversationsDesc', route: '/admin/view_and_remove_conversations/page', icon: Users, color: 'oklch(0.55 0.18 290)' },
-    ],
-  },
+  }
 ];
 
 function AdminDashboard() {
