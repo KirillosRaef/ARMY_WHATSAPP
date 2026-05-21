@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserUser_pageRouteImport } from './routes/user/user_page'
+import { Route as UserSelectedConversationIdRouteImport } from './routes/user/$selectedConversationId'
 import { Route as AdminAdmin_pageRouteImport } from './routes/admin/admin_page'
 import { Route as AdminAdd_userRouteImport } from './routes/admin/add_user'
 import { Route as AdminView_and_remove_usersPageRouteImport } from './routes/admin/view_and_remove_users/page'
@@ -31,6 +32,12 @@ const UserUser_pageRoute = UserUser_pageRouteImport.update({
   path: '/user/user_page',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UserSelectedConversationIdRoute =
+  UserSelectedConversationIdRouteImport.update({
+    id: '/user/$selectedConversationId',
+    path: '/user/$selectedConversationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminAdmin_pageRoute = AdminAdmin_pageRouteImport.update({
   id: '/admin/admin_page',
   path: '/admin/admin_page',
@@ -53,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/admin/add_user': typeof AdminAdd_userRoute
   '/admin/admin_page': typeof AdminAdmin_pageRoute
+  '/user/$selectedConversationId': typeof UserSelectedConversationIdRoute
   '/user/user_page': typeof UserUser_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
@@ -61,6 +69,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/admin/add_user': typeof AdminAdd_userRoute
   '/admin/admin_page': typeof AdminAdmin_pageRoute
+  '/user/$selectedConversationId': typeof UserSelectedConversationIdRoute
   '/user/user_page': typeof UserUser_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
@@ -70,6 +79,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/admin/add_user': typeof AdminAdd_userRoute
   '/admin/admin_page': typeof AdminAdmin_pageRoute
+  '/user/$selectedConversationId': typeof UserSelectedConversationIdRoute
   '/user/user_page': typeof UserUser_pageRoute
   '/admin/view_and_remove_users/page': typeof AdminView_and_remove_usersPageRoute
 }
@@ -80,6 +90,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/add_user'
     | '/admin/admin_page'
+    | '/user/$selectedConversationId'
     | '/user/user_page'
     | '/admin/view_and_remove_users/page'
   fileRoutesByTo: FileRoutesByTo
@@ -88,6 +99,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/add_user'
     | '/admin/admin_page'
+    | '/user/$selectedConversationId'
     | '/user/user_page'
     | '/admin/view_and_remove_users/page'
   id:
@@ -96,6 +108,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/add_user'
     | '/admin/admin_page'
+    | '/user/$selectedConversationId'
     | '/user/user_page'
     | '/admin/view_and_remove_users/page'
   fileRoutesById: FileRoutesById
@@ -105,6 +118,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   AdminAdd_userRoute: typeof AdminAdd_userRoute
   AdminAdmin_pageRoute: typeof AdminAdmin_pageRoute
+  UserSelectedConversationIdRoute: typeof UserSelectedConversationIdRoute
   UserUser_pageRoute: typeof UserUser_pageRoute
   AdminView_and_remove_usersPageRoute: typeof AdminView_and_remove_usersPageRoute
 }
@@ -130,6 +144,13 @@ declare module '@tanstack/react-router' {
       path: '/user/user_page'
       fullPath: '/user/user_page'
       preLoaderRoute: typeof UserUser_pageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/$selectedConversationId': {
+      id: '/user/$selectedConversationId'
+      path: '/user/$selectedConversationId'
+      fullPath: '/user/$selectedConversationId'
+      preLoaderRoute: typeof UserSelectedConversationIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/admin_page': {
@@ -161,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   AdminAdd_userRoute: AdminAdd_userRoute,
   AdminAdmin_pageRoute: AdminAdmin_pageRoute,
+  UserSelectedConversationIdRoute: UserSelectedConversationIdRoute,
   UserUser_pageRoute: UserUser_pageRoute,
   AdminView_and_remove_usersPageRoute: AdminView_and_remove_usersPageRoute,
 }

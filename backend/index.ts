@@ -20,6 +20,8 @@ import { getConversationsByUserIdRoute } from "./routes/conversation/conversatio
 import { addConversationByNumberRoute } from "./routes/conversation/addConversationByNumberRoute.ts";
 import { deleteConversationMembersRoute } from "./routes/conversation/deleteConversationMembersRoute.ts";
 import { deleteAllConversationsRoute } from "./routes/conversation/deleteAllRoutes.ts";
+import { getCurrentUserConversationsRoute } from "./routes/conversation/getCurrentUserConversationsRoute.ts";
+import { getCurrentUserRoute } from "./routes/user/getCurrentUserRoute.ts";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -48,7 +50,9 @@ const app = new Elysia()
   .use(getConversationsByUserIdRoute)
   .use(addConversationByNumberRoute)
   .use(deleteConversationMembersRoute)
-  .use(deleteAllConversationsRoute);
+  .use(deleteAllConversationsRoute)
+  .use(getCurrentUserConversationsRoute)
+  .use(getCurrentUserRoute);
 
 app.listen({
   port: 3000,

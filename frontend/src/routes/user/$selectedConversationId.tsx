@@ -2,14 +2,14 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import AddConversation from '@/components/user_page_helpers/add_conversation';
 import ViewAndRemoveConversations from '@/components/user_page_helpers/view_and_remove_conversations';
-import LoadingComponent from '@/components/helpers/loading_component';
 import ErrorComponent from '@/components/helpers/error_component';
+import LoadingComponent from '@/components/helpers/loading_component';
 import { useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-export const Route = createFileRoute('/user/user_page')({
-  component: UserDashboard,
-});
+export const Route = createFileRoute('/user/$selectedConversationId')({
+  component: RouteComponent,
+})
 
 const getCurrentUser = async () => {
   const user = await fetch('/api/current-user');
@@ -19,10 +19,12 @@ const getCurrentUser = async () => {
   return data;
 };
 
-function UserDashboard() {
+function RouteComponent() {
+  const { selectedConversationId } =
+    Route.useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
-
+  
   const { data: currentUser, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
     queryFn: getCurrentUser,
@@ -48,9 +50,7 @@ function UserDashboard() {
     <h1>{currentUser.number}</h1>
     <AddConversation />
     <ViewAndRemoveConversations />
-
-    {/* TODO: Add Chat window */}
-
+  
     {/* TODO: Add Contacts table using scroll area and avatar */}
   </div>;
 }
