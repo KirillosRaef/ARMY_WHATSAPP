@@ -254,10 +254,15 @@ export default function ChatWindow({
   const [incomingSignal, setIncomingSignal] = useState<CallSignal | null>(null);
   const callWsRef = useRef<WebSocket | null>(null);
 
-  // Connect call signaling WS
+  // Connect call signaling WS — depends ONLY on currentUserId so it stays
+  // stable across conversation switches and never overwrites the server-side
+  // registration while a call is in progress.
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = `${protocol}//${window.location.host}/ws/call?userId=${currentUserId}&conversationId=${conversationId}`;
+    // conversationId is intentionally omitted here — the server only uses it
+    // for the pub/sub channel which we don't rely on, and we must not
+    // reconnect (and re-register) whenever the user switches chats.
+    const url = `${protocol}//${window.location.host}/ws/call?userId=${currentUserId}&conversationId=global`;
     const ws = new WebSocket(url);
     ws.onmessage = (e) => {
       try {
@@ -266,13 +271,23 @@ export default function ChatWindow({
       } catch { /* ignore */ }
     };
     ws.onerror = (e) => console.error('[Call WS] error', e);
+    ws.onopen = () => console.log('[Call WS] connected, userId:', currentUserId);
     callWsRef.current = ws;
     return () => ws.close();
-  }, [currentUserId, conversationId]);
+  }, [currentUserId]); // ← NOT conversationId
 
   const sendSignal = useCallback((msg: CallSignal) => {
-    if (callWsRef.current?.readyState === WebSocket.OPEN) {
-      callWsRef.current.send(JSON.stringify(msg));
+    const ws = callWsRef.current;
+    if (!ws) return;
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(msg));
+    } else if (ws.readyState === WebSocket.CONNECTING) {
+      // Wait for the connection to open, then send
+      const onOpen = () => {
+        ws.send(JSON.stringify(msg));
+        ws.removeEventListener('open', onOpen);
+      };
+      ws.addEventListener('open', onOpen);
     }
   }, []);
 
@@ -453,21 +468,30 @@ export default function ChatWindow({
         onIncomingSignalHandled={() => setIncomingSignal(null)}
       />
 
-      {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 shadow-sm">
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100" style={{ boxShadow: '0 1px 0 0 #f3f4f6, 0 2px 8px -2px rgba(99,102,241,0.06)' }}>
         {onBack && (
           <Button onClick={onBack} className="p-1.5 -ms-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all lg:hidden">
             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
           </Button>
         )}
-        <Avatar className="h-10 w-10 shadow-sm">
-          <AvatarFallback className={cn(contactColor, 'text-white font-semibold text-sm')}>{contactName.charAt(0)}</AvatarFallback>
-        </Avatar>
+        <div className="relative flex-shrink-0">
+          <Avatar className={cn('h-10 w-10 transition-all', callState.phase === 'active' && 'ring-2 ring-emerald-400 ring-offset-1')}>
+            <AvatarFallback className={cn(contactColor, 'text-white font-semibold text-sm')}>{contactName.charAt(0)}</AvatarFallback>
+          </Avatar>
+          {callState.phase === 'active' && (
+            <span className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-900 truncate">{contactName}</p>
-          <p className="text-xs text-emerald-500 font-medium">{t('chat.online')}</p>
+          {callState.phase === 'active' ? (
+            <p className="text-xs text-emerald-500 font-medium animate-pulse">On call</p>
+          ) : (
+            <p className="text-xs text-emerald-500 font-medium">{t('chat.online')}</p>
+          )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {/* Voice call button */}
           <Button
             onClick={() => {
@@ -477,17 +501,19 @@ export default function ChatWindow({
                 window.dispatchEvent(new CustomEvent('start-voice-call', { detail }));
               }
             }}
+            variant="outline"
+            size="icon"
             className={cn(
-              'p-2 rounded-lg transition-all',
+              'rounded-full transition-all duration-200 flex-shrink-0',
               callState.phase !== 'idle'
-                ? 'text-emerald-500 bg-emerald-50'
-                : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50'
+                ? 'text-emerald-500 border-emerald-250 bg-emerald-50 shadow-sm shadow-emerald-200'
+                : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200'
             )}
           >
-            <Phone className="h-4 w-4" />
+            <Phone className={cn('h-5 w-5', callState.phase !== 'idle' && 'animate-pulse')} />
           </Button>
-          <Button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-            <MoreVertical className="h-4 w-4" />
+          <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200 transition-all flex-shrink-0">
+            <MoreVertical className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -611,7 +637,9 @@ export default function ChatWindow({
           {/* Attachments */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon"><Paperclip /></Button>
+              <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all flex-shrink-0">
+                <Paperclip className="h-5 w-5" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onClick={() => setIsImageUploadOpen(true)}>
@@ -651,25 +679,29 @@ export default function ChatWindow({
           {/* Mic button — hold to record (click to start/stop) */}
           <Button
             onClick={isRecording ? stopRecording : startRecording}
+            variant="outline"
+            size="icon"
             className={cn(
-              'p-2.5 rounded-xl transition-all duration-200 flex-shrink-0',
+              'rounded-full transition-all duration-200 flex-shrink-0',
               isRecording
-                ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 shadow-sm shadow-red-500/25'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                ? 'bg-red-500 border-red-500 text-white hover:bg-red-600 active:scale-95 shadow-sm shadow-red-500/25'
+                : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200'
             )}
           >
-            {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            {isRecording ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
 
           {/* Send button */}
           <Button
             onClick={handleSend}
             disabled={!messageText.trim() || isSending}
+            variant="outline"
+            size="icon"
             className={cn(
-              'p-2.5 rounded-xl transition-all duration-200 flex-shrink-0',
+              'rounded-full transition-all duration-200 flex-shrink-0',
               messageText.trim()
-                ? 'bg-indigo-500 text-white shadow-sm shadow-indigo-500/25 hover:bg-indigo-600 active:scale-95'
-                : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                ? 'bg-indigo-500 border-indigo-500 text-white hover:bg-indigo-600 shadow-md shadow-indigo-500/25 active:scale-95 cursor-pointer'
+                : 'text-gray-300 hover:bg-transparent hover:text-gray-300 border-gray-200 cursor-not-allowed'
             )}
           >
             <Send className="h-5 w-5" />

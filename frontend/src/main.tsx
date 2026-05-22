@@ -35,7 +35,7 @@ if (!rootElement.innerHTML) {
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
-          <TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
+          {/* <TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} /> */}
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>,
