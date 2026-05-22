@@ -113,21 +113,21 @@ export default function ConversationSidebar({
       {/* Search + New Conversation */}
       <div className="px-4 py-3 space-y-3">
         <div className="relative">
-          <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute start-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('chat.searchPlaceholder')}
-            className="w-full ps-10 pe-4 py-2.5 bg-gray-100 rounded-xl text-sm text-gray-700 placeholder:text-gray-400 border-0 outline-none focus:bg-gray-50 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200"
+            className="w-full ps-11 pe-4 py-2.5 bg-gray-100/80 rounded-full text-sm text-gray-700 placeholder:text-gray-400 border border-transparent outline-none focus:bg-white focus:border-indigo-500/30 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300"
           />
         </div>
         <AddConversation />
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto px-2">
-        <p className="px-3 pt-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+      <div className="flex-1 overflow-y-auto px-3">
+        <p className="px-3 pt-2 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-gray-400/80">
           {t('chat.conversations')} {filteredConversations ? `(${filteredConversations.length})` : ''}
         </p>
 
@@ -154,7 +154,7 @@ export default function ConversationSidebar({
           </div>
         )}
 
-        <div className="space-y-0.5 pb-2">
+        <div className="space-y-1 pb-2">
           {filteredConversations?.map((conversation) => {
             const isActive = selectedConversationId === conversation.conversationId;
             const colorClass = getAvatarColor(conversation.name);
@@ -166,27 +166,32 @@ export default function ConversationSidebar({
                   navigate({ to: `/user/${conversation.conversationId}` });
                 }}
                 className={cn(
-                  'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group text-start',
+                  'w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 group text-start relative',
                   isActive
-                    ? 'bg-indigo-50 shadow-sm'
-                    : 'hover:bg-gray-50'
+                    ? 'bg-indigo-50/70 border border-indigo-100/40 shadow-sm shadow-indigo-150/10'
+                    : 'hover:bg-gray-50/80 border border-transparent'
                 )}
               >
+                {/* Active indicator bar */}
+                {isActive && (
+                  <div className="absolute start-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-indigo-500 transition-all duration-300" />
+                )}
+
                 <div className="relative flex-shrink-0">
-                  <Avatar className="h-12 w-12 shadow-sm">
+                  <Avatar className="h-12 w-12 shadow-sm transition-transform duration-300 group-hover:scale-105">
                     <AvatarFallback className={cn(colorClass, 'text-white font-semibold text-base')}>
                       {conversation.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   {/* Online indicator */}
-                  <div className="absolute bottom-0 end-0 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
+                  <div className="absolute bottom-0 end-0 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white" />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
                     <p className={cn(
-                      'text-sm font-semibold truncate',
-                      isActive ? 'text-indigo-700' : 'text-gray-900'
+                      'text-sm font-semibold truncate transition-colors duration-300',
+                      isActive ? 'text-indigo-900' : 'text-gray-900 group-hover:text-indigo-950'
                     )}>
                       {conversation.name}
                     </p>
@@ -196,11 +201,12 @@ export default function ConversationSidebar({
                   </p>
                 </div>
 
-                {isActive && (
-                  <div className="flex-shrink-0">
-                    <ChevronRight className="h-4 w-4 text-indigo-400 rtl:rotate-180" />
-                  </div>
-                )}
+                <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <ChevronRight className={cn(
+                    'h-4 w-4 rtl:rotate-180 transition-colors',
+                    isActive ? 'text-indigo-500' : 'text-gray-400'
+                  )} />
+                </div>
               </button>
             );
           })}
