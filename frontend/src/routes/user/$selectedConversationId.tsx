@@ -85,6 +85,8 @@ function RouteComponent() {
           contactName={selectedConversation?.name || t('chat.unknown')}
           contactNumber={selectedConversation?.number || ''}
           currentUserId={currentUser?.id || ''}
+          currentUserName={currentUser?.name || ''}
+          contactUserId={selectedConversation?.userId || ''}
           onBack={() => navigate({ to: '/user/user_page' })}
         />
       </div>

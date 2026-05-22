@@ -1,10 +1,20 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Smile, Paperclip, Phone, Video, MoreVertical, ArrowLeft, CheckCheck } from 'lucide-react';
+import {
+  Send, Smile, Paperclip, Phone, MoreVertical, ArrowLeft,
+  CheckCheck, ImageIcon, FileText, Mic, MicOff, FileType2, Download, Square,
+  Play, Pause,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-
+import { Button } from '../ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import EmojiPicker from 'emoji-picker-react';
+import ImageUploadCrop from '../image_upload_crop';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import VoiceCallOverlay, { type CallSignal, type CallState } from './voice_call_overlay';
 
 type MessageType = {
   id: string;
@@ -16,29 +26,183 @@ type MessageType = {
   createdAt: string;
 };
 
+function encodeFileContent(originalName: string, uniqueName: string) {
+  return `${originalName}|||${uniqueName}`;
+}
+function decodeFileContent(content: string): { originalName: string; uniqueName: string } {
+  const sep = content.indexOf('|||');
+  if (sep === -1) return { originalName: content, uniqueName: content };
+  return { originalName: content.slice(0, sep), uniqueName: content.slice(sep + 3) };
+}
+
+interface VoicePlayerProps {
+  src: string;
+  isMine: boolean;
+}
+
+function VoicePlayer({ src, isMine }: VoicePlayerProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [speed, setSpeed] = useState<1 | 1.5 | 2>(1);
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+  }, [src]);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch((e) => console.error('Play failed', e));
+      setIsPlaying(true);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+  };
+
+  const handleScrub = (value: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = value;
+      setCurrentTime(value);
+    }
+  };
+
+  const cycleSpeed = () => {
+    if (!audioRef.current) return;
+    let nextSpeed: 1 | 1.5 | 2 = 1;
+    if (speed === 1) nextSpeed = 1.5;
+    else if (speed === 1.5) nextSpeed = 2;
+    else nextSpeed = 1;
+
+    audioRef.current.playbackRate = nextSpeed;
+    setSpeed(nextSpeed);
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return '0:00';
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const totalBars = 20;
+  const barHeights = [40, 60, 30, 70, 50, 80, 45, 90, 60, 35, 75, 50, 65, 40, 85, 55, 30, 70, 50, 40];
+
+  return (
+    <div className={cn(
+      'flex items-center gap-3 py-1.5 px-2 rounded-xl min-w-[260px] max-w-[320px]',
+      isMine ? 'text-white' : 'text-gray-800'
+    )}>
+      <audio
+        ref={audioRef}
+        src={src}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleAudioEnded}
+      />
+
+      <button
+        onClick={togglePlay}
+        className={cn(
+          'h-10 w-10 rounded-full flex items-center justify-center transition-all shadow-md active:scale-90 flex-shrink-0',
+          isMine
+            ? 'bg-white text-indigo-600 hover:bg-indigo-50'
+            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+        )}
+      >
+        {isPlaying ? (
+          <Pause className="h-5 w-5 fill-current" />
+        ) : (
+          <Play className="h-5 w-5 fill-current ml-0.5" />
+        )}
+      </button>
+
+      <div className="flex-1 flex flex-col justify-center min-w-0">
+        <div className="flex items-end gap-[2px] h-7 w-full relative group cursor-pointer">
+          <input
+            type="range"
+            min={0}
+            max={duration || 100}
+            value={currentTime}
+            onChange={(e) => handleScrub(Number(e.target.value))}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          />
+
+          {barHeights.map((h, i) => {
+            const barProgress = (i / totalBars) * (duration || 1);
+            const isPlayed = currentTime >= barProgress;
+
+            return (
+              <div
+                key={i}
+                className="flex-1 rounded-sm transition-colors duration-150"
+                style={{
+                  height: `${h}%`,
+                  backgroundColor: isPlayed
+                    ? (isMine ? '#ffffff' : '#4f46e5')
+                    : (isMine ? 'rgba(255, 255, 255, 0.4)' : '#e5e7eb')
+                }}
+              />
+            );
+          })}
+        </div>
+
+        <div className="flex justify-between items-center mt-1">
+          <span className={cn('text-[10px] font-medium', isMine ? 'text-indigo-200' : 'text-gray-400')}>
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </span>
+        </div>
+      </div>
+
+      <button
+        onClick={cycleSpeed}
+        className={cn(
+          'text-[10px] font-bold px-2 py-1 rounded-full transition-colors flex-shrink-0',
+          isMine
+            ? 'bg-white/20 text-white hover:bg-white/30'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        )}
+      >
+        {speed}x
+      </button>
+    </div>
+  );
+}
+
 const getMessages = async (conversationId: string) => {
   const res = await fetch(`/api/messages/${conversationId}`);
   if (!res.ok) throw new Error('Failed to fetch messages');
   return res.json() as Promise<MessageType[]>;
 };
 
-// Avatar color palette
 const avatarColors = [
-  'bg-blue-500',
-  'bg-emerald-500',
-  'bg-violet-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-teal-500',
-  'bg-indigo-500',
-  'bg-orange-500',
+  'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500',
+  'bg-rose-500', 'bg-teal-500', 'bg-indigo-500', 'bg-orange-500',
 ];
 
 function getAvatarColor(name: string): string {
   let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return avatarColors[Math.abs(hash) % avatarColors.length];
 }
 
@@ -47,6 +211,8 @@ interface ChatWindowProps {
   contactName: string;
   contactNumber: string;
   currentUserId: string;
+  currentUserName: string;
+  contactUserId: string;
   onBack?: () => void;
 }
 
@@ -55,6 +221,8 @@ export default function ChatWindow({
   contactName,
   contactNumber,
   currentUserId,
+  currentUserName,
+  contactUserId,
   onBack,
 }: ChatWindowProps) {
   const { t } = useTranslation();
@@ -63,8 +231,52 @@ export default function ChatWindow({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  // const socketRef = useRef<WebSocket | null>(null);
 
+  // ── Image upload ────────────────────────────────────────────────────────────
+  const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+
+  // ── Document upload ─────────────────────────────────────────────────────────
+  const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
+  const [docUploadType, setDocUploadType] = useState<'pdf' | 'word'>('pdf');
+  const [selectedDocFile, setSelectedDocFile] = useState<File | null>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Voice recording ─────────────────────────────────────────────────────────
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Voice call ──────────────────────────────────────────────────────────────
+  const [callState, setCallState] = useState<CallState>({ phase: 'idle' });
+  const [incomingSignal, setIncomingSignal] = useState<CallSignal | null>(null);
+  const callWsRef = useRef<WebSocket | null>(null);
+
+  // Connect call signaling WS
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${protocol}//${window.location.host}/ws/call?userId=${currentUserId}&conversationId=${conversationId}`;
+    const ws = new WebSocket(url);
+    ws.onmessage = (e) => {
+      try {
+        const signal = JSON.parse(e.data) as CallSignal;
+        setIncomingSignal(signal);
+      } catch { /* ignore */ }
+    };
+    ws.onerror = (e) => console.error('[Call WS] error', e);
+    callWsRef.current = ws;
+    return () => ws.close();
+  }, [currentUserId, conversationId]);
+
+  const sendSignal = useCallback((msg: CallSignal) => {
+    if (callWsRef.current?.readyState === WebSocket.OPEN) {
+      callWsRef.current.send(JSON.stringify(msg));
+    }
+  }, []);
+
+  // ── Message WS ──────────────────────────────────────────────────────────────
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', conversationId],
     queryFn: () => getMessages(conversationId),
@@ -74,147 +286,216 @@ export default function ChatWindow({
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws/message?conversationId=${conversationId}&senderId=${currentUserId}`;
     const socket = new WebSocket(wsUrl);
-
-    socket.onopen = () => {
-      console.log('WS connected');
-    };
-
+    socket.onopen = () => console.log('WS connected');
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data) as MessageType;
-
-      queryClient.setQueryData(
-        ['messages', message.conversationId],
-        (oldData: MessageType[] = []) => {
-          if (oldData.some(msg => msg.id === message.id)) return oldData;
-          return [...oldData, message];
-        }
-      );
+      queryClient.setQueryData(['messages', message.conversationId], (oldData: MessageType[] = []) => {
+        if (oldData.some(msg => msg.id === message.id)) return oldData;
+        return [...oldData, message];
+      });
     };
-
-    socket.onerror = (e) => {
-      console.error('SOCKET ERROR', e);
-    };
-
-    socket.onclose = (e) => {
-      console.log('CLOSED', e.code, e.reason);
-    };
-
-    return () => {
-      console.log('CLEANUP');
-      socket.close();
-    };
+    socket.onerror = (e) => console.error('SOCKET ERROR', e);
+    socket.onclose = (e) => console.log('CLOSED', e.code, e.reason);
+    return () => socket.close();
   }, [conversationId, currentUserId, queryClient]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // ── Send helpers ────────────────────────────────────────────────────────────
+  const postMessage = async (content: string, type: string) => {
+    const res = await fetch('/api/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId, senderId: currentUserId, content, type }),
+    });
+    if (!res.ok) throw new Error('Failed to send message');
+  };
+
+  const handleSendImage = async () => {
+    if (!selectedImageFile || isSending) return;
+    setIsSending(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedImageFile);
+      const uploadRes = await fetch('/api/attachment/image/upload', { method: 'POST', body: formData });
+      if (!uploadRes.ok) throw new Error('Image upload failed');
+      const data = await uploadRes.json();
+      if (!data.success) throw new Error(data.error);
+      await postMessage(data.fileName, 'Image');
+      setIsImageUploadOpen(false);
+      setSelectedImageFile(null);
+    } catch (err) { console.error(err); }
+    finally { setIsSending(false); }
+  };
+
+  const handleSendDocument = async () => {
+    if (!selectedDocFile || isSending) return;
+    setIsSending(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedDocFile);
+      const uploadRes = await fetch('/api/attachment/document/upload', { method: 'POST', body: formData });
+      if (!uploadRes.ok) throw new Error('Document upload failed');
+      const data = await uploadRes.json();
+      if (!data.success) throw new Error(data.error);
+      await postMessage(encodeFileContent(data.originalName, data.fileName), 'File');
+      setIsDocUploadOpen(false);
+      setSelectedDocFile(null);
+    } catch (err) { console.error(err); }
+    finally { setIsSending(false); }
+  };
+
   const handleSend = async () => {
     const content = messageText.trim();
     if (!content || isSending) return;
     setIsSending(true);
     setMessageText('');
-
-    try {
-      const res = await fetch('/api/message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId,
-          senderId: currentUserId,
-          content: content,
-          type: 'Text',
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to send');
-      }
-      const data = await res.json();
-    } catch (err) {
-      console.error('Failed to send message:', err);
-    } finally {
-      setIsSending(false);
-    }
+    try { await postMessage(content, 'Text'); }
+    catch (err) { console.error(err); }
+    finally { setIsSending(false); }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  // ── Voice recording ─────────────────────────────────────────────────────────
+  const startRecording = async () => {
+    try {
+      // console.log(navigator);
+      // console.log(navigator.mediaDevices);
+      // console.log(window.isSecureContext);
+      // console.log(window.isSecureContext);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        const file = new File([blob], `voice_${Date.now()}.webm`, { type: mimeType });
+        await sendVoiceMessage(file);
+      };
+      recorder.start(250);
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      recordingTimerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+    } catch (err) {
+      console.error('Microphone access denied', err);
     }
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    mediaRecorderRef.current = null;
+    if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; }
+    setIsRecording(false);
+    setRecordingSeconds(0);
   };
 
+  const sendVoiceMessage = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadRes = await fetch('/api/attachment/audio/upload', { method: 'POST', body: formData });
+      if (!uploadRes.ok) throw new Error('Audio upload failed');
+      const data = await uploadRes.json();
+      if (!data.success) throw new Error(data.error);
+      await postMessage(data.fileName, 'Voice');
+    } catch (err) { console.error('Failed to send voice message:', err); }
+  };
+
+  const formatRecording = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+  const openDocDialog = (type: 'pdf' | 'word') => {
+    setDocUploadType(type);
+    setSelectedDocFile(null);
+    setIsDocUploadOpen(true);
+  };
+
+  const formatTime = (dateStr: string) => new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
     if (date.toDateString() === today.toDateString()) return t('chat.today');
     if (date.toDateString() === yesterday.toDateString()) return t('chat.yesterday');
     return date.toLocaleDateString();
   };
 
-  // Group messages by date
   const groupedMessages: { date: string; messages: MessageType[] }[] = [];
   messages?.forEach((msg) => {
     const dateKey = new Date(msg.createdAt).toDateString();
     const lastGroup = groupedMessages[groupedMessages.length - 1];
-    if (lastGroup && new Date(lastGroup.messages[0].createdAt).toDateString() === dateKey) {
-      lastGroup.messages.push(msg);
-    } else {
-      groupedMessages.push({ date: dateKey, messages: [msg] });
-    }
+    if (lastGroup && new Date(lastGroup.messages[0].createdAt).toDateString() === dateKey) lastGroup.messages.push(msg);
+    else groupedMessages.push({ date: dateKey, messages: [msg] });
   });
 
   const contactColor = getAvatarColor(contactName);
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
-      {/* Chat Header */}
+      {/* ── Voice Call Overlay ────────────────────────────────────────────────── */}
+      <VoiceCallOverlay
+        currentUserId={currentUserId}
+        conversationId={conversationId}
+        callState={callState}
+        onCallStateChange={setCallState}
+        sendSignal={sendSignal}
+        incomingSignal={incomingSignal}
+        onIncomingSignalHandled={() => setIncomingSignal(null)}
+      />
+
+      {/* ── Header ───────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 shadow-sm">
         {onBack && (
-          <button
-            onClick={onBack}
-            className="p-1.5 -ms-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all lg:hidden"
-          >
+          <Button onClick={onBack} className="p-1.5 -ms-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all lg:hidden">
             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
-          </button>
+          </Button>
         )}
-
         <Avatar className="h-10 w-10 shadow-sm">
-          <AvatarFallback className={cn(contactColor, 'text-white font-semibold text-sm')}>
-            {contactName.charAt(0)}
-          </AvatarFallback>
+          <AvatarFallback className={cn(contactColor, 'text-white font-semibold text-sm')}>{contactName.charAt(0)}</AvatarFallback>
         </Avatar>
-
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-900 truncate">{contactName}</p>
           <p className="text-xs text-emerald-500 font-medium">{t('chat.online')}</p>
         </div>
-
         <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all">
+          {/* Voice call button */}
+          <Button
+            onClick={() => {
+              if (callState.phase === 'idle') {
+                // Need to trigger initiateCall via VoiceCallOverlay — use a ref trick via event
+                const detail = { contactUserId, contactName, myName: currentUserName };
+                window.dispatchEvent(new CustomEvent('start-voice-call', { detail }));
+              }
+            }}
+            className={cn(
+              'p-2 rounded-lg transition-all',
+              callState.phase !== 'idle'
+                ? 'text-emerald-500 bg-emerald-50'
+                : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50'
+            )}
+          >
             <Phone className="h-4 w-4" />
-          </button>
-          <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+          </Button>
+          <Button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
             <MoreVertical className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* ── Messages ─────────────────────────────────────────────────────────── */}
       <div
         className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }}
       >
         {isLoading && (
           <div className="flex items-center justify-center py-20">
@@ -224,7 +505,6 @@ export default function ChatWindow({
             </div>
           </div>
         )}
-
         {!isLoading && messages?.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="h-16 w-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
@@ -237,61 +517,72 @@ export default function ChatWindow({
 
         {groupedMessages.map((group) => (
           <div key={group.date}>
-            {/* Date divider */}
             <div className="flex items-center justify-center my-4">
               <div className="px-4 py-1.5 bg-white rounded-full shadow-sm border border-gray-100">
-                <span className="text-xs font-medium text-gray-500">
-                  {formatDate(group.messages[0].createdAt)}
-                </span>
+                <span className="text-xs font-medium text-gray-500">{formatDate(group.messages[0].createdAt)}</span>
               </div>
             </div>
 
-            {/* Messages */}
             {group.messages.map((msg, idx) => {
               const isMine = msg.senderId === currentUserId;
               const showAvatar = !isMine && (idx === 0 || group.messages[idx - 1].senderId !== msg.senderId);
 
               return (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    'flex mb-1',
-                    isMine ? 'justify-end' : 'justify-start'
-                  )}
-                >
+                <div key={msg.id} className={cn('flex mb-1', isMine ? 'justify-end' : 'justify-start')}>
                   {!isMine && showAvatar && (
                     <Avatar className="h-7 w-7 mt-1 me-2 flex-shrink-0">
-                      <AvatarFallback className={cn(contactColor, 'text-white text-[10px] font-semibold')}>
-                        {contactName.charAt(0)}
-                      </AvatarFallback>
+                      <AvatarFallback className={cn(contactColor, 'text-white text-[10px] font-semibold')}>{contactName.charAt(0)}</AvatarFallback>
                     </Avatar>
                   )}
                   {!isMine && !showAvatar && <div className="w-9 flex-shrink-0" />}
 
-                  <div
-                    className={cn(
-                      'max-w-[75%] px-3.5 py-2 rounded-2xl shadow-sm relative group',
-                      isMine
-                        ? 'bg-indigo-500 text-white rounded-ee-md'
-                        : 'bg-white text-gray-800 rounded-es-md border border-gray-100'
+                  <div className={cn(
+                    'max-w-[75%] px-3.5 py-2 rounded-2xl shadow-sm relative group',
+                    isMine ? 'bg-indigo-500 text-white rounded-ee-md' : 'bg-white text-gray-800 rounded-es-md border border-gray-100',
+                    msg.type === 'Image' ? 'p-1.5' : ''
+                  )}>
+                    {/* Image */}
+                    {msg.type === 'Image' && (
+                      <div className="overflow-hidden rounded-xl">
+                        <img src={`/api/attachment/image/${msg.content}`} alt="Attachment" className="max-w-full h-auto object-cover max-h-[300px] rounded-xl" />
+                      </div>
                     )}
-                  >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {msg.content}
-                    </p>
-                    <div className={cn(
-                      'flex items-center gap-1 mt-1',
-                      isMine ? 'justify-end' : 'justify-start'
-                    )}>
-                      <span className={cn(
-                        'text-[10px]',
-                        isMine ? 'text-indigo-200' : 'text-gray-400'
-                      )}>
-                        {formatTime(msg.createdAt)}
-                      </span>
-                      {isMine && (
-                        <CheckCheck className="h-3 w-3 text-indigo-200" />
-                      )}
+
+                    {/* File */}
+                    {msg.type === 'File' && (() => {
+                      const { originalName, uniqueName } = decodeFileContent(msg.content);
+                      const ext = uniqueName.split('.').pop()?.toLowerCase() ?? '';
+                      const isPdf = ext === 'pdf';
+                      return (
+                        <a href={`/api/attachment/document/${uniqueName}`} download={originalName} className={cn('flex items-center gap-3 px-2 py-1 rounded-lg no-underline', isMine ? 'text-white' : 'text-gray-800')}>
+                          <div className={cn('flex items-center justify-center h-10 w-10 rounded-lg flex-shrink-0', isMine ? 'bg-white/20' : 'bg-indigo-50')}>
+                            {isPdf ? <FileText className={cn('h-5 w-5', isMine ? 'text-white' : 'text-red-500')} /> : <FileType2 className={cn('h-5 w-5', isMine ? 'text-white' : 'text-blue-500')} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold truncate max-w-[160px]">{originalName}</p>
+                            <p className={cn('text-[10px]', isMine ? 'text-indigo-200' : 'text-gray-400')}>{isPdf ? 'PDF' : 'Word'} Document</p>
+                          </div>
+                          <Download className={cn('h-4 w-4 flex-shrink-0', isMine ? 'text-indigo-200' : 'text-gray-400')} />
+                        </a>
+                      );
+                    })()}
+
+                    {/* Voice */}
+                    {msg.type === 'Voice' && (
+                      <VoicePlayer
+                        src={`/api/attachment/audio/${msg.content}`}
+                        isMine={isMine}
+                      />
+                    )}
+
+                    {/* Text */}
+                    {msg.type === 'Text' && (
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                    )}
+
+                    <div className={cn('flex items-center gap-1 mt-1', isMine ? 'justify-end' : 'justify-start', msg.type === 'Image' ? 'px-1' : '')}>
+                      <span className={cn('text-[10px]', isMine ? 'text-indigo-200' : 'text-gray-400')}>{formatTime(msg.createdAt)}</span>
+                      {isMine && <CheckCheck className="h-3 w-3 text-indigo-200" />}
                     </div>
                   </div>
                 </div>
@@ -299,34 +590,79 @@ export default function ChatWindow({
             })}
           </div>
         ))}
-
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input */}
+      {/* ── Input bar ────────────────────────────────────────────────────────── */}
       <div className="px-4 py-3 bg-white border-t border-gray-100">
         <div className="flex items-end gap-2">
-          <button className="p-2.5 rounded-xl text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all flex-shrink-0">
-            <Smile className="h-5 w-5" />
-          </button>
-          <button className="p-2.5 rounded-xl text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all flex-shrink-0">
-            <Paperclip className="h-5 w-5" />
-          </button>
+          {/* Emoji picker */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all flex-shrink-0">
+                <Smile className="h-5 w-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-2">
+              <EmojiPicker onEmojiClick={(e) => setMessageText(messageText + e.emoji)} />
+            </PopoverContent>
+          </Popover>
 
+          {/* Attachments */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon"><Paperclip /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setIsImageUploadOpen(true)}>
+                <ImageIcon className="h-4 w-4 mr-2" /> Image
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openDocDialog('pdf')}>
+                <FileText className="h-4 w-4 mr-2 text-red-500" /> PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openDocDialog('word')}>
+                <FileType2 className="h-4 w-4 mr-2 text-blue-500" /> Word Document
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Text input or recording indicator */}
           <div className="flex-1 relative">
-            <textarea
-              ref={inputRef}
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={t('chat.typePlaceholder')}
-              rows={1}
-              className="w-full resize-none rounded-xl bg-gray-100 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 border-0 outline-none focus:bg-gray-50 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 max-h-28"
-              style={{ minHeight: '42px' }}
-            />
+            {isRecording ? (
+              <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 h-[42px]">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-sm text-red-600 font-medium">{formatRecording(recordingSeconds)}</span>
+                <span className="text-xs text-red-400 ml-1">Recording…</span>
+              </div>
+            ) : (
+              <textarea
+                ref={inputRef}
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={t('chat.typePlaceholder')}
+                rows={1}
+                className="w-full resize-none rounded-xl bg-gray-100 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 border-0 outline-none focus:bg-gray-50 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 max-h-28"
+                style={{ minHeight: '42px' }}
+              />
+            )}
           </div>
 
-          <button
+          {/* Mic button — hold to record (click to start/stop) */}
+          <Button
+            onClick={isRecording ? stopRecording : startRecording}
+            className={cn(
+              'p-2.5 rounded-xl transition-all duration-200 flex-shrink-0',
+              isRecording
+                ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 shadow-sm shadow-red-500/25'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            )}
+          >
+            {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
+
+          {/* Send button */}
+          <Button
             onClick={handleSend}
             disabled={!messageText.trim() || isSending}
             className={cn(
@@ -337,9 +673,57 @@ export default function ChatWindow({
             )}
           >
             <Send className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
       </div>
+
+      {/* ── Image dialog ──────────────────────────────────────────────────────── */}
+      <Dialog open={isImageUploadOpen} onOpenChange={(open) => { setIsImageUploadOpen(open); if (!open) setSelectedImageFile(null); }}>
+        <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+          <DialogHeader><DialogTitle>Upload Image</DialogTitle></DialogHeader>
+          <ImageUploadCrop title="" label="Drag and drop an image here, or click to select one" aspect={1} onImageCropped={(file) => setSelectedImageFile(file)} />
+          <DialogFooter className="mt-4">
+            <Button disabled={!selectedImageFile || isSending} onClick={handleSendImage} className="bg-indigo-500 hover:bg-indigo-600 text-white">
+              {isSending ? 'Sending…' : 'Send Image'}{!isSending && <Send className="w-4 h-4 ml-2" />}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Document dialog ───────────────────────────────────────────────────── */}
+      <Dialog open={isDocUploadOpen} onOpenChange={(open) => { setIsDocUploadOpen(open); if (!open) setSelectedDocFile(null); }}>
+        <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {docUploadType === 'pdf' ? <><FileText className="h-5 w-5 text-red-500" /> Upload PDF</> : <><FileType2 className="h-5 w-5 text-blue-500" /> Upload Word Document</>}
+            </DialogTitle>
+          </DialogHeader>
+          <input ref={docInputRef} type="file" accept={docUploadType === 'pdf' ? '.pdf' : '.doc,.docx'} className="hidden" onChange={(e) => setSelectedDocFile(e.target.files?.[0] ?? null)} />
+          <div
+            onClick={() => docInputRef.current?.click()}
+            className={cn('flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 py-10', selectedDocFile ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50')}
+          >
+            {selectedDocFile ? (
+              <>
+                {docUploadType === 'pdf' ? <FileText className="h-10 w-10 text-red-500" /> : <FileType2 className="h-10 w-10 text-blue-500" />}
+                <p className="text-sm font-semibold text-gray-800 text-center px-4 break-all">{selectedDocFile.name}</p>
+                <p className="text-xs text-gray-400">{(selectedDocFile.size / 1024).toFixed(1)} KB · Click to change</p>
+              </>
+            ) : (
+              <>
+                {docUploadType === 'pdf' ? <FileText className="h-10 w-10 text-gray-300" /> : <FileType2 className="h-10 w-10 text-gray-300" />}
+                <p className="text-sm font-medium text-gray-500">Click to select a {docUploadType === 'pdf' ? 'PDF' : 'Word'} file</p>
+                <p className="text-xs text-gray-400">{docUploadType === 'pdf' ? '.pdf files only' : '.doc, .docx files only'}</p>
+              </>
+            )}
+          </div>
+          <DialogFooter className="mt-4">
+            <Button disabled={!selectedDocFile || isSending} onClick={handleSendDocument} className="bg-indigo-500 hover:bg-indigo-600 text-white">
+              {isSending ? 'Sending…' : 'Send Document'}{!isSending && <Send className="w-4 h-4 ml-2" />}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

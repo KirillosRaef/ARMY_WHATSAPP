@@ -4,6 +4,7 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import path from 'path';
 import tailwindcss from '@tailwindcss/vite';
 import os from 'os';
+import mkcert from 'vite-plugin-mkcert';
 
 function getLocalIP() {
   const interfaces = os.networkInterfaces();
@@ -27,6 +28,8 @@ const ip = getLocalIP();
 // https://vite.dev/config/
 export default defineConfig({
   server: {
+    host: true,
+    https: true,    
     proxy: {
       '/api': {
         target: `http://${ip}:3000`,
@@ -48,6 +51,7 @@ export default defineConfig({
       },
     }),
     tailwindcss(),
+    mkcert(),
   ],
   resolve: {
     alias: {

@@ -61,7 +61,7 @@ export const message = sqliteTable('message', {
   conversationId: text('conversation_id').notNull(),
   senderId: text('sender_id').notNull(),
   content: text('content').notNull(),
-  type: text('type', { enum: ['Text', 'Image', 'File'] }).notNull(),
+  type: text('type', { enum: ['Text', 'Image', 'File', 'Voice'] }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),

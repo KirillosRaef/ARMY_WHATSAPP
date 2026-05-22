@@ -18,6 +18,7 @@ messageWebSocketRoute.onError(({ error }) => {
         t.Literal('Text'),
         t.Literal('Image'),
         t.Literal('File'),
+        t.Literal('Voice'),
       ]),
     }),
     open(ws) {

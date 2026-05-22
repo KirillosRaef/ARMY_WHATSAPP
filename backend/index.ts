@@ -24,6 +24,10 @@ import { getCurrentUserConversationsRoute } from "./routes/conversation/getCurre
 import { getCurrentUserRoute } from "./routes/user/getCurrentUserRoute.ts";
 import { getMessagesByConversationRoute } from "./routes/conversation/getMessagesByConversationRoute.ts";
 import { messageWebSocketRoute } from "./routes/ws/messageWebSocketRoute.ts";
+import { imageRoute } from "./routes/attachment/imageRoute.ts";
+import { documentRoute } from "./routes/attachment/documentRoute.ts";
+import { audioRoute } from "./routes/attachment/audioRoute.ts";
+import { callSignalingRoute } from "./routes/ws/callSignalingRoute.ts";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -34,8 +38,8 @@ const app = new Elysia()
     origin: `http://${ip}:5173`,
   }))
   .use(staticPlugin({
-    assets: 'images',
-    prefix: '/images',
+    assets: 'attachments',
+    prefix: '/attachments',
   }))
   .use(signUpRoute)
   .use(loginRoute)
@@ -56,7 +60,11 @@ const app = new Elysia()
   .use(getCurrentUserConversationsRoute)
   .use(getCurrentUserRoute)
   .use(getMessagesByConversationRoute)
-  .use(messageWebSocketRoute);
+  .use(messageWebSocketRoute)
+  .use(imageRoute)
+  .use(documentRoute)
+  .use(audioRoute)
+  .use(callSignalingRoute);
 
 app.listen({
   port: 3000,
