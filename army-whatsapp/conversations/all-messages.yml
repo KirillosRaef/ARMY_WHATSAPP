@@ -1,11 +1,11 @@
 info:
-  name: all-conversations
+  name: all-messages
   type: http
-  seq: 11
+  seq: 13
 
 http:
   method: DELETE
-  url: http://192.168.1.111:3000/api/all-conversations
+  url: http://192.168.1.111:3000/api/all-messages
   auth: inherit
 
 settings:

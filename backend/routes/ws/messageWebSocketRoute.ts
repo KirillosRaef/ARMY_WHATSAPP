@@ -1,31 +1,54 @@
 import { Elysia, t } from "elysia";
 import { db } from "../../database";
-import { message, messageInsertSchema } from "../../schema";
+import { message } from "../../schema";
 export const messageWebSocketRoute = new Elysia()
 
 messageWebSocketRoute.onError(({ error }) => {
   console.log(error);
   return error;
 }).ws(
-  '/ws/message/:conversationId', {
-    params: t.Object({
-      conversationId: t.String()
-    }),
+  '/ws/message', {
     query: t.Object({
-      userId: t.String()
+      conversationId: t.String(),
+      senderId: t.String()
+    }),
+    body: t.Object({
+      content: t.String(),
+      type: t.Union([
+        t.Literal('Text'),
+        t.Literal('Image'),
+        t.Literal('File'),
+      ]),
     }),
     open(ws) {
-      const { conversationId } = ws.data.params
-      ws.subscribe(`ws/message/${conversationId}`)
-      const userId = ws.data.query.userId
-      console.log(`Connection established in room: ${conversationId}`)
-      console.log(`User: ${userId}`)
+      const { conversationId, senderId } = ws.data.query;
+      ws.subscribe(`conversation/${conversationId}`);
+      console.log(
+        `User ${senderId} joined conversation ${conversationId}`
+      );
     },
-    message(ws, message) {
-      const { conversationId } = ws.data.params
-      const userId = ws.data.query.userId
 
-      ws.send(`Echo to Room ${conversationId} (User: ${userId}): ${message}`)
-    }
+    message: async (ws, msg) => {
+      const { conversationId, senderId } = ws.data.query;
+      const { content, type } = msg
+
+      const data = await db.insert(message).values({
+        conversationId: conversationId,
+        senderId: senderId,
+        content: content,
+        type: type,
+      }).returning();
+
+      ws.publish(`conversation/${conversationId}`, data[0]);
+
+    },
+
+    close(ws) {
+      const { conversationId, senderId } = ws.data.query;
+
+      console.log(
+        `User ${senderId} left conversation ${conversationId}`
+      );
+    },
   }
 );

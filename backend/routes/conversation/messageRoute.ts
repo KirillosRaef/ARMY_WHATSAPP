@@ -8,8 +8,9 @@ messageRoute.onError(({ error }) => {
   return error;
 }).post(
   '/api/message',
-  async ({ body }) => {
+  async ({ body, server }) => {
     const data = await db.insert(message).values(body).returning();
+    server?.publish(`conversation/${body.conversationId}`, JSON.stringify(data[0]));
     return data[0];
   },
   {

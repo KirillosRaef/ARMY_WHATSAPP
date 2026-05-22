@@ -1,7 +1,7 @@
 info:
   name: current-user-conversation
   type: http
-  seq: 11
+  seq: 9
 
 http:
   method: GET

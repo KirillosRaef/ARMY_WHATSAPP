@@ -23,6 +23,7 @@ import { deleteAllConversationsRoute } from "./routes/conversation/deleteAllRout
 import { getCurrentUserConversationsRoute } from "./routes/conversation/getCurrentUserConversationsRoute.ts";
 import { getCurrentUserRoute } from "./routes/user/getCurrentUserRoute.ts";
 import { getMessagesByConversationRoute } from "./routes/conversation/getMessagesByConversationRoute.ts";
+import { messageWebSocketRoute } from "./routes/ws/messageWebSocketRoute.ts";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -54,7 +55,8 @@ const app = new Elysia()
   .use(deleteAllConversationsRoute)
   .use(getCurrentUserConversationsRoute)
   .use(getCurrentUserRoute)
-  .use(getMessagesByConversationRoute);
+  .use(getMessagesByConversationRoute)
+  .use(messageWebSocketRoute);
 
 app.listen({
   port: 3000,

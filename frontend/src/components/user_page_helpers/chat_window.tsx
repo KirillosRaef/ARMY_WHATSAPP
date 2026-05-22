@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, Smile, Paperclip, Phone, Video, MoreVertical, ArrowLeft, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+
 type MessageType = {
   id: string;
   conversationId: string;
@@ -62,13 +63,47 @@ export default function ChatWindow({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // const socketRef = useRef<WebSocket | null>(null);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', conversationId],
     queryFn: () => getMessages(conversationId),
-    refetchInterval: 3000,
-    staleTime: 0,
   });
+
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/message?conversationId=${conversationId}&senderId=${currentUserId}`;
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+      console.log('WS connected');
+    };
+
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data) as MessageType;
+
+      queryClient.setQueryData(
+        ['messages', message.conversationId],
+        (oldData: MessageType[] = []) => {
+          if (oldData.some(msg => msg.id === message.id)) return oldData;
+          return [...oldData, message];
+        }
+      );
+    };
+
+    socket.onerror = (e) => {
+      console.error('SOCKET ERROR', e);
+    };
+
+    socket.onclose = (e) => {
+      console.log('CLOSED', e.code, e.reason);
+    };
+
+    return () => {
+      console.log('CLEANUP');
+      socket.close();
+    };
+  }, [conversationId, currentUserId, queryClient]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,25 +113,9 @@ export default function ChatWindow({
     const content = messageText.trim();
     if (!content || isSending) return;
     setIsSending(true);
-
-    const optimisticMessage = {
-      id: 'temp-' + Date.now(),
-      conversationId,
-      senderId: currentUserId,
-      content: content,
-      type: 'Text',
-      createdAt: new Date().toISOString(),
-    } as MessageType;
     setMessageText('');
 
     try {
-      queryClient.setQueryData(
-        ['messages', conversationId],
-        (oldData: MessageType[]) => {
-          if (!oldData) return [optimisticMessage];
-          return [...oldData, optimisticMessage];
-        }
-      );
       const res = await fetch('/api/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,25 +126,12 @@ export default function ChatWindow({
           type: 'Text',
         }),
       });
+
       if (!res.ok) {
         throw new Error('Failed to send');
       }
       const data = await res.json();
-      queryClient.setQueryData(
-        ['messages', conversationId],
-        (old: MessageType[]) =>
-          old.map(msg =>
-            msg.id === optimisticMessage.id
-              ? data
-              : msg
-          )
-      );
     } catch (err) {
-      queryClient.setQueryData(
-        ['messages', conversationId],
-        (old: MessageType[]) =>
-          old.filter(msg => msg.id !== optimisticMessage.id)
-      );
       console.error('Failed to send message:', err);
     } finally {
       setIsSending(false);

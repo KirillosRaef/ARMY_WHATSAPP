@@ -31,6 +31,10 @@ export default defineConfig({
       '/api': {
         target: `http://${ip}:3000`,
       },
+      '/ws': {
+        target: `ws://${ip}:3000`,
+        ws: true,
+      },
     },
   },
   plugins: [

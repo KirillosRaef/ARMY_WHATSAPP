@@ -17,6 +17,14 @@ http:
       //   "number": "112"
       // }
 
+      {
+        "name": "Beeshoy Raef",
+        "email": "beeshoy@gmail.com",
+        "password": "strongPass123",
+        "role": "User",
+        "number": "7"
+      }
+
       // {
       //   "name": "Kirillos Raef",
       //   "email": "kraef@gmail.com",
@@ -25,13 +33,13 @@ http:
       //   "number": "113"
       // }
 
-      {
-        "name": "Matat2",
-        "email": "matat2@gmail.com",
-        "password": "weakPass123",
-        "role": "User",
-        "number": "117"
-      }
+      // {
+      //   "name": "Matat2",
+      //   "email": "matat2@gmail.com",
+      //   "password": "weakPass123",
+      //   "role": "User",
+      //   "number": "117"
+      // }
 
       // {
       //   "name": "mnozom3",

@@ -1,0 +1,19 @@
+info:
+  name: message-web-socket
+  type: websocket
+  seq: 1
+
+websocket:
+  url: http://192.168.1.111:3000/ws/message?conversationId=019e4768-8e7b-7000-887e-d76fac5da418&senderId=p8inaWHtMb85YR3aSr7GdjVpSsyuq7Tx
+  message:
+    type: json
+    data: |-
+      {
+        "content": "fine",
+        "type": "Text"
+      }
+  auth: inherit
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0
