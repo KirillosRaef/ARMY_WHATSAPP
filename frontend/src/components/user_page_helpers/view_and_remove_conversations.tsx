@@ -1,25 +1,12 @@
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from "@/components/ui/command"
-import { useQuery } from "@tanstack/react-query";
-import LoadingComponent from "../helpers/loading_component";
-import ErrorComponent from "../helpers/error_component";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Checkbox } from "../ui/checkbox";
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { useState } from "react";
-import { Button } from "../ui/button";
-import { Trash2 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
-
+import { useState } from 'react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Search, Plus, LogOut, MessageCircle, Settings, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import AddConversation from './add_conversation';
 
 export type CurrentUserConversationType = {
   conversationId: string;
@@ -28,7 +15,7 @@ export type CurrentUserConversationType = {
   name: string;
   email: string;
   number: string;
-  isSelected: boolean; 
+  isSelected: boolean;
 };
 
 const getCurrentUserConversations = async () => {
@@ -36,124 +23,189 @@ const getCurrentUserConversations = async () => {
   const currentUserIdData = await currentUserId.text();
 
   const currentUserConversations = await fetch(`/api/current-user-conversations/${currentUserIdData}`);
-  if (!currentUserConversations.ok) throw new Error('Failed to fetch users'); 
+  if (!currentUserConversations.ok) throw new Error('Failed to fetch conversations');
   const currentUserConversationsData = await currentUserConversations.json() as CurrentUserConversationType[];
-  const data = currentUserConversationsData.map((currentUserConversation) => {
-    return {
-      ...currentUserConversation,
-      isSelected: false,
-    };
-  });
-
-  console.log(data);
-  return data;
+  return currentUserConversationsData.map((c) => ({ ...c, isSelected: false }));
 };
 
-// const deleteSelection = async (selectedConversations: string[]) => {
-//   await fetch('/api/current-user-conversations', {
-//     method: 'DELETE',
-//     headers: { 'Content-Type': 'application/json' },
-//     credentials: 'include',
-//     body: JSON.stringify({ conversationIds: selectedConversations }),
-//   });
-// };
+// Color palette for avatar backgrounds
+const avatarColors = [
+  'bg-blue-500',
+  'bg-emerald-500',
+  'bg-violet-500',
+  'bg-amber-500',
+  'bg-rose-500',
+  'bg-teal-500',
+  'bg-indigo-500',
+  'bg-orange-500',
+];
 
-export default function ViewAndRemoveConversations() {
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return avatarColors[Math.abs(hash) % avatarColors.length];
+}
+
+interface ConversationSidebarProps {
+  selectedConversationId?: string;
+  currentUser?: { name: string; email: string; number: string };
+  onLogout: () => void;
+}
+
+export default function ConversationSidebar({
+  selectedConversationId,
+  currentUser,
+  onLogout,
+}: ConversationSidebarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  // const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedConversationId, setSelectedConversationId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
-    data: currentUserConversations,
+    data: conversations,
     isLoading,
     error,
   } = useQuery({
     queryKey: ['currentUserConversations'],
-    queryFn: getCurrentUserConversations as () => Promise<CurrentUserConversationType[]>,
+    queryFn: getCurrentUserConversations,
     staleTime: 0,
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
   });
 
-  // const [selectedConversations, setSelectedConversations] = useState<Record<string, boolean>>(() =>
-  //     Object.fromEntries(currentUserConversations?.map((c) => [c.conversationId, c.isSelected]) || [])
-  // );
-  
-  // const toggle = (key: string) => {
-  //   setSelectedConversations((prev) => ({ ...prev, [key]: !prev[key] }));
-  // };
-
-  // const handleDelete = async () => {
-  //   const selectedConversationIds = Object.keys(selectedConversations).filter((key) => selectedConversations[key]);
-    
-  //   setIsDeleting(true);
-  //   try {
-  //     await deleteSelection(selectedConversationIds);
-  //     window.location.reload();
-  //   } finally {
-  //     setIsDeleting(false);
-  //   }
-  // };
-
-  if (isLoading) {
-    return <LoadingComponent shell='User' />
-  }
-
-  if (error) {
-    return <ErrorComponent error={error} shell='User' />
-  }
+  const filteredConversations = conversations?.filter((c) =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.number.includes(searchQuery)
+  );
 
   return (
-    <Command className="max-w-sm rounded-lg border">
-      <CommandInput placeholder="Type a command or search..." />
-      <CommandList>
-        {/* <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="gap-2 animate-fade-in bg-destructive/15 text-red-500 hover:bg-destructive/30 hover:text-red-400 border border-destructive/20 h-9 rounded-lg px-4 transition-all"
-        >
-          {isDeleting ? (
-            <>
-              <div className="h-3.5 w-3.5 rounded-full border-2 border-red-500/40 border-t-red-500 animate-spin" />
-              {t('table.deleting')}
-            </>
-          ) : (
-            <>
-              <Trash2 className="h-3.5 w-3.5" />
-              {t('table.deleteSelected', { count: Object.keys(selectedConversations).filter((key) => selectedConversations[key]).length })}
-            </>
-          )}
-        </Button> */}
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Suggestions">
-          {currentUserConversations?.map((currentUserConversation, i) => (
-            <CommandItem key={currentUserConversation.conversationId}
-              onSelect={() => {
-                setSelectedConversationId(currentUserConversation.conversationId);
-                navigate({
-                  to: `/user/${currentUserConversation.conversationId}`,
-                });
-              }}
-            >
-              {/* <Checkbox
-                checked={selectedConversations[currentUserConversation.conversationId]}
-                onCheckedChange={() => toggle(currentUserConversation.conversationId)}
-                aria-label={t('common.selectRow')}
-                className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary translate-y-[2px]"
-              /> */}
-              <Avatar>
-                <AvatarFallback>{currentUserConversation.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <CommandShortcut>{currentUserConversation.name}</CommandShortcut>
-              <CommandShortcut>{currentUserConversation.number}</CommandShortcut>
-              <CommandShortcut>{currentUserConversation.email}</CommandShortcut>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </Command>
+    <div className="flex flex-col h-full bg-white border-e border-gray-200">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 bg-gray-50/80 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
+              <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-sm">
+                {currentUser?.name?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate">{currentUser?.name || t('chat.user')}</p>
+            <p className="text-xs text-gray-500 truncate">{t('chat.online')}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <LanguageSwitcher />
+          <button
+            onClick={onLogout}
+            className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
+            title={t('common.disconnect')}
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Search + New Conversation */}
+      <div className="px-4 py-3 space-y-3">
+        <div className="relative">
+          <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t('chat.searchPlaceholder')}
+            className="w-full ps-10 pe-4 py-2.5 bg-gray-100 rounded-xl text-sm text-gray-700 placeholder:text-gray-400 border-0 outline-none focus:bg-gray-50 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200"
+          />
+        </div>
+        <AddConversation />
+      </div>
+
+      {/* Conversations List */}
+      <div className="flex-1 overflow-y-auto px-2">
+        <p className="px-3 pt-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+          {t('chat.conversations')} {filteredConversations ? `(${filteredConversations.length})` : ''}
+        </p>
+
+        {isLoading && (
+          <div className="px-3 py-8 text-center">
+            <div className="inline-flex items-center gap-2 text-sm text-gray-400">
+              <div className="h-4 w-4 rounded-full border-2 border-gray-300 border-t-indigo-500 animate-spin" />
+              {t('common.loading')}
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="mx-3 my-4 p-3 bg-red-50 rounded-xl text-sm text-red-600 border border-red-100">
+            {error.message}
+          </div>
+        )}
+
+        {!isLoading && !error && filteredConversations?.length === 0 && (
+          <div className="px-3 py-12 text-center">
+            <MessageCircle className="h-12 w-12 text-gray-200 mx-auto mb-3" />
+            <p className="text-sm font-medium text-gray-400">{t('chat.noConversations')}</p>
+            <p className="text-xs text-gray-300 mt-1">{t('chat.startConversation')}</p>
+          </div>
+        )}
+
+        <div className="space-y-0.5 pb-2">
+          {filteredConversations?.map((conversation) => {
+            const isActive = selectedConversationId === conversation.conversationId;
+            const colorClass = getAvatarColor(conversation.name);
+
+            return (
+              <button
+                key={conversation.conversationId}
+                onClick={() => {
+                  navigate({ to: `/user/${conversation.conversationId}` });
+                }}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group text-start',
+                  isActive
+                    ? 'bg-indigo-50 shadow-sm'
+                    : 'hover:bg-gray-50'
+                )}
+              >
+                <div className="relative flex-shrink-0">
+                  <Avatar className="h-12 w-12 shadow-sm">
+                    <AvatarFallback className={cn(colorClass, 'text-white font-semibold text-base')}>
+                      {conversation.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Online indicator */}
+                  <div className="absolute bottom-0 end-0 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <p className={cn(
+                      'text-sm font-semibold truncate',
+                      isActive ? 'text-indigo-700' : 'text-gray-900'
+                    )}>
+                      {conversation.name}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-400 truncate">
+                    {conversation.number}
+                  </p>
+                </div>
+
+                {isActive && (
+                  <div className="flex-shrink-0">
+                    <ChevronRight className="h-4 w-4 text-indigo-400 rtl:rotate-180" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

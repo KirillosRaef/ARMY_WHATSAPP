@@ -11,8 +11,8 @@
     "selectRow": "تحديد الصف"
   },
   "app": {
-    "title": "مدير أجهزة AMRY",
-    "subtitle": "مدير الأجهزة"
+    "title": "AMRY واتساب",
+    "subtitle": "منصة المراسلة"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -30,9 +30,36 @@
     "viewDevices": "عرض الأجهزة",
     "myRequests": "طلباتي"
   },
+  "chat": {
+    "user": "مستخدم",
+    "online": "متصل",
+    "offline": "غير متصل",
+    "searchPlaceholder": "البحث في المحادثات...",
+    "conversations": "المحادثات",
+    "noConversations": "لا توجد محادثات بعد",
+    "startConversation": "ابدأ محادثة جديدة للتواصل",
+    "newConversation": "محادثة جديدة",
+    "addDescription": "أدخل رقم هاتف الشخص الذي تريد التحدث معه.",
+    "phoneNumber": "رقم الهاتف",
+    "phonePlaceholder": "أدخل رقم الهاتف",
+    "adding": "جاري الإضافة...",
+    "add": "إضافة",
+    "addError": "فشل إضافة المحادثة. يرجى المحاولة مرة أخرى.",
+    "conversationCreated": "تم إنشاء المحادثة بنجاح!",
+    "welcomeTitle": "AMRY واتساب",
+    "welcomeDescription": "أرسل واستقبل الرسائل بأمان. اختر محادثة من القائمة الجانبية لبدء المراسلة.",
+    "encrypted": "مشفّر من طرف إلى طرف",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "loadingMessages": "جاري تحميل الرسائل...",
+    "noMessages": "لا توجد رسائل بعد",
+    "sendFirstMessage": "أرسل رسالة لبدء المحادثة",
+    "typePlaceholder": "اكتب رسالة...",
+    "unknown": "غير معروف"
+  },
   "login": {
-    "title": "مدير أجهزة AMRY",
-    "subtitle": "منصة إدارة الأجهزة الآمنة",
+    "title": "AMRY واتساب",
+    "subtitle": "منصة المراسلة الآمنة",
     "welcomeBack": "مرحباً بعودتك",
     "enterCredentials": "أدخل بيانات الدخول للمتابعة",
     "emailAddress": "البريد الإلكتروني",
@@ -40,7 +67,7 @@
     "signIn": "تسجيل الدخول",
     "signingIn": "جاري تسجيل الدخول...",
     "loginFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
-    "footer": "© 2025 مدير أجهزة AMRY. جميع الحقوق محفوظة."
+    "footer": "© 2025 AMRY واتساب. جميع الحقوق محفوظة."
   },
   "forms": {
     "unitDetails": "تفاصيل الوحدة",
@@ -108,6 +135,7 @@
     "name": "الاسم",
     "email": "البريد الإلكتروني",
     "role": "الدور",
+    "number": "الرقم",
     "militaryUnitName": "اسم الوحدة العسكرية",
     "branch": "الفرع",
     "brandName": "اسم العلامة",
@@ -153,6 +181,8 @@
     "noDataSubmitDeviceType": "أضف نوع جهاز جديد للبدء",
     "noDataSubmitRequest": "أرسل طلب إضافة جهاز للبدء",
     "noDataSubmitMilitaryUnit": "أضف وحدة عسكرية جديدة للبدء",
+    "addConversation": "إضافة محادثة",
+    "addConversationDescription": "أدخل رقم هاتف المستخدم لبدء محادثة.",
     "deleting": "جاري الحذف...",
     "deleteSelected": "حذف {{count}} المحدد",
     "accepting": "جاري القبول...",

@@ -9,8 +9,8 @@ messageRoute.onError(({ error }) => {
 }).post(
   '/api/message',
   async ({ body }) => {
-    const data = await db.insert(message).values(body);
-    return body;
+    const data = await db.insert(message).values(body).returning();
+    return data[0];
   },
   {
     body: t.Omit(messageInsertSchema, ['id']),

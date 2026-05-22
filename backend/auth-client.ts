@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/client";
 import type { auth } from "./\auth.ts";
 import { inferAdditionalFields } from "better-auth/client/plugins";
-import { ip } from "./index.ts";
+import { ip } from "./auth.ts";
 
 
 export const authClient = createAuthClient({
