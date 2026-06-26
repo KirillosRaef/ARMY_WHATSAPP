@@ -5,6 +5,6 @@ import { ip } from "./auth.ts";
 
 
 export const authClient = createAuthClient({
-    baseURL: `http://${ip}:3000`,
+    baseURL: `https://${ip}:3000`,
     plugins: [inferAdditionalFields<typeof auth>()],
 });

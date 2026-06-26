@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
+/* System fonts — no internet needed */
+/* Windows: Segoe UI is pre-installed and looks similar to Inter */
+/* Arabic: Segoe UI includes Arabic glyphs; Tahoma is a good fallback */
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -8,7 +9,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -133,7 +134,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
 
   --animate-fade-in: fade-in 0.4s ease-out;
   --animate-slide-up: slide-up 0.4s ease-out;
@@ -171,7 +172,7 @@
     color-scheme: dark;
   }
   html[dir='rtl'] {
-    font-family: 'Noto Sans Arabic', 'Inter', system-ui, sans-serif;
+    font-family: 'Segoe UI', Tahoma, 'Arial', system-ui, sans-serif;
   }
   body {
     @apply bg-background text-foreground;

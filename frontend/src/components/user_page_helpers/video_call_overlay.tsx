@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Phone, PhoneOff, Mic, MicOff } from 'lucide-react';
+import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // STUN servers for NAT traversal (public Google STUN)
@@ -125,50 +125,27 @@ class SoundSynthesizer {
   }
 }
 
-export type CallSignal =
-  | { type: 'call-offer';    offer: RTCSessionDescriptionInit; from: string; fromName: string; to: string; conversationId: string }
-  | { type: 'call-answer';   answer: RTCSessionDescriptionInit; from: string; to: string }
-  | { type: 'ice-candidate'; candidate: RTCIceCandidateInit;    from: string; to: string }
-  | { type: 'call-end';      from: string; to: string }
-  | { type: 'call-reject';   from: string; to: string }
-  | { type: 'call-busy';     from: string; to: string };
+export type VideoCallSignal =
+  | { type: 'video-call-offer';    offer: RTCSessionDescriptionInit; from: string; fromName: string; to: string; conversationId: string }
+  | { type: 'video-call-answer';   answer: RTCSessionDescriptionInit; from: string; to: string }
+  | { type: 'video-ice-candidate'; candidate: RTCIceCandidateInit;    from: string; to: string }
+  | { type: 'video-call-end';      from: string; to: string }
+  | { type: 'video-call-reject';   from: string; to: string }
+  | { type: 'video-call-busy';     from: string; to: string };
 
-export type CallState =
+export type VideoCallState =
   | { phase: 'idle' }
   | { phase: 'calling';  contactName: string; contactUserId: string }
   | { phase: 'incoming'; callerName: string;  callerUserId: string }
   | { phase: 'active';   otherUserId: string };
 
-interface VoiceCallOverlayProps {
+interface VideoCallOverlayProps {
   currentUserId: string;
   conversationId: string;
-  callState: CallState;
-  onCallStateChange: (s: CallState) => void;
-  // The signaling WS is managed externally and passed in via callbacks
-  sendSignal: (msg: CallSignal) => void;
+  callState: VideoCallState;
+  onCallStateChange: (s: VideoCallState) => void;
+  sendSignal: (msg: VideoCallSignal) => void;
   isOtherCallActive?: boolean;
-}
-
-// ── Animated sound wave bars ───────────────────────────────────────────────
-function SoundWave({ active }: { active: boolean }) {
-  const bars = [3, 5, 8, 12, 9, 6, 10, 7, 11, 5, 8, 4, 9, 6, 3];
-  return (
-    <div className="flex items-center gap-[3px] h-8">
-      {bars.map((h, i) => (
-        <div
-          key={i}
-          className={cn(
-            'w-[3px] rounded-full transition-all',
-            active ? 'bg-emerald-400' : 'bg-white/25',
-          )}
-          style={{
-            height: active ? `${h * 2}px` : '4px',
-            animation: active ? `soundBar 1s ease-in-out ${i * 0.07}s infinite alternate` : 'none',
-          }}
-        />
-      ))}
-    </div>
-  );
 }
 
 // ── Avatar with concentric orbit rings ────────────────────────────────────
@@ -196,20 +173,17 @@ function CallAvatar({
 
   return (
     <div className="relative flex items-center justify-center">
-      {/* Outer pulse rings */}
       {pulse && (
         <>
           <div className={cn('absolute rounded-full border-2 animate-ping', ringColors[color])} style={{ width: 140, height: 140, animationDuration: '2s' }} />
           <div className={cn('absolute rounded-full border-2 animate-ping', ringColors[color])} style={{ width: 110, height: 110, animationDuration: '2s', animationDelay: '0.5s' }} />
         </>
       )}
-      {/* Avatar circle */}
       <div className={cn(
         'relative h-24 w-24 rounded-full bg-gradient-to-br flex items-center justify-center shadow-2xl',
         gradients[color], glows[color],
         'shadow-[0_0_40px_rgba(0,0,0,0.4)]',
       )}>
-        {/* Sheen overlay */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
         <span className="relative text-white text-4xl font-bold tracking-tight select-none">
           {name.charAt(0).toUpperCase()}
@@ -252,23 +226,27 @@ function ActionButton({
   );
 }
 
-export default function VoiceCallOverlay({
+export default function VideoCallOverlay({
   currentUserId,
   conversationId,
   callState,
   onCallStateChange,
   sendSignal,
   isOtherCallActive = false,
-}: VoiceCallOverlayProps) {
+}: VideoCallOverlayProps) {
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const callingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ringerRef = useRef<SoundSynthesizer | null>(null);
+  const hangUpRef = useRef<((targetUserId?: string) => void) | null>(null);
 
   // Initialize Sound Ringer once
   useEffect(() => {
@@ -298,21 +276,34 @@ export default function VoiceCallOverlay({
 
     pc.onicecandidate = (e) => {
       if (e.candidate) {
-        sendSignal({ type: 'ice-candidate', candidate: e.candidate.toJSON(), from: currentUserId, to: targetUserId });
+        sendSignal({ type: 'video-ice-candidate', candidate: e.candidate.toJSON(), from: currentUserId, to: targetUserId });
       }
     };
 
     pc.oniceconnectionstatechange = () => {
-      console.log('[WebRTC] ICE connection state:', pc.iceConnectionState);
+      console.log('[WebRTC Video] ICE connection state:', pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+        console.warn('[WebRTC Video] ICE connection failed/disconnected, hanging up');
+        hangUpRef.current?.(targetUserId);
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log('[WebRTC Video] Connection state:', pc.connectionState);
+      if (pc.connectionState === 'failed') {
+        console.warn('[WebRTC Video] Connection failed, hanging up');
+        hangUpRef.current?.(targetUserId);
+      }
     };
 
     pc.ontrack = (e) => {
-      console.log('[WebRTC] Received remote track:', e.track.kind, 'streams:', e.streams.length);
+      console.log('[WebRTC Video] Received remote track:', e.track.kind);
       const stream = e.streams[0];
-      if (remoteAudioRef.current && stream) {
-        remoteAudioRef.current.srcObject = stream;
-        remoteAudioRef.current.play().catch(err => {
-          console.error('[WebRTC] Error auto-playing remote audio:', err);
+      remoteStreamRef.current = stream;
+      if (remoteVideoRef.current && stream) {
+        remoteVideoRef.current.srcObject = stream;
+        remoteVideoRef.current.play().catch(err => {
+          console.error('[WebRTC Video] Error auto-playing remote video:', err);
         });
       }
     };
@@ -324,22 +315,30 @@ export default function VoiceCallOverlay({
   // ── Process Queued ICE Candidates ──────────────────────────────────────────
   const processPendingIceCandidates = useCallback(async (pc: RTCPeerConnection) => {
     if (pendingIceCandidatesRef.current.length === 0) return;
-    console.log(`[WebRTC] Processing ${pendingIceCandidatesRef.current.length} queued ICE candidates`);
+    console.log(`[WebRTC Video] Processing ${pendingIceCandidatesRef.current.length} queued ICE candidates`);
     for (const candidate of pendingIceCandidatesRef.current) {
       try {
         await pc.addIceCandidate(new RTCIceCandidate(candidate));
       } catch (err) {
-        console.error('[WebRTC] Error adding queued ICE candidate:', err);
+        console.error('[WebRTC Video] Error adding queued ICE candidate:', err);
       }
     }
     pendingIceCandidatesRef.current = [];
   }, []);
 
-  // ── Get local mic stream ───────────────────────────────────────────────────
+  // ── Get local media stream (video + audio) ─────────────────────────────────
   const getLocalStream = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    localStreamRef.current = stream;
-    return stream;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      localStreamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+      return stream;
+    } catch (err) {
+      console.error('[WebRTC Video] Camera/microphone access denied:', err);
+      throw err;
+    }
   };
 
   // ── Start call timer ───────────────────────────────────────────────────────
@@ -360,23 +359,32 @@ export default function VoiceCallOverlay({
     peerRef.current = null;
     localStreamRef.current?.getTracks().forEach(t => t.stop());
     localStreamRef.current = null;
+    remoteStreamRef.current = null;
     pendingIceCandidatesRef.current = [];
-    if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
+    setIsMuted(false);
+    setIsVideoMuted(false);
     stopTimer();
   }, []);
 
   // ── Initiate a call ────────────────────────────────────────────────────────
   const initiateCall = useCallback(async (targetUserId: string, targetName: string, myName: string) => {
-    const stream = await getLocalStream();
-    const pc = createPeer(targetUserId);
-    stream.getTracks().forEach(t => pc.addTrack(t, stream));
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    sendSignal({ type: 'call-offer', offer, from: currentUserId, fromName: myName, to: targetUserId, conversationId });
-    onCallStateChange({ phase: 'calling', contactName: targetName, contactUserId: targetUserId });
-  }, [createPeer, currentUserId, conversationId, sendSignal, onCallStateChange]);
+    try {
+      const stream = await getLocalStream();
+      const pc = createPeer(targetUserId);
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendSignal({ type: 'video-call-offer', offer, from: currentUserId, fromName: myName, to: targetUserId, conversationId });
+      onCallStateChange({ phase: 'calling', contactName: targetName, contactUserId: targetUserId });
+    } catch (e) {
+      console.error('Failed to initiate video call:', e);
+      cleanup();
+    }
+  }, [createPeer, currentUserId, conversationId, sendSignal, onCallStateChange, cleanup]);
 
-  // ── Listen for call start triggered from header button ─────────────────────
+  // ── Listen for video call start triggered from header button ───────────────
   useEffect(() => {
     const handler = (e: Event) => {
       const { contactUserId, contactName, myName } = (e as CustomEvent).detail;
@@ -384,38 +392,54 @@ export default function VoiceCallOverlay({
         initiateCall(contactUserId, contactName, myName);
       }
     };
-    window.addEventListener('start-voice-call', handler);
-    return () => window.removeEventListener('start-voice-call', handler);
+    window.addEventListener('start-video-call', handler);
+    return () => window.removeEventListener('start-video-call', handler);
   }, [callState.phase, initiateCall]);
 
   // ── Accept incoming call ───────────────────────────────────────────────────
   const acceptCall = useCallback(async (callerUserId: string, offer: RTCSessionDescriptionInit) => {
-    const stream = await getLocalStream();
-    const pc = createPeer(callerUserId);
-    stream.getTracks().forEach(t => pc.addTrack(t, stream));
-    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    try {
+      const stream = await getLocalStream();
+      const pc = createPeer(callerUserId);
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
-    // Process early candidates now that remote description is set
-    await processPendingIceCandidates(pc);
+      await processPendingIceCandidates(pc);
 
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    sendSignal({ type: 'call-answer', answer, from: currentUserId, to: callerUserId });
-    onCallStateChange({ phase: 'active', otherUserId: callerUserId });
-    startTimer();
-  }, [createPeer, currentUserId, sendSignal, onCallStateChange, processPendingIceCandidates]);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      sendSignal({ type: 'video-call-answer', answer, from: currentUserId, to: callerUserId });
+      onCallStateChange({ phase: 'active', otherUserId: callerUserId });
+      startTimer();
+      
+      // Delay binding local source so video renders correctly
+      setTimeout(() => {
+        if (localVideoRef.current && localStreamRef.current) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+        }
+      }, 300);
+    } catch (e) {
+      console.error('Failed to accept video call:', e);
+      cleanup();
+    }
+  }, [createPeer, currentUserId, sendSignal, onCallStateChange, processPendingIceCandidates, cleanup]);
 
   // ── Hang up ────────────────────────────────────────────────────────────────
   const hangUp = useCallback((targetUserId?: string) => {
     if (targetUserId) {
-      sendSignal({ type: 'call-end', from: currentUserId, to: targetUserId });
+      sendSignal({ type: 'video-call-end', from: currentUserId, to: targetUserId });
     }
     cleanup();
     onCallStateChange({ phase: 'idle' });
   }, [cleanup, currentUserId, sendSignal, onCallStateChange]);
 
+  // Keep hangUpRef in sync so createPeer callbacks can call it
+  useEffect(() => {
+    hangUpRef.current = hangUp;
+  }, [hangUp]);
+
   const rejectCall = useCallback((callerUserId: string) => {
-    sendSignal({ type: 'call-reject', from: currentUserId, to: callerUserId });
+    sendSignal({ type: 'video-call-reject', from: currentUserId, to: callerUserId });
     onCallStateChange({ phase: 'idle' });
   }, [currentUserId, sendSignal, onCallStateChange]);
 
@@ -428,16 +452,12 @@ export default function VoiceCallOverlay({
 
     if (callState.phase === 'calling') {
       const targetId = callState.contactUserId;
-      console.log('[Voice Call] Placing 20 seconds timeout for outgoing call...');
       callingTimeoutRef.current = setTimeout(() => {
-        console.log('[Voice Call] Outgoing call timed out after 20 seconds. Shutting down.');
         hangUp(targetId);
       }, 20000);
     } else if (callState.phase === 'incoming') {
       const targetId = callState.callerUserId;
-      console.log('[Voice Call] Placing 20 seconds timeout for incoming call...');
       callingTimeoutRef.current = setTimeout(() => {
-        console.log('[Voice Call] Incoming call timed out after 20 seconds. Rejecting.');
         rejectCall(targetId);
       }, 20000);
     }
@@ -449,54 +469,81 @@ export default function VoiceCallOverlay({
     };
   }, [callState, hangUp, rejectCall]);
 
+  // ── Bind streams when active ───────────────────────────────────────────────
+  useEffect(() => {
+    if (callState.phase === 'active') {
+      const interval = setInterval(() => {
+        let boundBoth = true;
+        if (localVideoRef.current && localStreamRef.current && !localVideoRef.current.srcObject) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+        } else if (!localVideoRef.current) {
+          boundBoth = false;
+        }
+        if (remoteVideoRef.current && remoteStreamRef.current && !remoteVideoRef.current.srcObject) {
+          remoteVideoRef.current.srcObject = remoteStreamRef.current;
+          remoteVideoRef.current.play().catch(err => {
+            console.error('[WebRTC Video] Error auto-playing remote video in effect:', err);
+          });
+        } else if (!remoteVideoRef.current || !remoteStreamRef.current) {
+          boundBoth = false;
+        }
+        if (boundBoth) {
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [callState.phase]);
+
   // ── Handle incoming signals ────────────────────────────────────────────────
   useEffect(() => {
-    const handleSignal = async (incomingSignal: CallSignal) => {
+    const handleSignal = async (incomingSignal: VideoCallSignal) => {
       switch (incomingSignal.type) {
-        case 'call-offer': {
+        case 'video-call-offer': {
           if (callState.phase !== 'idle' || isOtherCallActive) {
-            console.log('[WebRTC] Received call offer while busy, sending busy signal to:', incomingSignal.from);
-            sendSignal({ type: 'call-busy', from: currentUserId, to: incomingSignal.from });
+            console.log('[WebRTC Video] Received video call offer while busy, sending busy signal to:', incomingSignal.from);
+            sendSignal({ type: 'video-call-busy', from: currentUserId, to: incomingSignal.from });
             break;
           }
           onCallStateChange({ phase: 'incoming', callerName: incomingSignal.fromName, callerUserId: incomingSignal.from });
-          // Store the offer so acceptCall can use it
-          (window as any).__pendingCallOffer = incomingSignal.offer;
-          (window as any).__pendingCallerUserId = incomingSignal.from;
+          (window as any).__pendingVideoCallOffer = incomingSignal.offer;
+          (window as any).__pendingVideoCallerUserId = incomingSignal.from;
           break;
         }
-        case 'call-answer': {
+        case 'video-call-answer': {
           if (peerRef.current) {
             await peerRef.current.setRemoteDescription(new RTCSessionDescription(incomingSignal.answer));
-
-            // Process early candidates now that remote description is set
             await processPendingIceCandidates(peerRef.current);
-
             onCallStateChange({ phase: 'active', otherUserId: incomingSignal.from });
             startTimer();
+            // Bind local stream to display local PIP
+            setTimeout(() => {
+              if (localVideoRef.current && localStreamRef.current) {
+                localVideoRef.current.srcObject = localStreamRef.current;
+              }
+            }, 300);
           }
           break;
         }
-        case 'ice-candidate': {
+        case 'video-ice-candidate': {
           if (peerRef.current && peerRef.current.remoteDescription) {
             try {
               await peerRef.current.addIceCandidate(new RTCIceCandidate(incomingSignal.candidate));
             } catch (err) {
-              console.error('[WebRTC] Error adding ICE candidate directly:', err);
+              console.error('[WebRTC Video] Error adding ICE candidate directly:', err);
             }
           } else {
-            console.log('[WebRTC] Remote description not ready, queuing ICE candidate');
             pendingIceCandidatesRef.current.push(incomingSignal.candidate);
           }
           break;
         }
-        case 'call-end':
-        case 'call-reject': {
+        case 'video-call-end':
+        case 'video-call-reject': {
           cleanup();
           onCallStateChange({ phase: 'idle' });
           break;
         }
-        case 'call-busy': {
+        case 'video-call-busy': {
           cleanup();
           onCallStateChange({ phase: 'idle' });
           alert('This user is currently in another call. Please try again later.');
@@ -506,17 +553,17 @@ export default function VoiceCallOverlay({
     };
 
     const handler = (e: Event) => {
-      const signal = (e as CustomEvent).detail as CallSignal;
+      const signal = (e as CustomEvent).detail as VideoCallSignal;
       handleSignal(signal);
     };
 
-    window.addEventListener('voice-call-signal', handler);
+    window.addEventListener('video-call-signal', handler);
     return () => {
-      window.removeEventListener('voice-call-signal', handler);
+      window.removeEventListener('video-call-signal', handler);
     };
   }, [currentUserId, conversationId, callState.phase, isOtherCallActive, sendSignal, cleanup, onCallStateChange, processPendingIceCandidates]);
 
-  // ── Mute toggle ────────────────────────────────────────────────────────────
+  // ── Audio/Video Mutes ──────────────────────────────────────────────────────
   const toggleMute = () => {
     if (localStreamRef.current) {
       localStreamRef.current.getAudioTracks().forEach(t => { t.enabled = !t.enabled; });
@@ -524,199 +571,205 @@ export default function VoiceCallOverlay({
     }
   };
 
-  // Hidden audio element for remote stream (not display: none to prevent browser playback throttling)
-  const audioEl = (
-    <audio ref={remoteAudioRef} autoPlay playsInline className="absolute pointer-events-none opacity-0 h-0 w-0" />
-  );
+  const toggleCamera = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getVideoTracks().forEach(t => { t.enabled = !t.enabled; });
+      setIsVideoMuted(m => !m);
+    }
+  };
 
-  if (callState.phase === 'idle') return <>{audioEl}</>;
+  if (callState.phase === 'idle') return null;
 
   // ── Shared backdrop ─────────────────────────────────────────────────────────
   const Backdrop = ({ children }: { children: React.ReactNode }) => (
     <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{
-      background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, rgba(0,0,0,0.75) 60%)',
+      background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, rgba(0,0,0,0.85) 60%)',
       backdropFilter: 'blur(20px)',
     }}>
-      {/* Noise texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-      }} />
       {children}
     </div>
   );
 
   // ── Card container ─────────────────────────────────────────────────────────
-  const Card = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  const Card = ({ children }: { children: React.ReactNode }) => (
     <div
-      className={cn('relative flex flex-col items-center gap-8 rounded-[2rem] pt-16 pb-10 px-10 w-[340px] animate-in fade-in zoom-in-95', className)}
+      className="relative flex flex-col items-center gap-8 rounded-[2rem] pt-16 pb-10 px-10 w-[340px] animate-in fade-in zoom-in-95"
       style={{
         background: 'linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
         border: '1px solid rgba(255,255,255,0.12)',
         boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
       }}
     >
-      {/* Subtle top highlight */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full" />
       {children}
     </div>
   );
 
-  // ── Incoming call UI ───────────────────────────────────────────────────────
+  // ── Incoming Video Call UI ────────────────────────────────────────────────
   if (callState.phase === 'incoming') {
     const { callerName, callerUserId } = callState;
     return (
-      <>
-        {audioEl}
-        <Backdrop>
-          <Card>
-            {/* Incoming badge */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase text-emerald-400 leading-none" style={{
-                background: 'rgba(16,185,129,0.15)',
-                border: '1px solid rgba(16,185,129,0.3)',
-              }}>
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Incoming call
-              </div>
+      <Backdrop>
+        <Card>
+          <div className="absolute top-6 left-1/2 -translate-x-1/2">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase text-emerald-400 leading-none" style={{
+              background: 'rgba(16,185,129,0.15)',
+              border: '1px solid rgba(16,185,129,0.3)',
+            }}>
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Incoming Video Call
             </div>
+          </div>
 
-            {/* Avatar */}
-            <CallAvatar name={callerName} color="emerald" pulse />
+          <CallAvatar name={callerName} color="emerald" pulse />
 
-            {/* Name & status */}
-            <div className="text-center space-y-1">
-              <p className="text-2xl font-bold text-white tracking-tight">{callerName}</p>
-              <p className="text-sm text-white/50">Voice call</p>
-            </div>
+          <div className="text-center space-y-1">
+            <p className="text-2xl font-bold text-white tracking-tight">{callerName}</p>
+            <p className="text-sm text-white/50">Video calling...</p>
+          </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-10">
-              <ActionButton
-                onClick={() => rejectCall(callerUserId)}
-                icon={<PhoneOff className="h-7 w-7 text-white" />}
-                label="Decline"
-                variant="red"
-              />
-              <ActionButton
-                onClick={() => {
-                  const offer = (window as any).__pendingCallOffer;
-                  const callerId = (window as any).__pendingCallerUserId;
-                  if (offer && callerId) acceptCall(callerId, offer);
-                }}
-                icon={<Phone className="h-7 w-7 text-white" />}
-                label="Accept"
-                variant="green"
-              />
-            </div>
-          </Card>
-        </Backdrop>
-      </>
+          <div className="flex items-center gap-10">
+            <ActionButton
+              onClick={() => rejectCall(callerUserId)}
+              icon={<PhoneOff className="h-7 w-7 text-white" />}
+              label="Decline"
+              variant="red"
+            />
+            <ActionButton
+              onClick={() => {
+                const offer = (window as any).__pendingVideoCallOffer;
+                const callerId = (window as any).__pendingVideoCallerUserId;
+                if (offer && callerId) acceptCall(callerId, offer);
+              }}
+              icon={<Phone className="h-7 w-7 text-white" />}
+              label="Accept"
+              variant="green"
+            />
+          </div>
+        </Card>
+      </Backdrop>
     );
   }
 
-  // ── Outgoing (calling) UI ──────────────────────────────────────────────────
+  // ── Outgoing Video Call UI ────────────────────────────────────────────────
   if (callState.phase === 'calling') {
     const { contactName, contactUserId } = callState;
     return (
-      <>
-        {audioEl}
-        <Backdrop>
-          <Card>
-            {/* Calling badge */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase text-indigo-300 leading-none" style={{
-                background: 'rgba(99,102,241,0.15)',
-                border: '1px solid rgba(99,102,241,0.3)',
-              }}>
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" style={{ animation: 'pulse 1s ease-in-out infinite' }} />
-                Calling
-              </div>
+      <Backdrop>
+        <Card>
+          <div className="absolute top-6 left-1/2 -translate-x-1/2">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase text-indigo-300 leading-none" style={{
+              background: 'rgba(99,102,241,0.15)',
+              border: '1px solid rgba(99,102,241,0.3)',
+            }}>
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+              Video Calling
             </div>
+          </div>
 
-            {/* Avatar */}
-            <CallAvatar name={contactName} color="indigo" pulse />
+          <CallAvatar name={contactName} color="indigo" pulse />
 
-            {/* Name & animated status */}
-            <div className="text-center space-y-1">
-              <p className="text-2xl font-bold text-white tracking-tight">{contactName}</p>
-              <p className="text-sm text-white/50 animate-pulse">Connecting…</p>
-            </div>
+          <div className="text-center space-y-1">
+            <p className="text-2xl font-bold text-white tracking-tight">{contactName}</p>
+            <p className="text-sm text-white/50 animate-pulse">Connecting video…</p>
+          </div>
 
-            {/* Cancel button */}
-            <ActionButton
-              onClick={() => hangUp(contactUserId)}
-              icon={<PhoneOff className="h-7 w-7 text-white" />}
-              label="Cancel"
-              variant="red"
-            />
-          </Card>
-        </Backdrop>
-      </>
+          <ActionButton
+            onClick={() => hangUp(contactUserId)}
+            icon={<PhoneOff className="h-7 w-7 text-white" />}
+            label="Cancel"
+            variant="red"
+          />
+        </Card>
+      </Backdrop>
     );
   }
 
-  // ── Active call — floating pill at top ─────────────────────────────────────
+  // ── Active Video Call UI (Full screen viewport call) ───────────────────────
   if (callState.phase === 'active') {
     const { otherUserId } = callState;
-
     return (
-      <>
-        {audioEl}
-        <div
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-4"
-          style={{ minWidth: 280 }}
-        >
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-            style={{
-              background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.1) 100%)',
-              border: '1px solid rgba(16,185,129,0.3)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05)',
-            }}
-          >
-            {/* Live indicator dot */}
-            <div className="relative flex-shrink-0">
-              <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
-              <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400 block" />
-            </div>
+      <div className="fixed inset-0 z-[250] flex flex-col justify-between bg-black">
+        {/* Remote Camera Fullscreen Video */}
+        <div className="absolute inset-0 z-0">
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className="h-full w-full object-cover"
+          />
+          {/* Muted/video off overlays for Remote */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40 pointer-events-none" />
+        </div>
 
-            {/* Wave + timer */}
-            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-white/90">Voice call</span>
-                <SoundWave active={!isMuted} />
-              </div>
-              <span className="text-xs font-mono text-emerald-400 tabular-nums">{formatDuration(callDuration)}</span>
+        {/* Local Camera Floating PIP */}
+        <div className="absolute top-4 right-4 z-10 w-24 h-36 md:w-32 md:h-48 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20 bg-gray-900">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={cn('h-full w-full object-cover transform -scale-x-100', isVideoMuted && 'opacity-0')}
+          />
+          {isVideoMuted && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <VideoOff className="h-6 w-6 text-white/50" />
             </div>
+          )}
+        </div>
 
-            {/* Mute */}
+        {/* Call Top Details (Timer and Status) */}
+        <div className="relative z-10 p-6 flex items-start justify-between pointer-events-none">
+          <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 flex flex-col gap-0.5">
+            <span className="text-xs font-semibold text-white/90">Video Call</span>
+            <span className="text-sm font-mono text-emerald-400 font-medium tracking-wider">{formatDuration(callDuration)}</span>
+          </div>
+        </div>
+
+        {/* Bottom Controls Bar */}
+        <div className="relative z-10 p-8 flex items-center justify-center gap-6">
+          <div className="flex items-center gap-6 bg-black/40 backdrop-blur-xl px-6 py-4 rounded-3xl border border-white/10 shadow-2xl">
+            {/* Audio Mute */}
             <button
               onClick={toggleMute}
               className={cn(
-                'h-8 w-8 rounded-full flex items-center justify-center transition-all duration-200 flex-shrink-0',
+                'h-12 w-12 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shadow-md',
                 isMuted
-                  ? 'bg-red-500/80 text-white shadow-red-500/30 shadow-md'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white',
+                  ? 'bg-red-500 text-white'
+                  : 'bg-white/10 text-white/90 hover:bg-white/20'
               )}
               title={isMuted ? 'Unmute' : 'Mute'}
             >
-              {isMuted ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+              {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </button>
 
-            {/* Hang up */}
+            {/* Video Mute */}
+            <button
+              onClick={toggleCamera}
+              className={cn(
+                'h-12 w-12 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shadow-md',
+                isVideoMuted
+                  ? 'bg-red-500 text-white'
+                  : 'bg-white/10 text-white/90 hover:bg-white/20'
+              )}
+              title={isVideoMuted ? 'Turn Camera On' : 'Turn Camera Off'}
+            >
+              {isVideoMuted ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+            </button>
+
+            {/* Hangup */}
             <button
               onClick={() => hangUp(otherUserId)}
-              className="h-8 w-8 rounded-full bg-red-500 hover:bg-red-400 flex items-center justify-center transition-all duration-200 shadow-md shadow-red-500/30 flex-shrink-0 active:scale-90"
-              title="End call"
+              className="h-12 w-12 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 flex items-center justify-center transition-all duration-200 shadow-md shadow-red-500/30"
+              title="Hang up"
             >
-              <PhoneOff className="h-3.5 w-3.5 text-white" />
+              <PhoneOff className="h-5 w-5 text-white" />
             </button>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
-  return <>{audioEl}</>;
+  return null;
 }

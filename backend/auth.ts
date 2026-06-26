@@ -21,7 +21,7 @@ function getLocalIp() {
 export const ip = getLocalIp();
 
 export const auth = betterAuth({
-  baseURL: `http://${ip}:3000`,
+  baseURL: `https://${ip}:3000`,
   database: drizzleAdapter(db, {
     provider: 'sqlite',
   }),

@@ -3,18 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
-  Send, Smile, Paperclip, Phone, MoreVertical, ArrowLeft,
+  Send, Smile, Paperclip, Phone, Video, MoreVertical, ArrowLeft,
   CheckCheck, ImageIcon, FileText, Mic, MicOff, FileType2, Download, Square,
-  Play, Pause,
+  Play, Pause, FileSpreadsheet, Presentation, Film,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker, { EmojiStyle } from 'emoji-picker-react';
 import ImageUploadCrop from '../image_upload_crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import VoiceCallOverlay, { type CallSignal, type CallState } from './voice_call_overlay';
+import VideoCallOverlay, { type VideoCallSignal, type VideoCallState } from './video_call_overlay';
 
 type MessageType = {
   id: string;
@@ -244,9 +245,14 @@ export default function ChatWindow({
 
   // ── Document upload ─────────────────────────────────────────────────────────
   const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
-  const [docUploadType, setDocUploadType] = useState<'pdf' | 'word'>('pdf');
+  const [docUploadType, setDocUploadType] = useState<'pdf' | 'word' | 'ppt' | 'excel'>('pdf');
   const [selectedDocFile, setSelectedDocFile] = useState<File | null>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Video upload ────────────────────────────────────────────────────────────
+  const [isVideoUploadOpen, setIsVideoUploadOpen] = useState(false);
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   // ── Voice recording ─────────────────────────────────────────────────────────
   const [isRecording, setIsRecording] = useState(false);
@@ -257,7 +263,10 @@ export default function ChatWindow({
 
   // ── Voice call ──────────────────────────────────────────────────────────────
   const [callState, setCallState] = useState<CallState>({ phase: 'idle' });
-  const [incomingSignal, setIncomingSignal] = useState<CallSignal | null>(null);
+
+  // ── Video call ──────────────────────────────────────────────────────────────
+  const [videoCallState, setVideoCallState] = useState<VideoCallState>({ phase: 'idle' });
+
   const callWsRef = useRef<WebSocket | null>(null);
 
   // Connect call signaling WS — depends ONLY on currentUserId so it stays
@@ -272,8 +281,12 @@ export default function ChatWindow({
     const ws = new WebSocket(url);
     ws.onmessage = (e) => {
       try {
-        const signal = JSON.parse(e.data) as CallSignal;
-        setIncomingSignal(signal);
+        const signal = JSON.parse(e.data) as any;
+        if (signal.type && signal.type.startsWith('video-')) {
+          window.dispatchEvent(new CustomEvent('video-call-signal', { detail: signal }));
+        } else {
+          window.dispatchEvent(new CustomEvent('voice-call-signal', { detail: signal }));
+        }
       } catch { /* ignore */ }
     };
     ws.onerror = (e) => console.error('[Call WS] error', e);
@@ -282,7 +295,7 @@ export default function ChatWindow({
     return () => ws.close();
   }, [currentUserId]); // ← NOT conversationId
 
-  const sendSignal = useCallback((msg: CallSignal) => {
+  const sendSignal = useCallback((msg: any) => {
     const ws = callWsRef.current;
     if (!ws) return;
     if (ws.readyState === WebSocket.OPEN) {
@@ -368,6 +381,23 @@ export default function ChatWindow({
     finally { setIsSending(false); }
   };
 
+  const handleSendVideo = async () => {
+    if (!selectedVideoFile || isSending) return;
+    setIsSending(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedVideoFile);
+      const uploadRes = await fetch('/api/attachment/video/upload', { method: 'POST', body: formData });
+      if (!uploadRes.ok) throw new Error('Video upload failed');
+      const data = await uploadRes.json();
+      if (!data.success) throw new Error(data.error);
+      await postMessage(encodeFileContent(data.originalName, data.fileName), 'Video');
+      setIsVideoUploadOpen(false);
+      setSelectedVideoFile(null);
+    } catch (err) { console.error(err); }
+    finally { setIsSending(false); }
+  };
+
   const handleSend = async () => {
     const content = messageText.trim();
     if (!content || isSending) return;
@@ -435,10 +465,37 @@ export default function ChatWindow({
   const formatRecording = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
-  const openDocDialog = (type: 'pdf' | 'word') => {
+  const openDocDialog = (type: 'pdf' | 'word' | 'ppt' | 'excel') => {
     setDocUploadType(type);
     setSelectedDocFile(null);
     setIsDocUploadOpen(true);
+  };
+
+  const getDocAccept = () => {
+    switch (docUploadType) {
+      case 'pdf': return '.pdf';
+      case 'word': return '.doc,.docx';
+      case 'ppt': return '.ppt,.pptx';
+      case 'excel': return '.xls,.xlsx,.csv';
+    }
+  };
+
+  const getDocLabel = () => {
+    switch (docUploadType) {
+      case 'pdf': return 'PDF';
+      case 'word': return 'Word Document';
+      case 'ppt': return 'PowerPoint';
+      case 'excel': return 'Excel Spreadsheet';
+    }
+  };
+
+  const getDocIcon = (className?: string) => {
+    switch (docUploadType) {
+      case 'pdf': return <FileText className={cn('h-5 w-5 text-red-500', className)} />;
+      case 'word': return <FileType2 className={cn('h-5 w-5 text-blue-500', className)} />;
+      case 'ppt': return <Presentation className={cn('h-5 w-5 text-orange-500', className)} />;
+      case 'excel': return <FileSpreadsheet className={cn('h-5 w-5 text-emerald-500', className)} />;
+    }
   };
 
   const formatTime = (dateStr: string) => new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -470,8 +527,17 @@ export default function ChatWindow({
         callState={callState}
         onCallStateChange={setCallState}
         sendSignal={sendSignal}
-        incomingSignal={incomingSignal}
-        onIncomingSignalHandled={() => setIncomingSignal(null)}
+        isOtherCallActive={videoCallState.phase !== 'idle'}
+      />
+
+      {/* ── Video Call Overlay ────────────────────────────────────────────────── */}
+      <VideoCallOverlay
+        currentUserId={currentUserId}
+        conversationId={conversationId}
+        callState={videoCallState}
+        onCallStateChange={setVideoCallState}
+        sendSignal={sendSignal}
+        isOtherCallActive={callState.phase !== 'idle'}
       />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -482,16 +548,16 @@ export default function ChatWindow({
           </Button>
         )}
         <div className="relative flex-shrink-0">
-          <Avatar className={cn('h-10 w-10 transition-all', callState.phase === 'active' && 'ring-2 ring-emerald-400 ring-offset-1')}>
+          <Avatar className={cn('h-10 w-10 transition-all', (callState.phase === 'active' || videoCallState.phase === 'active') && 'ring-2 ring-emerald-400 ring-offset-1')}>
             <AvatarFallback className={cn(contactColor.bg, contactColor.text, 'font-semibold text-sm')}>{contactName.charAt(0)}</AvatarFallback>
           </Avatar>
-          {callState.phase === 'active' && (
+          {(callState.phase === 'active' || videoCallState.phase === 'active') && (
             <span className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
           )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-900 truncate">{contactName}</p>
-          {callState.phase === 'active' ? (
+          {(callState.phase === 'active' || videoCallState.phase === 'active') ? (
             <p className="text-xs text-emerald-500 font-medium animate-pulse">On call</p>
           ) : (
             <p className="text-xs text-emerald-500 font-medium">{t('chat.online')}</p>
@@ -501,8 +567,7 @@ export default function ChatWindow({
           {/* Voice call button */}
           <Button
             onClick={() => {
-              if (callState.phase === 'idle') {
-                // Need to trigger initiateCall via VoiceCallOverlay — use a ref trick via event
+              if (callState.phase === 'idle' && videoCallState.phase === 'idle') {
                 const detail = { contactUserId, contactName, myName: currentUserName };
                 window.dispatchEvent(new CustomEvent('start-voice-call', { detail }));
               }
@@ -518,6 +583,27 @@ export default function ChatWindow({
           >
             <Phone className={cn('h-5 w-5', callState.phase !== 'idle' && 'animate-pulse')} />
           </Button>
+
+          {/* Video call button */}
+          <Button
+            onClick={() => {
+              if (callState.phase === 'idle' && videoCallState.phase === 'idle') {
+                const detail = { contactUserId, contactName, myName: currentUserName };
+                window.dispatchEvent(new CustomEvent('start-video-call', { detail }));
+              }
+            }}
+            variant="outline"
+            size="icon"
+            className={cn(
+              'rounded-full transition-all duration-200 flex-shrink-0',
+              videoCallState.phase !== 'idle'
+                ? 'text-emerald-500 border-emerald-250 bg-emerald-50 shadow-sm shadow-emerald-200'
+                : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200'
+            )}
+          >
+            <Video className={cn('h-5 w-5', videoCallState.phase !== 'idle' && 'animate-pulse')} />
+          </Button>
+
           <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200 transition-all flex-shrink-0">
             <MoreVertical className="h-5 w-5" />
           </Button>
@@ -571,7 +657,7 @@ export default function ChatWindow({
                   <div className={cn(
                     'max-w-[75%] px-3.5 py-2 rounded-2xl shadow-sm relative group',
                     isMine ? 'bg-indigo-500 text-white rounded-ee-md' : 'bg-white text-gray-800 rounded-es-md border border-gray-100',
-                    msg.type === 'Image' ? 'p-1.5' : ''
+                    (msg.type === 'Image' || msg.type === 'Video') ? 'p-1.5' : ''
                   )}>
                     {/* Image */}
                     {msg.type === 'Image' && (
@@ -580,19 +666,53 @@ export default function ChatWindow({
                       </div>
                     )}
 
+                    {/* Video */}
+                    {msg.type === 'Video' && (() => {
+                      const { originalName, uniqueName } = decodeFileContent(msg.content);
+                      return (
+                        <div className="overflow-hidden rounded-xl">
+                          <video
+                            src={`/api/attachment/video/${uniqueName}`}
+                            controls
+                            preload="metadata"
+                            className="max-w-full h-auto max-h-[300px] rounded-xl"
+                            style={{ minWidth: 220 }}
+                          />
+                          <p className={cn('text-[10px] mt-1 px-1 truncate', isMine ? 'text-indigo-200' : 'text-gray-400')}>{originalName}</p>
+                        </div>
+                      );
+                    })()}
+
                     {/* File */}
                     {msg.type === 'File' && (() => {
                       const { originalName, uniqueName } = decodeFileContent(msg.content);
                       const ext = uniqueName.split('.').pop()?.toLowerCase() ?? '';
                       const isPdf = ext === 'pdf';
+                      const isPpt = ext === 'ppt' || ext === 'pptx';
+                      const isExcel = ext === 'xls' || ext === 'xlsx' || ext === 'csv';
+
+                      const getFileIcon = () => {
+                        if (isPdf) return <FileText className={cn('h-5 w-5', isMine ? 'text-white' : 'text-red-500')} />;
+                        if (isPpt) return <Presentation className={cn('h-5 w-5', isMine ? 'text-white' : 'text-orange-500')} />;
+                        if (isExcel) return <FileSpreadsheet className={cn('h-5 w-5', isMine ? 'text-white' : 'text-emerald-500')} />;
+                        return <FileType2 className={cn('h-5 w-5', isMine ? 'text-white' : 'text-blue-500')} />;
+                      };
+
+                      const getFileLabel = () => {
+                        if (isPdf) return 'PDF Document';
+                        if (isPpt) return 'PowerPoint';
+                        if (isExcel) return 'Excel Spreadsheet';
+                        return 'Word Document';
+                      };
+
                       return (
                         <a href={`/api/attachment/document/${uniqueName}`} download={originalName} className={cn('flex items-center gap-3 px-2 py-1 rounded-lg no-underline', isMine ? 'text-white' : 'text-gray-800')}>
                           <div className={cn('flex items-center justify-center h-10 w-10 rounded-lg flex-shrink-0', isMine ? 'bg-white/20' : 'bg-indigo-50')}>
-                            {isPdf ? <FileText className={cn('h-5 w-5', isMine ? 'text-white' : 'text-red-500')} /> : <FileType2 className={cn('h-5 w-5', isMine ? 'text-white' : 'text-blue-500')} />}
+                            {getFileIcon()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold truncate max-w-[160px]">{originalName}</p>
-                            <p className={cn('text-[10px]', isMine ? 'text-indigo-200' : 'text-gray-400')}>{isPdf ? 'PDF' : 'Word'} Document</p>
+                            <p className={cn('text-[10px]', isMine ? 'text-indigo-200' : 'text-gray-400')}>{getFileLabel()}</p>
                           </div>
                           <Download className={cn('h-4 w-4 flex-shrink-0', isMine ? 'text-indigo-200' : 'text-gray-400')} />
                         </a>
@@ -612,7 +732,7 @@ export default function ChatWindow({
                       <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                     )}
 
-                    <div className={cn('flex items-center gap-1 mt-1', isMine ? 'justify-end' : 'justify-start', msg.type === 'Image' ? 'px-1' : '')}>
+                    <div className={cn('flex items-center gap-1 mt-1', isMine ? 'justify-end' : 'justify-start', (msg.type === 'Image' || msg.type === 'Video') ? 'px-1' : '')}>
                       <span className={cn('text-[10px]', isMine ? 'text-indigo-200' : 'text-gray-400')}>{formatTime(msg.createdAt)}</span>
                       {isMine && <CheckCheck className="h-3 w-3 text-indigo-200" />}
                     </div>
@@ -636,7 +756,12 @@ export default function ChatWindow({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-2">
-              <EmojiPicker onEmojiClick={(e) => setMessageText(messageText + e.emoji)} />
+              <EmojiPicker
+                emojiStyle={EmojiStyle.NATIVE}
+                onEmojiClick={(e) => setMessageText(messageText + e.emoji)}
+                searchDisabled={false}
+                previewConfig={{ showPreview: false }}
+              />
             </PopoverContent>
           </Popover>
 
@@ -651,11 +776,20 @@ export default function ChatWindow({
               <DropdownMenuItem onClick={() => setIsImageUploadOpen(true)}>
                 <ImageIcon className="h-4 w-4 mr-2" /> Image
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsVideoUploadOpen(true)}>
+                <Film className="h-4 w-4 mr-2 text-purple-500" /> Video
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openDocDialog('pdf')}>
                 <FileText className="h-4 w-4 mr-2 text-red-500" /> PDF
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openDocDialog('word')}>
                 <FileType2 className="h-4 w-4 mr-2 text-blue-500" /> Word Document
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openDocDialog('ppt')}>
+                <Presentation className="h-4 w-4 mr-2 text-orange-500" /> PowerPoint
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openDocDialog('excel')}>
+                <FileSpreadsheet className="h-4 w-4 mr-2 text-emerald-500" /> Excel
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -733,31 +867,66 @@ export default function ChatWindow({
         <DialogContent className="sm:max-w-md bg-white border border-gray-200">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {docUploadType === 'pdf' ? <><FileText className="h-5 w-5 text-red-500" /> Upload PDF</> : <><FileType2 className="h-5 w-5 text-blue-500" /> Upload Word Document</>}
+              {getDocIcon()} Upload {getDocLabel()}
             </DialogTitle>
           </DialogHeader>
-          <input ref={docInputRef} type="file" accept={docUploadType === 'pdf' ? '.pdf' : '.doc,.docx'} className="hidden" onChange={(e) => setSelectedDocFile(e.target.files?.[0] ?? null)} />
+          <input ref={docInputRef} type="file" accept={getDocAccept()} className="hidden" onChange={(e) => setSelectedDocFile(e.target.files?.[0] ?? null)} />
           <div
             onClick={() => docInputRef.current?.click()}
             className={cn('flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 py-10', selectedDocFile ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50')}
           >
             {selectedDocFile ? (
               <>
-                {docUploadType === 'pdf' ? <FileText className="h-10 w-10 text-red-500" /> : <FileType2 className="h-10 w-10 text-blue-500" />}
+                {getDocIcon('h-10 w-10')}
                 <p className="text-sm font-semibold text-gray-800 text-center px-4 break-all">{selectedDocFile.name}</p>
                 <p className="text-xs text-gray-400">{(selectedDocFile.size / 1024).toFixed(1)} KB · Click to change</p>
               </>
             ) : (
               <>
-                {docUploadType === 'pdf' ? <FileText className="h-10 w-10 text-gray-300" /> : <FileType2 className="h-10 w-10 text-gray-300" />}
-                <p className="text-sm font-medium text-gray-500">Click to select a {docUploadType === 'pdf' ? 'PDF' : 'Word'} file</p>
-                <p className="text-xs text-gray-400">{docUploadType === 'pdf' ? '.pdf files only' : '.doc, .docx files only'}</p>
+                {getDocIcon('h-10 w-10 !text-gray-300')}
+                <p className="text-sm font-medium text-gray-500">Click to select a {getDocLabel()} file</p>
+                <p className="text-xs text-gray-400">{getDocAccept()} files only</p>
               </>
             )}
           </div>
           <DialogFooter className="mt-4">
             <Button disabled={!selectedDocFile || isSending} onClick={handleSendDocument} className="bg-indigo-500 hover:bg-indigo-600 text-white">
-              {isSending ? 'Sending…' : 'Send Document'}{!isSending && <Send className="w-4 h-4 ml-2" />}
+              {isSending ? 'Sending…' : `Send ${getDocLabel()}`}{!isSending && <Send className="w-4 h-4 ml-2" />}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Video upload dialog ─────────────────────────────────────────────────── */}
+      <Dialog open={isVideoUploadOpen} onOpenChange={(open) => { setIsVideoUploadOpen(open); if (!open) setSelectedVideoFile(null); }}>
+        <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Film className="h-5 w-5 text-purple-500" /> Upload Video
+            </DialogTitle>
+          </DialogHeader>
+          <input ref={videoInputRef} type="file" accept=".mp4,.webm,.mov,.avi,.mkv" className="hidden" onChange={(e) => setSelectedVideoFile(e.target.files?.[0] ?? null)} />
+          <div
+            onClick={() => videoInputRef.current?.click()}
+            className={cn('flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 py-10', selectedVideoFile ? 'border-purple-400 bg-purple-50' : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50')}
+          >
+            {selectedVideoFile ? (
+              <>
+                <Film className="h-10 w-10 text-purple-500" />
+                <p className="text-sm font-semibold text-gray-800 text-center px-4 break-all">{selectedVideoFile.name}</p>
+                <p className="text-xs text-gray-400">{(selectedVideoFile.size / (1024 * 1024)).toFixed(1)} MB · Click to change</p>
+              </>
+            ) : (
+              <>
+                <Film className="h-10 w-10 text-gray-300" />
+                <p className="text-sm font-medium text-gray-500">Click to select a video file</p>
+                <p className="text-xs text-gray-400">.mp4, .webm, .mov, .avi, .mkv</p>
+              </>
+            )}
+          </div>
+          <DialogFooter className="mt-4">
+            <Button disabled={!selectedVideoFile || isSending} onClick={handleSendVideo} className="bg-purple-500 hover:bg-purple-600 text-white">
+              {isSending ? 'Sending…' : 'Send Video'}{!isSending && <Send className="w-4 h-4 ml-2" />}
             </Button>
           </DialogFooter>
         </DialogContent>

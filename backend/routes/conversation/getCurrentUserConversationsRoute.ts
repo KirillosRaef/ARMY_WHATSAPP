@@ -1,13 +1,14 @@
 import { Elysia, t } from "elysia";
 import { db } from "../../database";
 import { conversation, conversationMembers, user } from "../../schema";
-import { ne, eq, inArray, and } from "drizzle-orm";
+import { ne, eq, inArray, and, desc } from "drizzle-orm";
+
 export const getCurrentUserConversationsRoute = new Elysia()
 
 getCurrentUserConversationsRoute.onError(({ error }) => {
   console.log(error);
   return error;
-}).get('api/current-user-conversations/:currentUserId',
+}).get('/api/current-user-conversations/:currentUserId',
   async ({ params: { currentUserId } }) => {
 
     const currentUserConversations = await db
@@ -18,6 +19,9 @@ getCurrentUserConversationsRoute.onError(({ error }) => {
         name: user.name,
         email: user.email,
         number: user.number,
+        lastMessageAt: conversation.lastMessageAt,
+        lastMessagePreview: conversation.lastMessagePreview,
+        unreadCount: conversationMembers.unreadCount,
       })
       .from(conversation)
       .leftJoin(
@@ -35,9 +39,30 @@ getCurrentUserConversationsRoute.onError(({ error }) => {
             .from(conversationMembers)
             .where(eq(conversationMembers.userId, currentUserId))
         ), ne(conversationMembers.userId, currentUserId))
-      );
-      
-    return currentUserConversations;
+      )
+      .orderBy(desc(conversation.lastMessageAt));
+
+    // We need the unread count for the CURRENT user, not the other member.
+    // The query above joins on the OTHER member's row (ne(userId, currentUserId)).
+    // So we need a separate query to get the current user's unread counts.
+    const currentUserMemberships = await db
+      .select({
+        conversationId: conversationMembers.conversationId,
+        unreadCount: conversationMembers.unreadCount,
+      })
+      .from(conversationMembers)
+      .where(eq(conversationMembers.userId, currentUserId));
+
+    const unreadMap = new Map(
+      currentUserMemberships.map(m => [m.conversationId, m.unreadCount])
+    );
+
+    const result = currentUserConversations.map(c => ({
+      ...c,
+      unreadCount: unreadMap.get(c.conversationId) ?? 0,
+    }));
+
+    return result;
   }, {
   params: t.Object({
     currentUserId: t.String(),

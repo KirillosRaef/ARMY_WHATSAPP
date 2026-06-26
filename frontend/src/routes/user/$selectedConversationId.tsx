@@ -4,7 +4,8 @@ import ConversationSidebar from '@/components/user_page_helpers/view_and_remove_
 import ChatWindow from '@/components/user_page_helpers/chat_window';
 import ErrorComponent from '@/components/helpers/error_component';
 import LoadingComponent from '@/components/helpers/loading_component';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import type { CurrentUserConversationType } from '@/components/user_page_helpers/view_and_remove_conversations';
 
 export const Route = createFileRoute('/user/$selectedConversationId')({
@@ -30,6 +31,7 @@ function RouteComponent() {
   const { selectedConversationId } = Route.useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: currentUser, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['currentUser'],
@@ -46,6 +48,31 @@ function RouteComponent() {
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
   });
+
+  // Mark the conversation as read when it's opened
+  useEffect(() => {
+    if (!currentUser?.id || !selectedConversationId) return;
+
+    // Call the mark-read API
+    fetch(`/api/conversations/${selectedConversationId}/mark-read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUser.id }),
+    }).catch((err) => console.error('Failed to mark conversation as read:', err));
+
+    // Immediately zero out the unread count in the cache
+    queryClient.setQueryData(
+      ['currentUserConversations'],
+      (oldData: CurrentUserConversationType[] | undefined) => {
+        if (!oldData) return oldData;
+        return oldData.map((conv) =>
+          conv.conversationId === selectedConversationId
+            ? { ...conv, unreadCount: 0 }
+            : conv
+        );
+      }
+    );
+  }, [selectedConversationId, currentUser?.id, queryClient]);
 
   const handleLogout = async () => {
     try {

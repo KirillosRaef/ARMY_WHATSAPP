@@ -3,6 +3,8 @@ import { sql} from "drizzle-orm";
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
+import fs from 'fs';
+import path from 'path';
 import { ip } from "./auth.ts";
 import { signUpRoute } from "./routes/user/signUpRoute";
 import { loginRoute } from "./routes/user/loginRoute";
@@ -27,7 +29,10 @@ import { messageWebSocketRoute } from "./routes/ws/messageWebSocketRoute.ts";
 import { imageRoute } from "./routes/attachment/imageRoute.ts";
 import { documentRoute } from "./routes/attachment/documentRoute.ts";
 import { audioRoute } from "./routes/attachment/audioRoute.ts";
+import { videoRoute } from "./routes/attachment/videoRoute.ts";
 import { callSignalingRoute } from "./routes/ws/callSignalingRoute.ts";
+import { conversationNotifyRoute } from "./routes/ws/conversationNotifyRoute.ts";
+import { markConversationReadRoute } from "./routes/conversation/markConversationReadRoute.ts";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -35,7 +40,7 @@ export function lower(email: SQLiteColumn): any {
 
 const app = new Elysia()
   .use(cors({
-    origin: `http://${ip}:5173`,
+    origin: true,
   }))
   .use(staticPlugin({
     assets: 'attachments',
@@ -64,12 +69,26 @@ const app = new Elysia()
   .use(imageRoute)
   .use(documentRoute)
   .use(audioRoute)
-  .use(callSignalingRoute);
+  .use(videoRoute)
+  .use(callSignalingRoute)
+  .use(conversationNotifyRoute)
+  .use(markConversationReadRoute);
+
+// Load self-signed certificates
+const certsDir = path.resolve(import.meta.dir, '../certs');
+const tlsConfig = fs.existsSync(path.join(certsDir, 'server-key.pem'))
+  ? {
+      key: Bun.file(path.join(certsDir, 'server-key.pem')),
+      cert: Bun.file(path.join(certsDir, 'server.pem')),
+    }
+  : undefined;
 
 app.listen({
   port: 3000,
   hostname: ip,
+  tls: tlsConfig,
 }, () => {
-  console.log(`Server running at http://${ip}:3000`);
+  const protocol = tlsConfig ? 'https' : 'http';
+  console.log(`Server running at ${protocol}://${ip}:3000`);
 });
 

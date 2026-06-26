@@ -37,6 +37,10 @@ export const conversation = sqliteTable('conversations', {
   name: text('name').default('Private'),
   createdById: text('created_by_id').notNull(),
   image: text('image'),
+  lastMessageAt: integer('last_message_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+  lastMessagePreview: text('last_message_preview').default(''),
 });
 
 export const conversationInsertSchema = createInsertSchema(conversation);
@@ -50,6 +54,7 @@ export const conversationMembers = sqliteTable('conversation_members', {
   joinedAt: integer('joined_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
+  unreadCount: integer('unread_count').default(0).notNull(),
 }, (t) => [uniqueIndex('unique_conversation_member').on(t.conversationId, t.userId)]);
 
 export const conversationMembersInsertSchema = createInsertSchema(conversationMembers);
@@ -61,7 +66,7 @@ export const message = sqliteTable('message', {
   conversationId: text('conversation_id').notNull(),
   senderId: text('sender_id').notNull(),
   content: text('content').notNull(),
-  type: text('type', { enum: ['Text', 'Image', 'File', 'Voice'] }).notNull(),
+  type: text('type', { enum: ['Text', 'Image', 'File', 'Voice', 'Video'] }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),

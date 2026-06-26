@@ -6,6 +6,12 @@ info:
 http:
   method: POST
   url: http://192.168.1.111:3000/api/attachment/upload
+  body:
+    type: json
+    data: |-
+      {
+        
+      }
   auth: inherit
 
 settings:

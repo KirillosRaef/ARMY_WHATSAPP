@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Search, Plus, LogOut, MessageCircle, Settings, ChevronRight } from 'lucide-react';
+import { Search, Plus, LogOut, MessageCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import AddConversation from './add_conversation';
@@ -16,6 +16,9 @@ export type CurrentUserConversationType = {
   email: string;
   number: string;
   isSelected: boolean;
+  lastMessageAt: string | number | null;
+  lastMessagePreview: string | null;
+  unreadCount: number;
 };
 
 const getCurrentUserConversations = async () => {
@@ -48,9 +51,71 @@ function getAvatarColor(name: string): { bg: string; text: string } {
   return avatarColors[Math.abs(hash) % avatarColors.length];
 }
 
+function formatRelativeTime(dateValue: string | number | null | undefined): string {
+  if (!dateValue) return '';
+  const date = new Date(dateValue);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) return 'now';
+  if (diffMin < 60) return `${diffMin}m`;
+  if (diffHour < 24) return `${diffHour}h`;
+  if (diffDay === 1) return 'yesterday';
+  if (diffDay < 7) return `${diffDay}d`;
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function playNotificationSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+    
+    // First chime (C5)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+    gain1.gain.setValueAtTime(0, ctx.currentTime);
+    gain1.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.02);
+    gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.12);
+
+    // Second chime (E5)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+    gain2.gain.setValueAtTime(0, ctx.currentTime + 0.08);
+    gain2.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.10);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(ctx.currentTime + 0.08);
+    osc2.stop(ctx.currentTime + 0.28);
+    
+    setTimeout(() => {
+      ctx.close().catch(() => {});
+    }, 350);
+  } catch (e) {
+    console.error('Failed to play message notification sound:', e);
+  }
+}
+
 interface ConversationSidebarProps {
   selectedConversationId?: string;
-  currentUser?: { name: string; email: string; number: string };
+  currentUser?: { id: string; name: string; email: string; number: string };
   onLogout: () => void;
 }
 
@@ -61,7 +126,9 @@ export default function ConversationSidebar({
 }: ConversationSidebarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const wsRef = useRef<WebSocket | null>(null);
 
   const {
     data: conversations,
@@ -74,6 +141,74 @@ export default function ConversationSidebar({
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
   });
+
+  // Connect to the conversation notification WebSocket
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/conversations-notify?userId=${currentUser.id}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('[Sidebar WS] Connected for conversation updates');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'conversation-update') {
+          if (data.senderId !== currentUser?.id) {
+            playNotificationSound();
+          }
+          // Update the conversation list in React Query cache
+          queryClient.setQueryData(
+            ['currentUserConversations'],
+            (oldData: CurrentUserConversationType[] | undefined) => {
+              if (!oldData) return oldData;
+
+              const updated = oldData.map((conv) => {
+                if (conv.conversationId === data.conversationId) {
+                  // If this conversation is currently selected, don't increment unread
+                  const isCurrentlyViewing = selectedConversationId === data.conversationId;
+                  return {
+                    ...conv,
+                    lastMessageAt: data.lastMessageAt,
+                    lastMessagePreview: data.lastMessagePreview,
+                    unreadCount: isCurrentlyViewing
+                      ? conv.unreadCount
+                      : (conv.unreadCount || 0) + 1,
+                  };
+                }
+                return conv;
+              });
+
+              // Sort by lastMessageAt descending
+              updated.sort((a, b) => {
+                const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+                const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+                return bTime - aTime;
+              });
+
+              return updated;
+            }
+          );
+        }
+      } catch {
+        /* ignore parse errors */
+      }
+    };
+
+    ws.onerror = (e) => console.error('[Sidebar WS] Error:', e);
+    ws.onclose = () => console.log('[Sidebar WS] Disconnected');
+
+    wsRef.current = ws;
+
+    return () => {
+      ws.close();
+      wsRef.current = null;
+    };
+  }, [currentUser?.id, queryClient, selectedConversationId]);
 
   const filteredConversations = conversations?.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -158,6 +293,7 @@ export default function ConversationSidebar({
           {filteredConversations?.map((conversation) => {
             const isActive = selectedConversationId === conversation.conversationId;
             const colorClass = getAvatarColor(conversation.name);
+            const hasUnread = (conversation.unreadCount || 0) > 0;
 
             return (
               <button
@@ -189,24 +325,53 @@ export default function ConversationSidebar({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <p className={cn(
-                      'text-sm font-semibold truncate transition-colors duration-300',
-                      isActive ? 'text-indigo-900' : 'text-gray-900 group-hover:text-indigo-950'
-                    )}>
-                      {conversation.name}
-                    </p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className={cn(
+                        'text-sm truncate transition-colors duration-300',
+                        hasUnread ? 'font-bold' : 'font-semibold',
+                        isActive ? 'text-indigo-900' : 'text-gray-900 group-hover:text-indigo-950'
+                      )}>
+                        {conversation.name}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 font-mono font-medium flex-shrink-0">
+                        {conversation.number}
+                      </span>
+                    </div>
+                    {/* Timestamp */}
+                    {conversation.lastMessageAt && (
+                      <span className={cn(
+                        'text-[10px] flex-shrink-0 ms-2',
+                        hasUnread ? 'text-indigo-500 font-semibold' : 'text-gray-400'
+                      )}>
+                        {formatRelativeTime(conversation.lastMessageAt)}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-400 truncate">
-                    {conversation.number}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className={cn(
+                      'text-xs truncate',
+                      hasUnread ? 'text-gray-600 font-medium' : 'text-gray-400'
+                    )}>
+                      {conversation.lastMessagePreview || t('chat.noMessages')}
+                    </p>
+                    {/* Unread badge */}
+                    {hasUnread && (
+                      <span className="flex-shrink-0 ms-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold shadow-sm shadow-indigo-500/30 animate-fade-in">
+                        {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <ChevronRight className={cn(
-                    'h-4 w-4 rtl:rotate-180 transition-colors',
-                    isActive ? 'text-indigo-500' : 'text-gray-400'
-                  )} />
-                </div>
+                {/* Chevron — only show when no unread badge */}
+                {!hasUnread && (
+                  <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <ChevronRight className={cn(
+                      'h-4 w-4 rtl:rotate-180 transition-colors',
+                      isActive ? 'text-indigo-500' : 'text-gray-400'
+                    )} />
+                  </div>
+                )}
               </button>
             );
           })}

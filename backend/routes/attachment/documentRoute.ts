@@ -49,7 +49,19 @@ documentRoute
             ? 'application/pdf'
             : ext === '.doc'
             ? 'application/msword'
-            : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            : ext === '.docx'
+            ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            : ext === '.pptx'
+            ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+            : ext === '.ppt'
+            ? 'application/vnd.ms-powerpoint'
+            : ext === '.xlsx'
+            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            : ext === '.xls'
+            ? 'application/vnd.ms-excel'
+            : ext === '.csv'
+            ? 'text/csv'
+            : 'application/octet-stream';
 
         return new Response(file.stream(), {
           headers: {
