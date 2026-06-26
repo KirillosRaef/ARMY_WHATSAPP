@@ -30,9 +30,12 @@ import { imageRoute } from "./routes/attachment/imageRoute.ts";
 import { documentRoute } from "./routes/attachment/documentRoute.ts";
 import { audioRoute } from "./routes/attachment/audioRoute.ts";
 import { videoRoute } from "./routes/attachment/videoRoute.ts";
-import { callSignalingRoute } from "./routes/ws/callSignalingRoute.ts";
+import { callSignalingRoute, activeGroupCalls } from "./routes/ws/callSignalingRoute.ts";
 import { conversationNotifyRoute } from "./routes/ws/conversationNotifyRoute.ts";
 import { markConversationReadRoute } from "./routes/conversation/markConversationReadRoute.ts";
+import { addGroupConversationRoute } from "./routes/conversation/addGroupConversationRoute.ts";
+import { getConversationMembersByIdRoute } from "./routes/conversation/getConversationMembersByIdRoute.ts";
+import { addConversationMemberRoute } from "./routes/conversation/addConversationMemberRoute.ts";
 
 export function lower(email: SQLiteColumn): any {
   return sql`lower(${email})`;
@@ -60,6 +63,9 @@ const app = new Elysia()
   .use(getConversationMembersRoute)
   .use(getConversationsByUserIdRoute)
   .use(addConversationByNumberRoute)
+  .use(addGroupConversationRoute)
+  .use(getConversationMembersByIdRoute)
+  .use(addConversationMemberRoute)
   .use(deleteConversationMembersRoute)
   .use(deleteAllConversationsRoute)
   .use(getCurrentUserConversationsRoute)
@@ -72,7 +78,18 @@ const app = new Elysia()
   .use(videoRoute)
   .use(callSignalingRoute)
   .use(conversationNotifyRoute)
-  .use(markConversationReadRoute);
+  .use(markConversationReadRoute)
+  .get('/api/conversations/:conversationId/active-call', ({ params: { conversationId } }) => {
+    const call = activeGroupCalls.get(conversationId);
+    if (!call) {
+      return { active: false, type: null, participants: [] };
+    }
+    return {
+      active: true,
+      type: call.type,
+      participants: Array.from(call.participants.keys()),
+    };
+  });
 
 // Load self-signed certificates
 const certsDir = path.resolve(import.meta.dir, '../certs');

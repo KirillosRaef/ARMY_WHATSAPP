@@ -131,7 +131,11 @@ export type CallSignal =
   | { type: 'ice-candidate'; candidate: RTCIceCandidateInit;    from: string; to: string }
   | { type: 'call-end';      from: string; to: string }
   | { type: 'call-reject';   from: string; to: string }
-  | { type: 'call-busy';     from: string; to: string };
+  | { type: 'call-busy';     from: string; to: string }
+  | { type: 'group-call-invite'; from: string; fromName: string; roomId: string }
+  | { type: 'group-call-join';   from: string; fromName: string; roomId: string }
+  | { type: 'group-call-leave';  from: string; roomId: string }
+  | { type: 'group-call-participants'; participants: Array<{ id: string; name: string }>; roomId: string };
 
 export type CallState =
   | { phase: 'idle' }
@@ -141,12 +145,15 @@ export type CallState =
 
 interface VoiceCallOverlayProps {
   currentUserId: string;
+  currentUserName?: string;
   conversationId: string;
   callState: CallState;
   onCallStateChange: (s: CallState) => void;
   // The signaling WS is managed externally and passed in via callbacks
   sendSignal: (msg: CallSignal) => void;
   isOtherCallActive?: boolean;
+  conversationType: string;
+  members: Array<{ id: string; name: string; email: string; number: string }>;
 }
 
 // ── Animated sound wave bars ───────────────────────────────────────────────
@@ -254,13 +261,15 @@ function ActionButton({
 
 export default function VoiceCallOverlay({
   currentUserId,
-  conversationId,
+  currentUserName = 'User',
+  conversationId: _conversationId,
   callState,
   onCallStateChange,
   sendSignal,
   isOtherCallActive = false,
 }: VoiceCallOverlayProps) {
   const peerRef = useRef<RTCPeerConnection | null>(null);
+  const activeConvoIdRef = useRef<string>('');
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
@@ -269,6 +278,27 @@ export default function VoiceCallOverlay({
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const callingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ringerRef = useRef<SoundSynthesizer | null>(null);
+
+  // Group Call Mesh state and refs
+  const [isGroupCall, setIsGroupCall] = useState(false);
+
+  // State refs to prevent stale closures in event listener
+  const callStateRef = useRef(callState);
+  const isGroupCallRef = useRef(isGroupCall);
+  const isOtherCallActiveRef = useRef(isOtherCallActive);
+
+  useEffect(() => { callStateRef.current = callState; }, [callState]);
+  useEffect(() => { isGroupCallRef.current = isGroupCall; }, [isGroupCall]);
+  useEffect(() => { isOtherCallActiveRef.current = isOtherCallActive; }, [isOtherCallActive]);
+
+  interface RemoteParticipant {
+    userId: string;
+    userName: string;
+    stream: MediaStream;
+  }
+  const [remoteParticipants, setRemoteParticipants] = useState<RemoteParticipant[]>([]);
+  const peersRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const pendingGroupIceCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
   // Initialize Sound Ringer once
   useEffect(() => {
@@ -291,6 +321,88 @@ export default function VoiceCallOverlay({
       ringer.stop();
     }
   }, [callState.phase]);
+
+  // ── Group Helpers ──────────────────────────────────────────────────────────
+  const removePeer = useCallback((targetUserId: string) => {
+    const pc = peersRef.current.get(targetUserId);
+    if (pc) {
+      pc.close();
+      peersRef.current.delete(targetUserId);
+    }
+    setRemoteParticipants((prev) => prev.filter((p) => p.userId !== targetUserId));
+    pendingGroupIceCandidatesRef.current.delete(targetUserId);
+  }, []);
+
+  const cleanupGroupCall = useCallback(() => {
+    peersRef.current.forEach((pc) => pc.close());
+    peersRef.current.clear();
+    setRemoteParticipants([]);
+    pendingGroupIceCandidatesRef.current.clear();
+    setIsGroupCall(false);
+  }, []);
+
+  const getOrCreatePeerConnection = useCallback((targetUserId: string, targetName: string) => {
+    if (peersRef.current.has(targetUserId)) {
+      return peersRef.current.get(targetUserId)!;
+    }
+
+    const pc = new RTCPeerConnection(ICE_SERVERS);
+    peersRef.current.set(targetUserId, pc);
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        sendSignal({
+          type: 'ice-candidate',
+          candidate: e.candidate.toJSON(),
+          from: currentUserId,
+          to: targetUserId,
+        } as any);
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log(`[WebRTC Voice Group] ICE connection state for ${targetUserId}:`, pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed') {
+        console.warn(`[WebRTC Voice Group] Peer connection failed for ${targetUserId}, removing peer`);
+        removePeer(targetUserId);
+      }
+    };
+
+    pc.ontrack = (e) => {
+      console.log(`[WebRTC Voice Group] Received remote track from ${targetUserId}:`, e.track.kind);
+      const stream = e.streams[0];
+      setRemoteParticipants((prev) => {
+        const newStream = new MediaStream(stream.getTracks());
+        if (prev.some((p) => p.userId === targetUserId)) {
+          return prev.map((p) => p.userId === targetUserId ? { ...p, stream: newStream } : p);
+        }
+        return [...prev, { userId: targetUserId, userName: targetName, stream: newStream }];
+      });
+    };
+
+    // Add local tracks to the new peer connection
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => {
+        pc.addTrack(track, localStreamRef.current!);
+      });
+    }
+
+    return pc;
+  }, [currentUserId, sendSignal, removePeer]);
+
+  const processPendingGroupIceCandidates = useCallback(async (userId: string, pc: RTCPeerConnection) => {
+    const candidates = pendingGroupIceCandidatesRef.current.get(userId) || [];
+    if (candidates.length === 0) return;
+    console.log(`[WebRTC Voice Group] Processing ${candidates.length} queued ICE candidates for ${userId}`);
+    for (const candidate of candidates) {
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (err) {
+        console.error(`[WebRTC Voice Group] Error adding queued ICE candidate for ${userId}:`, err);
+      }
+    }
+    pendingGroupIceCandidatesRef.current.delete(userId);
+  }, []);
 
   // ── Create / reset PeerConnection ────────────────────────────────────
   const createPeer = useCallback((targetUserId: string) => {
@@ -358,38 +470,74 @@ export default function VoiceCallOverlay({
   const cleanup = useCallback(() => {
     peerRef.current?.close();
     peerRef.current = null;
+    cleanupGroupCall();
     localStreamRef.current?.getTracks().forEach(t => t.stop());
     localStreamRef.current = null;
     pendingIceCandidatesRef.current = [];
     if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+    activeConvoIdRef.current = '';
     stopTimer();
-  }, []);
+  }, [cleanupGroupCall]);
 
   // ── Initiate a call ────────────────────────────────────────────────────────
-  const initiateCall = useCallback(async (targetUserId: string, targetName: string, myName: string) => {
+  const initiateCall = useCallback(async (targetUserId: string, targetName: string, myName: string, callConvoId: string) => {
+    activeConvoIdRef.current = callConvoId;
     const stream = await getLocalStream();
     const pc = createPeer(targetUserId);
     stream.getTracks().forEach(t => pc.addTrack(t, stream));
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    sendSignal({ type: 'call-offer', offer, from: currentUserId, fromName: myName, to: targetUserId, conversationId });
+    sendSignal({ type: 'call-offer', offer, from: currentUserId, fromName: myName, to: targetUserId, conversationId: callConvoId });
     onCallStateChange({ phase: 'calling', contactName: targetName, contactUserId: targetUserId });
-  }, [createPeer, currentUserId, conversationId, sendSignal, onCallStateChange]);
+  }, [createPeer, currentUserId, sendSignal, onCallStateChange]);
+
+  // ── Initiate a group call ──────────────────────────────────────────────────
+  const initiateGroupCall = useCallback(async (myName: string, roomId: string, joinOnly = false) => {
+    try {
+      activeConvoIdRef.current = roomId;
+      setIsGroupCall(true);
+      await getLocalStream();
+      onCallStateChange({ phase: 'active', otherUserId: 'group' });
+      startTimer();
+      if (!joinOnly) {
+        sendSignal({
+          type: 'group-call-invite',
+          from: currentUserId,
+          fromName: myName,
+          roomId,
+        } as any);
+      }
+      sendSignal({
+        type: 'group-call-join',
+        from: currentUserId,
+        fromName: myName,
+        roomId,
+      } as any);
+    } catch (e) {
+      console.error('Failed to initiate group voice call:', e);
+      cleanup();
+    }
+  }, [currentUserId, sendSignal, onCallStateChange, cleanup]);
 
   // ── Listen for call start triggered from header button ─────────────────────
   useEffect(() => {
     const handler = (e: Event) => {
-      const { contactUserId, contactName, myName } = (e as CustomEvent).detail;
+      const { contactUserId, contactName, myName, isGroup, roomId, conversationId: eventConvoId, joinOnly } = (e as CustomEvent).detail;
       if (callState.phase === 'idle') {
-        initiateCall(contactUserId, contactName, myName);
+        if (isGroup) {
+          initiateGroupCall(myName, roomId, joinOnly);
+        } else {
+          initiateCall(contactUserId, contactName, myName, eventConvoId || '');
+        }
       }
     };
     window.addEventListener('start-voice-call', handler);
     return () => window.removeEventListener('start-voice-call', handler);
-  }, [callState.phase, initiateCall]);
+  }, [callState.phase, initiateCall, initiateGroupCall]);
 
   // ── Accept incoming call ───────────────────────────────────────────────────
-  const acceptCall = useCallback(async (callerUserId: string, offer: RTCSessionDescriptionInit) => {
+  const acceptCall = useCallback(async (callerUserId: string, offer: RTCSessionDescriptionInit, callConvoId: string) => {
+    activeConvoIdRef.current = callConvoId;
     const stream = await getLocalStream();
     const pc = createPeer(callerUserId);
     stream.getTracks().forEach(t => pc.addTrack(t, stream));
@@ -405,14 +553,36 @@ export default function VoiceCallOverlay({
     startTimer();
   }, [createPeer, currentUserId, sendSignal, onCallStateChange, processPendingIceCandidates]);
 
+  // ── Accept incoming group call ─────────────────────────────────────────────
+  const acceptGroupCall = useCallback(async (roomId: string, myName: string) => {
+    try {
+      activeConvoIdRef.current = roomId;
+      setIsGroupCall(true);
+      await getLocalStream();
+      onCallStateChange({ phase: 'active', otherUserId: 'group' });
+      startTimer();
+      sendSignal({
+        type: 'group-call-join',
+        from: currentUserId,
+        fromName: myName,
+        roomId,
+      } as any);
+    } catch (e) {
+      console.error('Failed to accept group voice call:', e);
+      cleanup();
+    }
+  }, [currentUserId, sendSignal, onCallStateChange, cleanup]);
+
   // ── Hang up ────────────────────────────────────────────────────────────────
   const hangUp = useCallback((targetUserId?: string) => {
-    if (targetUserId) {
+    if (isGroupCall) {
+      sendSignal({ type: 'group-call-leave', from: currentUserId, roomId: activeConvoIdRef.current } as any);
+    } else if (targetUserId) {
       sendSignal({ type: 'call-end', from: currentUserId, to: targetUserId });
     }
     cleanup();
     onCallStateChange({ phase: 'idle' });
-  }, [cleanup, currentUserId, sendSignal, onCallStateChange]);
+  }, [cleanup, currentUserId, sendSignal, onCallStateChange, isGroupCall]);
 
   const rejectCall = useCallback((callerUserId: string) => {
     sendSignal({ type: 'call-reject', from: currentUserId, to: callerUserId });
@@ -453,8 +623,105 @@ export default function VoiceCallOverlay({
   useEffect(() => {
     const handleSignal = async (incomingSignal: CallSignal) => {
       switch (incomingSignal.type) {
+        case 'group-call-participants': {
+          if (isGroupCallRef.current && callStateRef.current.phase === 'active' && incomingSignal.roomId === activeConvoIdRef.current) {
+            console.log(`[WebRTC Voice Group] Received current participants:`, incomingSignal.participants);
+            for (const p of incomingSignal.participants) {
+              if (currentUserId < p.id) {
+                console.log(`[WebRTC Voice Group] Initiating offer to existing participant: ${p.name}`);
+                try {
+                  const pc = getOrCreatePeerConnection(p.id, p.name);
+                  const offer = await pc.createOffer();
+                  await pc.setLocalDescription(offer);
+                  sendSignal({
+                    type: 'call-offer',
+                    offer,
+                    from: currentUserId,
+                    fromName: currentUserName,
+                    to: p.id,
+                    conversationId: activeConvoIdRef.current,
+                  });
+                } catch (err) {
+                  console.error(`[WebRTC Voice Group] Error creating offer to existing participant ${p.id}:`, err);
+                }
+              }
+            }
+          }
+          break;
+        }
+        case 'group-call-invite': {
+          if (callStateRef.current.phase !== 'idle' || isOtherCallActiveRef.current || isGroupCallRef.current) {
+            // Busy, ignore invitation
+            break;
+          }
+          setIsGroupCall(true);
+          onCallStateChange({ phase: 'incoming', callerName: incomingSignal.fromName, callerUserId: incomingSignal.from });
+          (window as any).__pendingGroupCallRoomId = incomingSignal.roomId;
+          (window as any).__pendingGroupCallerName = incomingSignal.fromName;
+          activeConvoIdRef.current = incomingSignal.roomId;
+          break;
+        }
+        case 'group-call-join': {
+          if (isGroupCallRef.current && callStateRef.current.phase === 'active' && incomingSignal.roomId === activeConvoIdRef.current) {
+            console.log(`[WebRTC Voice Group] Peer joined group call: ${incomingSignal.fromName} (${incomingSignal.from})`);
+            if (currentUserId < incomingSignal.from) {
+              console.log(`[WebRTC Voice Group] Initiating offer to peer: ${incomingSignal.fromName}`);
+              try {
+                const pc = getOrCreatePeerConnection(incomingSignal.from, incomingSignal.fromName);
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                sendSignal({
+                  type: 'call-offer',
+                  offer,
+                  from: currentUserId,
+                  fromName: currentUserName,
+                  to: incomingSignal.from,
+                  conversationId: activeConvoIdRef.current,
+                });
+              } catch (err) {
+                console.error(`[WebRTC Voice Group] Error creating offer to peer ${incomingSignal.from}:`, err);
+              }
+            }
+          }
+          break;
+        }
+        case 'group-call-leave': {
+          if (isGroupCallRef.current && callStateRef.current.phase === 'active' && incomingSignal.roomId === activeConvoIdRef.current) {
+            console.log(`[WebRTC Voice Group] Peer left group call: ${incomingSignal.from}`);
+            removePeer(incomingSignal.from);
+          }
+          break;
+        }
+        case 'group-call-ended': {
+          if (incomingSignal.roomId === activeConvoIdRef.current) {
+            console.log(`[WebRTC Voice Group] Group call ended by server`);
+            cleanup();
+            onCallStateChange({ phase: 'idle' });
+          }
+          break;
+        }
         case 'call-offer': {
-          if (callState.phase !== 'idle' || isOtherCallActive) {
+          if (isGroupCallRef.current && callStateRef.current.phase === 'active' && incomingSignal.conversationId === activeConvoIdRef.current) {
+            console.log(`[WebRTC Voice Group] Received peer offer from: ${incomingSignal.from}`);
+            try {
+              const pc = getOrCreatePeerConnection(incomingSignal.from, incomingSignal.fromName || incomingSignal.from);
+              await pc.setRemoteDescription(new RTCSessionDescription(incomingSignal.offer));
+              await processPendingGroupIceCandidates(incomingSignal.from, pc);
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+              sendSignal({
+                type: 'call-answer',
+                answer,
+                from: currentUserId,
+                to: incomingSignal.from,
+              });
+            } catch (err) {
+              console.error(`[WebRTC Voice Group] Error responding to peer offer from ${incomingSignal.from}:`, err);
+            }
+            break;
+          }
+
+          if (callStateRef.current.phase !== 'idle' || isOtherCallActiveRef.current || isGroupCallRef.current) {
             console.log('[WebRTC] Received call offer while busy, sending busy signal to:', incomingSignal.from);
             sendSignal({ type: 'call-busy', from: currentUserId, to: incomingSignal.from });
             break;
@@ -463,21 +730,45 @@ export default function VoiceCallOverlay({
           // Store the offer so acceptCall can use it
           (window as any).__pendingCallOffer = incomingSignal.offer;
           (window as any).__pendingCallerUserId = incomingSignal.from;
+          (window as any).__pendingCallConvoId = incomingSignal.conversationId;
+          activeConvoIdRef.current = incomingSignal.conversationId;
           break;
         }
         case 'call-answer': {
+          if (isGroupCallRef.current) {
+            const pc = peersRef.current.get(incomingSignal.from);
+            if (pc) {
+              console.log(`[WebRTC Voice Group] Received peer answer from: ${incomingSignal.from}`);
+              await pc.setRemoteDescription(new RTCSessionDescription(incomingSignal.answer));
+              await processPendingGroupIceCandidates(incomingSignal.from, pc);
+            }
+            break;
+          }
           if (peerRef.current) {
             await peerRef.current.setRemoteDescription(new RTCSessionDescription(incomingSignal.answer));
-
             // Process early candidates now that remote description is set
             await processPendingIceCandidates(peerRef.current);
-
             onCallStateChange({ phase: 'active', otherUserId: incomingSignal.from });
             startTimer();
           }
           break;
         }
         case 'ice-candidate': {
+          if (isGroupCallRef.current) {
+            const pc = peersRef.current.get(incomingSignal.from);
+            if (pc && pc.remoteDescription) {
+              try {
+                await pc.addIceCandidate(new RTCIceCandidate(incomingSignal.candidate));
+              } catch (err) {
+                console.error(`[WebRTC Voice Group] Error adding ICE candidate for ${incomingSignal.from}:`, err);
+              }
+            } else {
+              const list = pendingGroupIceCandidatesRef.current.get(incomingSignal.from) || [];
+              list.push(incomingSignal.candidate);
+              pendingGroupIceCandidatesRef.current.set(incomingSignal.from, list);
+            }
+            break;
+          }
           if (peerRef.current && peerRef.current.remoteDescription) {
             try {
               await peerRef.current.addIceCandidate(new RTCIceCandidate(incomingSignal.candidate));
@@ -514,7 +805,17 @@ export default function VoiceCallOverlay({
     return () => {
       window.removeEventListener('voice-call-signal', handler);
     };
-  }, [currentUserId, conversationId, callState.phase, isOtherCallActive, sendSignal, cleanup, onCallStateChange, processPendingIceCandidates]);
+  }, [
+    currentUserId,
+    currentUserName,
+    sendSignal,
+    cleanup,
+    onCallStateChange,
+    processPendingIceCandidates,
+    getOrCreatePeerConnection,
+    processPendingGroupIceCandidates,
+    removePeer,
+  ]);
 
   // ── Mute toggle ────────────────────────────────────────────────────────────
   const toggleMute = () => {
@@ -566,7 +867,10 @@ export default function VoiceCallOverlay({
     const { callerName, callerUserId } = callState;
     return (
       <>
-        {audioEl}
+        {!isGroupCall && audioEl}
+        {isGroupCall && remoteParticipants.map((p) => (
+          <RemoteAudio key={p.userId} stream={p.stream} />
+        ))}
         <Backdrop>
           <Card>
             {/* Incoming badge */}
@@ -586,22 +890,35 @@ export default function VoiceCallOverlay({
             {/* Name & status */}
             <div className="text-center space-y-1">
               <p className="text-2xl font-bold text-white tracking-tight">{callerName}</p>
-              <p className="text-sm text-white/50">Voice call</p>
+              <p className="text-sm text-white/50">{isGroupCall ? 'Group Voice call' : 'Voice call'}</p>
             </div>
 
             {/* Action buttons */}
             <div className="flex items-center gap-10">
               <ActionButton
-                onClick={() => rejectCall(callerUserId)}
+                onClick={() => {
+                  if (isGroupCall) {
+                    cleanup();
+                    onCallStateChange({ phase: 'idle' });
+                  } else {
+                    rejectCall(callerUserId);
+                  }
+                }}
                 icon={<PhoneOff className="h-7 w-7 text-white" />}
                 label="Decline"
                 variant="red"
               />
               <ActionButton
                 onClick={() => {
-                  const offer = (window as any).__pendingCallOffer;
-                  const callerId = (window as any).__pendingCallerUserId;
-                  if (offer && callerId) acceptCall(callerId, offer);
+                  if (isGroupCall) {
+                    const roomId = (window as any).__pendingGroupCallRoomId;
+                    if (roomId) acceptGroupCall(roomId, currentUserName);
+                  } else {
+                    const offer = (window as any).__pendingCallOffer;
+                    const callerId = (window as any).__pendingCallerUserId;
+                    const convoId = (window as any).__pendingCallConvoId;
+                    if (offer && callerId) acceptCall(callerId, offer, convoId || '');
+                  }
                 }}
                 icon={<Phone className="h-7 w-7 text-white" />}
                 label="Accept"
@@ -619,7 +936,7 @@ export default function VoiceCallOverlay({
     const { contactName, contactUserId } = callState;
     return (
       <>
-        {audioEl}
+        {!isGroupCall && audioEl}
         <Backdrop>
           <Card>
             {/* Calling badge */}
@@ -661,7 +978,10 @@ export default function VoiceCallOverlay({
 
     return (
       <>
-        {audioEl}
+        {!isGroupCall && audioEl}
+        {isGroupCall && remoteParticipants.map((p) => (
+          <RemoteAudio key={p.userId} stream={p.stream} />
+        ))}
         <div
           className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-4"
           style={{ minWidth: 280 }}
@@ -684,7 +1004,7 @@ export default function VoiceCallOverlay({
             {/* Wave + timer */}
             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-white/90">Voice call</span>
+                <span className="text-xs font-semibold text-white/90">{isGroupCall ? 'Group Voice' : 'Voice call'}</span>
                 <SoundWave active={!isMuted} />
               </div>
               <span className="text-xs font-mono text-emerald-400 tabular-nums">{formatDuration(callDuration)}</span>
@@ -718,5 +1038,28 @@ export default function VoiceCallOverlay({
     );
   }
 
-  return <>{audioEl}</>;
+  return (
+    <>
+      {!isGroupCall && audioEl}
+      {isGroupCall && remoteParticipants.map((p) => (
+        <RemoteAudio key={p.userId} stream={p.stream} />
+      ))}
+    </>
+  );
+}
+
+// ── Remote Participant audio playing component ──────────────────────────────
+function RemoteAudio({ stream }: { stream: MediaStream }) {
+  const ref = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (ref.current && stream) {
+      ref.current.srcObject = stream;
+      ref.current.play().catch(err => {
+        console.error('[WebRTC Group Voice Audio] Error auto-playing remote stream:', err);
+      });
+    }
+  }, [stream]);
+
+  return <audio ref={ref} autoPlay playsInline className="absolute pointer-events-none opacity-0 h-0 w-0" />;
 }

@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Search, Plus, LogOut, MessageCircle, ChevronRight } from 'lucide-react';
+import { Search, LogOut, MessageCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import AddConversation from './add_conversation';
@@ -15,6 +15,7 @@ export type CurrentUserConversationType = {
   name: string;
   email: string;
   number: string;
+  type?: string;
   isSelected: boolean;
   lastMessageAt: string | number | null;
   lastMessagePreview: string | null;

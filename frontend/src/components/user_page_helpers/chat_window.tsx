@@ -1,21 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Send, Smile, Paperclip, Phone, Video, MoreVertical, ArrowLeft,
-  CheckCheck, ImageIcon, FileText, Mic, MicOff, FileType2, Download, Square,
-  Play, Pause, FileSpreadsheet, Presentation, Film,
+  CheckCheck, ImageIcon, FileText, Mic, FileType2, Download, Square,
+  Play, Pause, FileSpreadsheet, Presentation, Film, CheckCircle2, AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import EmojiPicker, { EmojiStyle } from 'emoji-picker-react';
 import ImageUploadCrop from '../image_upload_crop';
+import { Input } from '../ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import VoiceCallOverlay, { type CallSignal, type CallState } from './voice_call_overlay';
-import VideoCallOverlay, { type VideoCallSignal, type VideoCallState } from './video_call_overlay';
+import type { CallState } from './voice_call_overlay';
+import type { VideoCallState } from './video_call_overlay';
 
 type MessageType = {
   id: string;
@@ -215,6 +216,7 @@ function getAvatarColor(name: string): { bg: string; text: string } {
 
 interface ChatWindowProps {
   conversationId: string;
+  conversationType: string;
   contactName: string;
   contactNumber: string;
   currentUserId: string;
@@ -225,8 +227,9 @@ interface ChatWindowProps {
 
 export default function ChatWindow({
   conversationId,
+  conversationType,
   contactName,
-  contactNumber,
+  contactNumber: _contactNumber,
   currentUserId,
   currentUserName,
   contactUserId,
@@ -238,6 +241,8 @@ export default function ChatWindow({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+
 
   // ── Image upload ────────────────────────────────────────────────────────────
   const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
@@ -261,54 +266,128 @@ export default function ChatWindow({
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Voice call ──────────────────────────────────────────────────────────────
+  // ── Voice & Video call states (listened globally) ───────────────────────────
   const [callState, setCallState] = useState<CallState>({ phase: 'idle' });
-
-  // ── Video call ──────────────────────────────────────────────────────────────
   const [videoCallState, setVideoCallState] = useState<VideoCallState>({ phase: 'idle' });
+  const [activeGroupCall, setActiveGroupCall] = useState<{ active: boolean; type: 'voice' | 'video' | null; participants: string[] } | null>(null);
 
-  const callWsRef = useRef<WebSocket | null>(null);
-
-  // Connect call signaling WS — depends ONLY on currentUserId so it stays
-  // stable across conversation switches and never overwrites the server-side
-  // registration while a call is in progress.
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // conversationId is intentionally omitted here — the server only uses it
-    // for the pub/sub channel which we don't rely on, and we must not
-    // reconnect (and re-register) whenever the user switches chats.
-    const url = `${protocol}//${window.location.host}/ws/call?userId=${currentUserId}&conversationId=global`;
-    const ws = new WebSocket(url);
-    ws.onmessage = (e) => {
-      try {
-        const signal = JSON.parse(e.data) as any;
-        if (signal.type && signal.type.startsWith('video-')) {
-          window.dispatchEvent(new CustomEvent('video-call-signal', { detail: signal }));
-        } else {
-          window.dispatchEvent(new CustomEvent('voice-call-signal', { detail: signal }));
-        }
-      } catch { /* ignore */ }
-    };
-    ws.onerror = (e) => console.error('[Call WS] error', e);
-    ws.onopen = () => console.log('[Call WS] connected, userId:', currentUserId);
-    callWsRef.current = ws;
-    return () => ws.close();
-  }, [currentUserId]); // ← NOT conversationId
-
-  const sendSignal = useCallback((msg: any) => {
-    const ws = callWsRef.current;
-    if (!ws) return;
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(msg));
-    } else if (ws.readyState === WebSocket.CONNECTING) {
-      // Wait for the connection to open, then send
-      const onOpen = () => {
-        ws.send(JSON.stringify(msg));
-        ws.removeEventListener('open', onOpen);
-      };
-      ws.addEventListener('open', onOpen);
+    if (conversationType !== 'Group') {
+      setActiveGroupCall(null);
+      return;
     }
+
+    const checkActiveCall = async () => {
+      try {
+        const res = await fetch(`/api/conversations/${conversationId}/active-call`);
+        if (res.ok) {
+          const data = await res.json();
+          setActiveGroupCall(data);
+        }
+      } catch (err) {
+        console.error('Failed to check active call:', err);
+      }
+    };
+
+    checkActiveCall();
+    const interval = setInterval(checkActiveCall, 4000);
+    return () => clearInterval(interval);
+  }, [conversationId, conversationType]);
+
+  const checkAndStartCall = async (type: 'voice' | 'video') => {
+    if (callState.phase !== 'idle' || videoCallState.phase !== 'idle') return;
+
+    if (conversationType === 'Group') {
+      try {
+        const res = await fetch(`/api/conversations/${conversationId}/active-call`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.active) {
+            const activeType = data.type;
+            const detail = {
+              contactUserId: '',
+              contactName,
+              myName: currentUserName,
+              isGroup: true,
+              roomId: conversationId,
+              conversationId,
+              joinOnly: true,
+            };
+            if (activeType === 'video') {
+              window.dispatchEvent(new CustomEvent('start-video-call', { detail }));
+            } else {
+              window.dispatchEvent(new CustomEvent('start-voice-call', { detail }));
+            }
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check active calls:', err);
+      }
+    }
+
+    const detail = {
+      contactUserId: conversationType === 'Group' ? '' : contactUserId,
+      contactName,
+      myName: currentUserName,
+      isGroup: conversationType === 'Group',
+      roomId: conversationType === 'Group' ? conversationId : undefined,
+      conversationId,
+      joinOnly: false,
+    };
+    if (type === 'video') {
+      window.dispatchEvent(new CustomEvent('start-video-call', { detail }));
+    } else {
+      window.dispatchEvent(new CustomEvent('start-voice-call', { detail }));
+    }
+  };
+
+  useEffect(() => {
+    const handleCallState = (e: Event) => {
+      setCallState((e as CustomEvent).detail);
+    };
+    const handleVideoCallState = (e: Event) => {
+      setVideoCallState((e as CustomEvent).detail);
+    };
+    window.addEventListener('call-state-change', handleCallState);
+    window.addEventListener('video-call-state-change', handleVideoCallState);
+    return () => {
+      window.removeEventListener('call-state-change', handleCallState);
+      window.removeEventListener('video-call-state-change', handleVideoCallState);
+    };
   }, []);
+
+  // ── Add group member states & handler ──────────────────────────────────────
+  const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
+  const [addMemberNumber, setAddMemberNumber] = useState('');
+  const [addMemberStatus, setAddMemberStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [addMemberMessage, setAddMemberMessage] = useState('');
+
+  const handleAddMember = async () => {
+    if (!addMemberNumber.trim()) return;
+    setAddMemberStatus('loading');
+    setAddMemberMessage('');
+    try {
+      const res = await fetch(`/api/conversations/${conversationId}/add-member`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number: addMemberNumber.trim() }),
+      });
+      const data = await res.json() as any;
+      if (res.ok && data.success) {
+        setAddMemberStatus('success');
+        setAddMemberMessage(data.message || 'Member added successfully');
+        setAddMemberNumber('');
+        queryClient.invalidateQueries({ queryKey: ['conversationMembers', conversationId] });
+      } else {
+        setAddMemberStatus('error');
+        setAddMemberMessage(data.message || 'Failed to add member');
+      }
+    } catch (err) {
+      setAddMemberStatus('error');
+      setAddMemberMessage('Network error occurred');
+    }
+  };
 
   // ── Message WS ──────────────────────────────────────────────────────────────
   const { data: messages, isLoading } = useQuery({
@@ -520,25 +599,7 @@ export default function ChatWindow({
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
-      {/* ── Voice Call Overlay ────────────────────────────────────────────────── */}
-      <VoiceCallOverlay
-        currentUserId={currentUserId}
-        conversationId={conversationId}
-        callState={callState}
-        onCallStateChange={setCallState}
-        sendSignal={sendSignal}
-        isOtherCallActive={videoCallState.phase !== 'idle'}
-      />
 
-      {/* ── Video Call Overlay ────────────────────────────────────────────────── */}
-      <VideoCallOverlay
-        currentUserId={currentUserId}
-        conversationId={conversationId}
-        callState={videoCallState}
-        onCallStateChange={setVideoCallState}
-        sendSignal={sendSignal}
-        isOtherCallActive={callState.phase !== 'idle'}
-      />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100" style={{ boxShadow: '0 1px 0 0 #f3f4f6, 0 2px 8px -2px rgba(99,102,241,0.06)' }}>
@@ -559,6 +620,11 @@ export default function ChatWindow({
           <p className="text-sm font-semibold text-gray-900 truncate">{contactName}</p>
           {(callState.phase === 'active' || videoCallState.phase === 'active') ? (
             <p className="text-xs text-emerald-500 font-medium animate-pulse">On call</p>
+          ) : activeGroupCall?.active ? (
+            <p className="text-xs text-emerald-500 font-semibold animate-pulse flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+              Active group {activeGroupCall.type} call
+            </p>
           ) : (
             <p className="text-xs text-emerald-500 font-medium">{t('chat.online')}</p>
           )}
@@ -566,47 +632,52 @@ export default function ChatWindow({
         <div className="flex items-center gap-1.5">
           {/* Voice call button */}
           <Button
-            onClick={() => {
-              if (callState.phase === 'idle' && videoCallState.phase === 'idle') {
-                const detail = { contactUserId, contactName, myName: currentUserName };
-                window.dispatchEvent(new CustomEvent('start-voice-call', { detail }));
-              }
-            }}
+            onClick={() => checkAndStartCall('voice')}
             variant="outline"
             size="icon"
             className={cn(
               'rounded-full transition-all duration-200 flex-shrink-0',
               callState.phase !== 'idle'
                 ? 'text-emerald-500 border-emerald-250 bg-emerald-50 shadow-sm shadow-emerald-200'
+                : activeGroupCall?.active && activeGroupCall.type === 'voice'
+                ? 'text-emerald-500 border-emerald-300 bg-emerald-50 shadow-sm animate-pulse'
                 : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200'
             )}
           >
-            <Phone className={cn('h-5 w-5', callState.phase !== 'idle' && 'animate-pulse')} />
+            <Phone className={cn('h-5 w-5', (callState.phase !== 'idle' || (activeGroupCall?.active && activeGroupCall.type === 'voice')) && 'animate-pulse')} />
           </Button>
 
           {/* Video call button */}
           <Button
-            onClick={() => {
-              if (callState.phase === 'idle' && videoCallState.phase === 'idle') {
-                const detail = { contactUserId, contactName, myName: currentUserName };
-                window.dispatchEvent(new CustomEvent('start-video-call', { detail }));
-              }
-            }}
+            onClick={() => checkAndStartCall('video')}
             variant="outline"
             size="icon"
             className={cn(
               'rounded-full transition-all duration-200 flex-shrink-0',
               videoCallState.phase !== 'idle'
                 ? 'text-emerald-500 border-emerald-250 bg-emerald-50 shadow-sm shadow-emerald-200'
+                : activeGroupCall?.active && activeGroupCall.type === 'video'
+                ? 'text-emerald-500 border-emerald-300 bg-emerald-50 shadow-sm animate-pulse'
                 : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200'
             )}
           >
-            <Video className={cn('h-5 w-5', videoCallState.phase !== 'idle' && 'animate-pulse')} />
+            <Video className={cn('h-5 w-5', (videoCallState.phase !== 'idle' || (activeGroupCall?.active && activeGroupCall.type === 'video')) && 'animate-pulse')} />
           </Button>
 
-          <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200 transition-all flex-shrink-0">
-            <MoreVertical className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 border-gray-200 transition-all flex-shrink-0 cursor-pointer">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {conversationType === 'Group' && (
+                <DropdownMenuItem onClick={() => setIsAddMemberDialogOpen(true)} className="cursor-pointer">
+                  Add Member
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -641,24 +712,35 @@ export default function ChatWindow({
               </div>
             </div>
 
-            {group.messages.map((msg, idx) => {
-              const isMine = msg.senderId === currentUserId;
-              const showAvatar = !isMine && (idx === 0 || group.messages[idx - 1].senderId !== msg.senderId);
-
-              return (
-                <div key={msg.id} className={cn('flex mb-1', isMine ? 'justify-end' : 'justify-start')}>
-                  {!isMine && showAvatar && (
-                    <Avatar className="h-7 w-7 mt-1 me-2 flex-shrink-0">
-                      <AvatarFallback className={cn(contactColor.bg, contactColor.text, 'text-[10px] font-semibold')}>{contactName.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  )}
-                  {!isMine && !showAvatar && <div className="w-9 flex-shrink-0" />}
-
-                  <div className={cn(
-                    'max-w-[75%] px-3.5 py-2 rounded-2xl shadow-sm relative group',
-                    isMine ? 'bg-indigo-500 text-white rounded-ee-md' : 'bg-white text-gray-800 rounded-es-md border border-gray-100',
-                    (msg.type === 'Image' || msg.type === 'Video') ? 'p-1.5' : ''
-                  )}>
+             {group.messages.map((msg, idx) => {
+               const isMine = msg.senderId === currentUserId;
+               const showAvatar = !isMine && (idx === 0 || group.messages[idx - 1].senderId !== msg.senderId);
+ 
+               return (
+                 <div key={msg.id} className={cn('flex mb-1', isMine ? 'justify-end' : 'justify-start')}>
+                   {!isMine && showAvatar && (() => {
+                     const senderDisplayName = conversationType === 'Group' ? (msg.senderName || 'User') : contactName;
+                     const senderColor = conversationType === 'Group' ? getAvatarColor(senderDisplayName) : contactColor;
+                     return (
+                       <Avatar className="h-7 w-7 mt-1 me-2 flex-shrink-0">
+                         <AvatarFallback className={cn(senderColor.bg, senderColor.text, 'text-[10px] font-semibold')}>
+                           {senderDisplayName.charAt(0).toUpperCase()}
+                         </AvatarFallback>
+                       </Avatar>
+                     );
+                   })()}
+                   {!isMine && !showAvatar && <div className="w-9 flex-shrink-0" />}
+ 
+                   <div className={cn(
+                     'max-w-[75%] px-3.5 py-2 rounded-2xl shadow-sm relative group',
+                     isMine ? 'bg-indigo-500 text-white rounded-ee-md' : 'bg-white text-gray-800 rounded-es-md border border-gray-100',
+                     (msg.type === 'Image' || msg.type === 'Video') ? 'p-1.5' : ''
+                   )}>
+                     {conversationType === 'Group' && !isMine && (
+                       <p className={cn("text-[11px] font-bold mb-1 block", getAvatarColor(msg.senderName || 'User').text)}>
+                         {msg.senderName || 'User'}
+                       </p>
+                     )}
                     {/* Image */}
                     {msg.type === 'Image' && (
                       <div className="overflow-hidden rounded-xl">
@@ -927,6 +1009,58 @@ export default function ChatWindow({
           <DialogFooter className="mt-4">
             <Button disabled={!selectedVideoFile || isSending} onClick={handleSendVideo} className="bg-purple-500 hover:bg-purple-600 text-white">
               {isSending ? 'Sending…' : 'Send Video'}{!isSending && <Send className="w-4 h-4 ml-2" />}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Add Member dialog ─────────────────────────────────────────────────── */}
+      <Dialog open={isAddMemberDialogOpen} onOpenChange={(open) => { setIsAddMemberDialogOpen(open); if (!open) { setAddMemberNumber(''); setAddMemberStatus('idle'); setAddMemberMessage(''); } }}>
+        <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+          <DialogHeader>
+            <DialogTitle>Add Member to Group</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="member-number" className="text-xs font-semibold text-gray-500">Phone Number</label>
+              <Input
+                id="member-number"
+                type="text"
+                placeholder="Enter phone number (e.g. 112)"
+                value={addMemberNumber}
+                onChange={(e) => setAddMemberNumber(e.target.value)}
+                disabled={addMemberStatus === 'loading'}
+                className="w-full bg-gray-50 border-gray-200 focus:bg-white transition-all focus:ring-indigo-500"
+              />
+            </div>
+            {addMemberStatus === 'error' && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-50 border border-rose-100 text-rose-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{addMemberMessage}</span>
+              </div>
+            )}
+            {addMemberStatus === 'success' && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+                <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                <span>{addMemberMessage}</span>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex items-center justify-end gap-2 border-t border-gray-100 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsAddMemberDialogOpen(false)}
+              disabled={addMemberStatus === 'loading'}
+              className="border-gray-200 text-gray-600 hover:bg-gray-50"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddMember}
+              disabled={!addMemberNumber.trim() || addMemberStatus === 'loading'}
+              className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium shadow-sm transition-all"
+            >
+              {addMemberStatus === 'loading' ? 'Adding…' : 'Add Member'}
             </Button>
           </DialogFooter>
         </DialogContent>

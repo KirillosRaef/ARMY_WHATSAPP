@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../../database";
-import { message, conversation, conversationMembers } from "../../schema";
+import { message, conversation, conversationMembers, user } from "../../schema";
 import { eq, ne, and, sql } from "drizzle-orm";
 
 export const messageWebSocketRoute = new Elysia()
@@ -78,8 +78,24 @@ messageWebSocketRoute.onError(({ error }) => {
           )
         );
 
+      // Fetch the message with senderName
+      const messagesData = await db
+        .select({
+          id: message.id,
+          conversationId: message.conversationId,
+          senderId: message.senderId,
+          senderName: user.name,
+          content: message.content,
+          type: message.type,
+          createdAt: message.createdAt,
+        })
+        .from(message)
+        .leftJoin(user, eq(message.senderId, user.id))
+        .where(eq(message.id, sentMessage.id));
+      const messageWithSender = messagesData[0] || sentMessage;
+
       // Publish to conversation channel (for the chat window)
-      ws.publish(`conversation/${conversationId}`, sentMessage);
+      ws.publish(`conversation/${conversationId}`, messageWithSender);
 
       // Publish sidebar notification to all conversation members
       const members = await db

@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../../database";
-import { message, messageInsertSchema, conversation, conversationMembers } from "../../schema";
+import { message, messageInsertSchema, conversation, conversationMembers, user } from "../../schema";
 import { eq, ne, and, sql } from "drizzle-orm";
 
 export const messageRoute = new Elysia()
@@ -47,8 +47,24 @@ messageRoute.onError(({ error }) => {
         )
       );
 
+    // Fetch the message with senderName
+    const messagesData = await db
+      .select({
+        id: message.id,
+        conversationId: message.conversationId,
+        senderId: message.senderId,
+        senderName: user.name,
+        content: message.content,
+        type: message.type,
+        createdAt: message.createdAt,
+      })
+      .from(message)
+      .leftJoin(user, eq(message.senderId, user.id))
+      .where(eq(message.id, sentMessage.id));
+    const messageWithSender = messagesData[0] || sentMessage;
+
     // Publish the message to conversation subscribers (for the chat window)
-    server?.publish(`conversation/${body.conversationId}`, JSON.stringify(sentMessage));
+    server?.publish(`conversation/${body.conversationId}`, JSON.stringify(messageWithSender));
 
     // Publish a sidebar notification so all users can update their conversation list
     // Fetch all members of this conversation to notify them individually
@@ -69,7 +85,7 @@ messageRoute.onError(({ error }) => {
       server?.publish(`user-conversations/${member.userId}`, notification);
     }
 
-    return sentMessage;
+    return messageWithSender;
   },
   {
     body: t.Omit(messageInsertSchema, ['id']),

@@ -109,6 +109,7 @@ function RouteComponent() {
       <div className="flex-1 flex flex-col min-w-0">
         <ChatWindow
           conversationId={selectedConversationId}
+          conversationType={selectedConversation?.type || 'Private'}
           contactName={selectedConversation?.name || t('chat.unknown')}
           contactNumber={selectedConversation?.number || ''}
           currentUserId={currentUser?.id || ''}

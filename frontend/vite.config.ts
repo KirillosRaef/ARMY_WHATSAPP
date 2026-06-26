@@ -32,7 +32,7 @@ const httpsConfig = fs.existsSync(path.join(certsDir, 'server-key.pem'))
       key: fs.readFileSync(path.join(certsDir, 'server-key.pem')),
       cert: fs.readFileSync(path.join(certsDir, 'server.pem')),
     }
-  : true; // Fallback to default if certs not yet generated
+  : undefined; // Fallback to HTTP if certs not yet generated
 
 // https://vite.dev/config/
 export default defineConfig({

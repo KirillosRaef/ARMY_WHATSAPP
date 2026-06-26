@@ -9,7 +9,7 @@ export default function ErrorComponent( {error, shell}: {error: Error, shell: 'U
       <UserShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4 animate-fade-in">
           <AlertCircle className="h-12 w-12 text-destructive" />
-          <p className="text-lg font-semibold text-foreground">Failed to load device types</p>
+          <p className="text-lg font-semibold text-foreground">Failed to load data</p>
           <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </UserShell>
@@ -17,7 +17,7 @@ export default function ErrorComponent( {error, shell}: {error: Error, shell: 'U
       <AdminShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4 animate-fade-in">
           <AlertCircle className="h-12 w-12 text-destructive" />
-          <p className="text-lg font-semibold text-foreground">Failed to load device types</p>
+          <p className="text-lg font-semibold text-foreground">Failed to load data</p>
           <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </AdminShell>
